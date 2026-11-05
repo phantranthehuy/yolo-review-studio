@@ -1,0 +1,11 @@
+
+/* Chế độ thao tác bằng hai biểu tượng: bàn tay và bút vẽ. */
+.coords .coordToolGroup{display:inline-flex;align-items:center;gap:9px;font:600 13px/1.2 system-ui,-apple-system,sans-serif}
+.coords .coordToolLabel{color:#526273}
+.coords .coordToolSwitch{display:inline-flex;gap:3px;padding:3px;border:1px solid #cbd8df;border-radius:10px;background:#eef2f5;box-shadow:inset 0 1px 2px #15324b0c}
+.coords .coordToolSwitch .coordToolBtn{width:39px;height:36px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:7px;color:#496171;background:transparent;cursor:pointer;transition:background .12s ease,color .12s ease,box-shadow .12s ease}
+.coords .coordToolSwitch .coordToolBtn:hover{color:#065e59;background:#fff}
+.coords .coordToolSwitch .coordToolBtn.is-active,.coords .coordToolSwitch .coordToolBtn[aria-pressed="true"]{background:#08756c;color:#fff;border-color:#08675f;box-shadow:0 1px 5px #123b3550}
+.coords .coordToolSwitch .coordToolBtn.is-active:hover{background:#05635c}
+.coords .coordToolSwitch .coordToolBtn:focus-visible{outline:3px solid #85b9e8;outline-offset:2px}
+.coords .coordModeInternal{display:none!important}

@@ -1,0 +1,7 @@
+
+@media(width < 1160px){
+ #coordsSection .coordFloatingTools:not(.coordMobileCollapsed){
+  border-radius:15px 0 0 15px!important;
+  border-right:0!important;
+ }
+}

@@ -1,0 +1,32 @@
+
+:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast):not([hidden]){
+ position:relative;right:auto;top:auto;bottom:auto;left:auto;transform:none;pointer-events:auto;
+ display:flex;align-items:center;gap:16px;width:100%;
+ margin:0;padding:16px 16px 16px 18px;z-index:10000;
+ border:1px solid #bd7258;border-radius:13px;background:rgba(255,242,231,.94);
+ color:#743c29;font-size:13px;line-height:1.6;box-shadow:0 8px 28px #152b3933;
+ backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+ animation:sizeWarningAppear .22s ease-out;
+}
+html[data-theme="dark"] :is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast){background:rgba(72,43,36,.94);color:#ffcfbb;border-color:#ad705c}
+:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast)>span{flex:1;min-width:0}
+:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast) .sizePopupClose{
+ display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;min-height:34px;
+ border:1px solid currentColor;border-radius:50%;padding:0;background:transparent;color:inherit;
+ font:700 14px/1 system-ui;cursor:pointer;
+}
+:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast) .sizePopupCross{display:none;font-size:23px;font-weight:400}
+:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast) .sizePopupClose:is(:hover,:focus-visible) .sizePopupCount{display:none}
+:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast) .sizePopupClose:is(:hover,:focus-visible) .sizePopupCross{display:block}
+:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast) .sizePopupClose:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+@keyframes sizeWarningAppear{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:720px){:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast):not([hidden]){gap:12px;padding:13px 14px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){:is(#coord_sizeWarning,#coord_copyToast,#coord_actionToast){animation:none!important}}
+
+#coord_toastStack{position:fixed;right:20px;top:84px;z-index:10000;display:flex;flex-direction:column;gap:10px;width:min(510px,calc(100vw - 32px));pointer-events:none}
+:is(#coord_copyToast,#coord_actionToast):not([hidden]){background:rgba(225,246,234,.95);color:#205a43;border-color:#649d82}
+html[data-theme="dark"] :is(#coord_copyToast,#coord_actionToast):not([hidden]){background:rgba(30,72,58,.95);color:#d3f4e4;border-color:#598d76}
+#coord_copyToast.copyFailed:not([hidden]){background:rgba(255,242,231,.95);color:#743c29;border-color:#bd7258}
+html[data-theme="dark"] #coord_copyToast.copyFailed:not([hidden]){background:rgba(72,43,36,.95);color:#ffcfbb;border-color:#ad705c}
+:is(#coord_copyToast,#coord_actionToast) .coordCopyToastIcon{flex:0 0 22px;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#ffffff20}
+@media(max-width:720px){#coord_toastStack{right:16px;top:80px}}

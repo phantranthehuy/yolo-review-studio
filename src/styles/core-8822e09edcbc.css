@@ -1,0 +1,87 @@
+
+/* v4.1 · Context dock: thanh cong cu + thong tin box dung chung mot be mat. */
+#coordsSection .coordFloatingTools > .coordCompactBar{display:none!important}
+#coordsSection .coordFloatingTools.isDocked{
+ position:fixed!important;z-index:2400;
+ top:auto!important;bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+ left:12px!important;right:12px!important;
+ width:auto;min-width:0;height:61px;max-height:none;
+ padding:7px 8px 7px 11px;gap:10px;
+ border:1px solid rgba(198,228,231,.29);border-radius:14px;
+ background:rgba(21,38,48,.86);
+ -webkit-backdrop-filter:blur(19px) saturate(1.2);backdrop-filter:blur(19px) saturate(1.2);
+ box-shadow:0 15px 44px rgba(14,29,41,.25),0 2px 8px rgba(0,0,0,.13);
+ animation:coordDockEnter .2s cubic-bezier(.22,1,.36,1) both;
+}
+#coordsSection .coordFloatingTools.isDocked > .coordCompactBar{
+ order:-1;display:flex!important;align-items:center;flex:0 1 500px;
+ min-width:220px;max-width:45%;height:42px;min-height:0;margin:0;padding:0 13px 0 3px;
+ border:0;border-right:1px solid rgba(219,239,245,.24);border-radius:0;
+ background:transparent;box-shadow:none;position:static;color:#e8f6f9;
+ -webkit-backdrop-filter:none;backdrop-filter:none;
+}
+#coordsSection .coordFloatingTools.isDocked .coordCompactTitle{
+ display:flex;align-items:center;gap:6px;white-space:nowrap;flex-wrap:nowrap!important;overflow-x:auto;
+ min-width:0;height:100%;padding:0;font:500 10.5px/1.35 Arial,sans-serif;
+ font-variant-numeric:tabular-nums;scrollbar-width:none;
+}
+#coordsSection .coordFloatingTools.isDocked .coordCompactTitle::-webkit-scrollbar{display:none}
+#coordsSection .coordFloatingTools.isDocked #coord_selectedName{
+ color:#a9f4ed;font-size:10.5px;font-weight:800;flex:none;
+}
+#coordsSection .coordFloatingTools.isDocked #coord_boxCount{color:#c4d8de;font-size:10px;flex:none}
+#coordsSection .coordFloatingTools.isDocked #coord_coord{
+ color:#fff;font:650 10.5px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;
+ flex:none;min-width:0;white-space:nowrap;
+}
+#coordsSection .coordFloatingTools.isDocked #coord_details{color:#d7e7ed;font-size:10px;flex:none}
+#coordsSection .coordFloatingTools.isDocked .coordToolbarScroll{
+ order:0;flex:1 1 auto;min-width:0;
+}
+#coordsSection .coordFloatingTools.isDocked .coordToggleGroup{color:#ecf5f8}
+#coordsSection .coordFloatingTools.isDocked .coordToggleGroupLabel{color:#b7d0d8}
+#coordsSection .coordFloatingTools.isDocked .coordMoreWrap{order:1;border-left-color:rgba(223,238,243,.2)}
+#coordsSection .coordFloatingTools.isDocked .coordMoreMenu{
+ top:auto!important;bottom:calc(100% + 10px)!important;
+}
+#coordsSection .coordFloatingTools.isDocked .coordMoreToggle{
+ background:#e9f4f4!important;
+}
+/* Dock la fixed nhung section 05 can co stacking context cao khi dock hoat dong. */
+#coordsSection.coordDockInView{position:relative;z-index:1}
+@keyframes coordDockEnter{
+ from{opacity:0;transform:translate3d(0,9px,0)}
+ to{opacity:1;transform:translate3d(0,0,0)}
+}
+@media(max-width:1000px){
+ #coordsSection .coordFloatingTools.isDocked{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;
+  grid-template-rows:25px 40px;column-gap:8px;row-gap:3px;
+  height:86px;padding:6px 8px 7px;
+ }
+ #coordsSection .coordFloatingTools.isDocked > .coordCompactBar{
+  grid-column:1/-1;grid-row:1;order:unset;
+  width:100%;max-width:none;min-width:0;height:25px;padding:0 3px 3px;
+  border-right:0;border-bottom:1px solid rgba(219,239,245,.22);
+ }
+ #coordsSection .coordFloatingTools.isDocked .coordToolbarScroll{
+  grid-column:1;grid-row:2;height:40px;order:unset;
+ }
+ #coordsSection .coordFloatingTools.isDocked .coordMoreWrap{
+  grid-column:2;grid-row:2;order:unset;align-self:center;
+ }
+}
+@media(max-width:700px){
+ #coordsSection .coordFloatingTools.isDocked{
+  left:6px!important;right:6px!important;
+  bottom:calc(6px + env(safe-area-inset-bottom, 0px));
+  height:84px;padding:5px 6px;border-radius:12px;
+ }
+ #coordsSection .coordFloatingTools.isDocked .coordCompactTitle{
+  font-size:10px;gap:7px;
+ }
+ #coordsSection .coordFloatingTools.isDocked #coord_coord{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){
+ #coordsSection .coordFloatingTools.isDocked{animation:none}
+}

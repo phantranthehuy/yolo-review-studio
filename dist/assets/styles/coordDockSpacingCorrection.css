@@ -1,0 +1,11 @@
+
+@media(min-width:1160px){
+ #coordsSection .coordFloatingTools.isDocked > .coordCompactBar{
+  flex:0 1 auto!important;max-width:42%!important;width:max-content!important;
+ }
+}
+@media(min-width:1160px){
+ #coordsSection .coordFloatingTools.isDocked .coordToolbarScroll{
+  justify-content:flex-start!important;margin-left:0!important;
+ }
+}

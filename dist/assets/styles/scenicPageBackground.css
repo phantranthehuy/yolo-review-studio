@@ -1,0 +1,22 @@
+
+body,html[data-theme="dark"] body{background:transparent!important;isolation:isolate}
+#scenicBackdrop{position:fixed;inset:0;overflow:hidden;z-index:-1;pointer-events:none;background:#d8e9ef}
+#scenicBackdrop .scenicLayer{position:absolute;inset:0;overflow:hidden;transition:opacity .4s ease}
+#scenicBackdrop img{position:absolute;top:0;left:50%;max-width:none;will-change:transform}
+#scenicBackdrop .scenicDark{opacity:0}
+html[data-theme="dark"] #scenicBackdrop .scenicLight{opacity:0}
+html[data-theme="dark"] #scenicBackdrop .scenicDark{opacity:1}
+#scenicBackdrop::after{content:"";position:absolute;inset:0;background:rgba(241,248,250,.12)}
+html[data-theme="dark"] #scenicBackdrop::after{background:rgba(4,10,14,.12)}
+body .panel,body #coordsSection.coords,body .hero,body .appHeader,body .workflowStrip{
+ background:rgba(249,253,253,.83)!important;
+ backdrop-filter:blur(18px) saturate(.9);-webkit-backdrop-filter:blur(18px) saturate(.9);
+}
+html[data-theme="dark"] body .panel,html[data-theme="dark"] body #coordsSection.coords,
+html[data-theme="dark"] body .hero,html[data-theme="dark"] body .appHeader,html[data-theme="dark"] body .workflowStrip{
+ background:rgba(25,38,45,.82)!important;
+}
+.sectionLabel{padding:14px 18px;border-radius:12px;background:rgba(249,253,253,.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+html[data-theme="dark"] .sectionLabel{background:rgba(25,38,45,.86)}
+@media(prefers-reduced-motion:reduce){#scenicBackdrop .scenicLayer{transition:none}}
+@media print{#scenicBackdrop{display:none}}

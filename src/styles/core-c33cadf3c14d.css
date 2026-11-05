@@ -1,0 +1,21 @@
+
+.coords .coordCanvasWrap{position:relative;display:block;width:max-content;max-width:none}
+.coords .coordBoxActions{position:absolute;z-index:15;display:flex;align-items:center;gap:5px;flex-wrap:wrap;background:#fff;border:1px solid #acc2d4;border-radius:9px;padding:5px;box-shadow:0 5px 16px #12334740;min-height:35px;max-width:calc(100% - 8px)}
+/* Vung hover trong suot noi lien menu va box (khong phai mot nut bam).
+   Pseudo-element la mot phan cua menu, giu pointerhover tren toan bo khoang 8-9 px. */
+.coords .coordBoxActions::after{content:"";position:absolute;left:0;right:0;top:100%;height:13px;background:transparent;pointer-events:auto}
+.coords .coordBoxActions[data-bridge="above"]::after{top:auto;bottom:100%}
+.coords .coordBoxActions[hidden],.coords .coordCanvasWrap[hidden]{display:none!important}
+.coords .coordBoxActions .coordActionTitle{font:700 11px Arial,sans-serif;background:#edf0ff;color:#5232ad;border-radius:5px;padding:5px 6px;white-space:nowrap}
+.coords .coordBoxActions button{font:600 11px/1.1 Arial,sans-serif;background:#0b7370;color:#fff;border:0;border-radius:6px;padding:7px 9px;white-space:nowrap;cursor:pointer}
+.coords .coordBoxActions button:hover{background:#064e55}
+.coords .coordBoxActions button.danger{background:#fcebea;color:#ac2c25;border:1px solid #edb7b3}
+.coords .coordBoxActions button.danger:hover{background:#a82d26;color:#fff}
+.coords .coordBoxActions button:focus-visible{outline:3px solid #778fff;outline-offset:2px}
+.coords .coordCompactBar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:#fff;border:1px solid #dce2e8;border-radius:10px;padding:10px 13px;margin:12px 0}
+.coords .coordCompactTitle{display:flex;align-items:center;flex-wrap:wrap;gap:10px;max-width:100%;font-size:12px}
+.coords .coordCompactTitle #coord_boxCount{color:#657385}.coords .coordCompactTitle #coord_selectedName{color:#086b6b}
+.coords .coordCompactTitle #coord_coord{font:600 12px ui-monospace,monospace;color:#294354;overflow-wrap:anywhere}
+.coords .coordMultiActions{display:flex;flex-wrap:wrap;gap:7px}
+.coords .coordMultiActions button{font-size:12px;padding:7px 10px}
+@media(max-width:650px){.coords .coordBoxActions{gap:3px;padding:4px}.coords .coordBoxActions button{font-size:10px;padding:6px 7px}.coords .coordCompactBar{padding:10px}}

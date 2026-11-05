@@ -1,0 +1,9 @@
+
+#configSection label.check{align-items:flex-start;gap:10px;line-height:1.6}
+#configSection label.check>input[type="checkbox"]{
+ flex:0 0 18px;width:18px!important;min-width:18px!important;max-width:18px!important;
+ height:18px!important;min-height:18px!important;max-height:18px!important;
+ padding:0!important;margin:2px 0 0!important;accent-color:#14817c;cursor:pointer;
+}
+#configSection label.check>span{line-height:22px}
+#configSection label.check code{display:inline;padding:2px 5px;border-radius:4px;font-size:.9em}

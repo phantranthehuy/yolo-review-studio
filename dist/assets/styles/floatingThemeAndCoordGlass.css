@@ -1,0 +1,37 @@
+
+#jumpDock{--theme-space:0px}
+@media(min-width:721px){
+ #jumpDock #jumpPanel{width:calc(100% - var(--theme-space));transition:width .46s cubic-bezier(.22,1,.36,1)}
+}
+@media(max-width:720px){
+ #jumpDock #jumpToggle{width:calc(100% - var(--theme-space));transition:width .46s cubic-bezier(.22,1,.36,1);background:rgba(9,100,109,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+ #jumpDock #jumpPanel{width:calc(100% - var(--theme-space))}
+}
+#jumpDock.themeDocked{--theme-space:calc(var(--theme-size,64px) + 10px)}
+#jumpDock #themeToggle{position:absolute;right:0;top:0;width:var(--theme-size,64px);height:var(--theme-size,64px);min-width:var(--theme-size,64px);padding:0;gap:0;border-radius:13px;z-index:2;background:rgba(246,253,253,.72);border:1px solid rgba(180,206,214,.8);backdrop-filter:blur(16px) saturate(1.15);-webkit-backdrop-filter:blur(16px) saturate(1.15);box-shadow:0 4px 14px #142e4714}
+#jumpDock #themeToggleLabel{display:none}
+html[data-theme="dark"] #jumpDock #themeToggle{background:rgba(32,44,51,.72);border-color:rgba(130,166,174,.46);color:#edf8f8}
+@media(prefers-reduced-motion:reduce){#jumpDock #jumpPanel,#jumpDock #jumpToggle{transition:none}}
+#coordsSection #coord_format{display:none!important}
+.coordFormatChoices{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-size:12px;font-weight:600}
+.coordFormatChoices button{height:32px;min-width:34px;padding:0 9px;border-radius:8px}
+.coordFormatChoices button[aria-pressed="true"]{background:#d8efeb!important;color:#075f60!important;border-color:#61aaa3!important}
+html[data-theme="dark"] .coordFormatChoices button[aria-pressed="true"]{background:#235755!important;color:#e1fffa!important;border-color:#55a49e!important}
+#coordsSection .coordFloatingTools:not(.coordMobileCollapsed),
+#coordsSection .coordMobileFlyout,
+#coordsSection .coordMoreMenu,
+#coordsSection .coordCompactBar,
+#coordsSection #coord_selectionInfo,
+#coordsSection #coord_overlapWrap{
+ background:rgba(246,253,253,.72)!important;
+ backdrop-filter:blur(18px) saturate(1.15)!important;
+ -webkit-backdrop-filter:blur(18px) saturate(1.15)!important;
+}
+#coordsSection .coordToolbarScroll,#coordsSection .coordMobileRail{background:transparent!important}
+html[data-theme="dark"] #coordsSection .coordFloatingTools:not(.coordMobileCollapsed),
+html[data-theme="dark"] #coordsSection .coordMobileFlyout,
+html[data-theme="dark"] #coordsSection .coordMoreMenu,
+html[data-theme="dark"] #coordsSection .coordCompactBar,
+html[data-theme="dark"] #coordsSection #coord_selectionInfo,
+html[data-theme="dark"] #coordsSection #coord_overlapWrap{background:rgba(24,42,50,.72)!important}
+#coordMobileInfoBar:not([hidden]){background:rgba(17,34,43,.72)!important;backdrop-filter:blur(18px)!important;-webkit-backdrop-filter:blur(18px)!important}

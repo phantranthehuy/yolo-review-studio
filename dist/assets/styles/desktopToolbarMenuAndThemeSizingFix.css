@@ -1,0 +1,42 @@
+
+/* Fixed edges follow the usable viewport, excluding the browser scrollbar.
+   Leave extra room beside the menu trigger on desktop only. */
+@media(min-width:1160px){
+ #coordsSection .coordFloatingTools.isDocked{
+  width:auto!important;max-width:100%!important;
+  padding-right:24px!important;overflow:visible!important;
+  background:transparent!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  isolation:isolate;
+ }
+ /* Blur on a sibling pane keeps the menu free to sample the page behind it.
+    An ancestor backdrop-filter otherwise traps its nested menu's blur. */
+ #coordsSection .coordFloatingTools.isDocked::before{
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:rgba(235,249,247,.73);
+  backdrop-filter:blur(26px) saturate(1.35);
+  -webkit-backdrop-filter:blur(26px) saturate(1.35);
+ }
+ html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked{
+  background:transparent!important;
+ }
+ html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked::before{
+  background:rgba(16,36,43,.65);
+ }
+ #coordsSection .coordFloatingTools.isDocked .coordMoreMenu{
+  right:0!important;
+  background:rgba(246,253,253,.72)!important;
+  backdrop-filter:blur(22px) saturate(1.2)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(1.2)!important;
+ }
+ html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked .coordMoreMenu{
+  background:rgba(24,42,50,.72)!important;
+ }
+}
+#jumpDock #themeToggle{
+ width:clamp(40px,var(--theme-size,52px),64px)!important;
+ height:clamp(40px,var(--theme-size,52px),64px)!important;
+ min-width:40px!important;max-width:64px!important;
+ min-height:40px!important;max-height:64px!important;
+ flex:0 0 auto!important;aspect-ratio:1;
+}

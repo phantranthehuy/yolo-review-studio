@@ -1,0 +1,14 @@
+{
+  "forest": {
+    "decoration": "<link rel=\"stylesheet\" href=\"assets/styles/fallingLeavesStyle.css\">\n<canvas id=\"fallingLeaves\" aria-hidden=\"true\"></canvas>\n<script src=\"assets/scripts/fallingLeavesMotion.js\"></script>\n<link rel=\"stylesheet\" href=\"assets/styles/scenicPageBackground.css\">\n<div id=\"scenicBackdrop\" aria-hidden=\"true\">\n <div class=\"scenicLayer scenicLight\"><img id=\"scenicLightImage\" alt=\"\" src=\"assets/images/image-bed719e05bb0.jpg\"></div>\n <div class=\"scenicLayer scenicDark\"><img id=\"scenicDarkImage\" alt=\"\" src=\"assets/images/image-ab3a7f4f3c8d.jpg\"></div>\n</div>\n<script src=\"assets/scripts/scenicPageScroll.js\"></script>"
+  },
+  "sakura": {
+    "decoration": "<link rel=\"stylesheet\" href=\"assets/styles/fallingFlowersStyle.css\">\n<canvas id=\"fallingFlowers\" aria-hidden=\"true\"></canvas>\n<script src=\"assets/scripts/fallingFlowersMotion.js\"></script>\n<link rel=\"stylesheet\" href=\"assets/styles/scenicPageBackground.css\">\n<div id=\"scenicBackdrop\" aria-hidden=\"true\">\n <div class=\"scenicLayer scenicLight\"><img id=\"scenicLightImage\" alt=\"\" src=\"assets/images/image-0dcb9636e7f4.jpg\"></div>\n <div class=\"scenicLayer scenicDark\"><img id=\"scenicDarkImage\" alt=\"\" src=\"assets/images/image-4239acdf1c33.jpg\"></div>\n</div>\n<script src=\"assets/scripts/scenicPageScroll.js\"></script>"
+  },
+  "flower": {
+    "decoration": "<link rel=\"stylesheet\" href=\"assets/styles/fallingFlowersStyle.css\">\n<canvas id=\"fallingFlowers\" aria-hidden=\"true\"></canvas>\n<script src=\"assets/scripts/fallingFlowersMotion.js\"></script>"
+  },
+  "default": {
+    "decoration": ""
+  }
+}

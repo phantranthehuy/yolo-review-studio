@@ -1,0 +1,16 @@
+
+[data-action-icon="coord-copy"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%2212%22%20height%3D%2212%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M16%208V4H4v12h4%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="coord-id"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%225%22%20width%3D%2218%22%20height%3D%2214%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M7%209h3m-3%204h3m4-4h3m-3%204h3%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="coord-delete"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%207h16M9%207V4h6v3M6%207l1%2013h10l1-13M10%2011v5m4-5v5%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="coord-copy-all"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Crect%20x%3D%229%22%20y%3D%229%22%20width%3D%2212%22%20height%3D%2212%22%20rx%3D%222%22%2F%3E%3Cpath%20d%3D%22M17%209V5H5v12h4M13%205V2H2v11h3%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="coord-note"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M12%203H4v18h16v-8M8%208h3M8%2012h2m-2%204h8m-4-6%207-7%203%203-7%207-4%201z%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="coord-delete-all"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%207h16M9%207V4h6v3M6%207l1%2013h10l1-13m-8%204%206%206m0-6-6%206%22%2F%3E%3C%2Fsvg%3E")}
+
+#coordsSection .coordMoreMenu button[data-action-icon],
+#coordsSection .coordMobileFlyout .coordFlyRow[data-action-icon]{
+ display:flex!important;align-items:center;gap:10px;text-align:left;line-height:1.5;
+}
+#coordsSection .coordMoreMenu button[data-action-icon]::before,
+#coordsSection .coordMobileFlyout .coordFlyRow[data-action-icon]::before{
+ width:18px;height:18px;flex:0 0 18px;margin:0;
+}

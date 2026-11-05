@@ -1,0 +1,46 @@
+
+@media(max-width:720px){
+ #jumpDock #jumpToggle{
+  overflow:hidden;
+  transition:width .42s cubic-bezier(.22,1,.36,1),padding .42s cubic-bezier(.22,1,.36,1),gap .42s cubic-bezier(.22,1,.36,1),border-radius .3s ease;
+ }
+ #jumpDock #jumpToggle .jumpMenuIcon{flex:none;transition:transform .32s cubic-bezier(.22,1,.36,1)}
+ #jumpDock #jumpToggle .jumpMenuText{
+  display:block;min-width:0;max-width:240px;opacity:1;
+  transition:max-width .38s cubic-bezier(.22,1,.36,1),opacity .2s ease;
+ }
+ #jumpDock #jumpArrow{
+  overflow:hidden;opacity:1;
+  transition:width .38s ease,opacity .18s ease,transform .35s cubic-bezier(.22,1,.36,1);
+ }
+ /* Retain the sticky layout's full width/height so the page and scroll target
+    stay stable. Only the visible controls become a compact left-hand pair. */
+ #jumpDock.themeDocked{pointer-events:none}
+ #jumpDock.themeDocked>*{pointer-events:auto}
+ #jumpDock.themeDocked #jumpToggle{
+  width:clamp(40px,var(--theme-size,53px),64px)!important;
+  height:clamp(40px,var(--theme-size,53px),64px);
+  min-height:40px;justify-content:center;
+  padding:0;gap:0;border-radius:13px;
+ }
+ #jumpDock.themeDocked #jumpToggle .jumpMenuText{
+  max-width:0;opacity:0;pointer-events:none;
+ }
+ #jumpDock.themeDocked #jumpArrow{
+  width:0;opacity:0;border:0;margin:0!important;
+ }
+ #jumpDock.themeDocked #themeToggle{
+  left:calc(clamp(40px,var(--theme-size,53px),64px) + 10px);
+  right:auto;
+ }
+ #jumpDock.themeDocked #jumpPanel{
+  left:0;right:auto;width:min(360px,calc(100vw - 32px));
+  transform-origin:26px 0;
+ }
+ #jumpDock.themeDocked[data-open="true"] #jumpToggle .jumpMenuIcon{transform:rotate(90deg)}
+ #jumpDock.themeDocked #jumpToggle:active .jumpMenuIcon{scale:.9}
+}
+@media(prefers-reduced-motion:reduce){
+ #jumpDock #jumpToggle,#jumpDock #jumpToggle .jumpMenuText,
+ #jumpDock #jumpToggle .jumpMenuIcon,#jumpDock #jumpArrow{transition:none!important}
+}

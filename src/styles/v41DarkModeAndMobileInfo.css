@@ -1,0 +1,110 @@
+
+/* Use the separate information footer whenever the coordinate tools float. */
+#coordMobileInfoBar{display:none}
+@media(width < 1160px){
+ #coordsSection #coord_selectionInfo,
+ #coordsSection .coordFloatingTools.isDocked > #coord_selectionInfo{display:none!important}
+ #coordMobileInfoBar:not([hidden]){
+   display:flex;align-items:center;gap:8px;box-sizing:border-box;
+   position:fixed;left:0;right:0;bottom:0;z-index:2950;
+   min-height:40px;max-height:82px;padding:9px 13px calc(9px + env(safe-area-inset-bottom,0px));
+   background:rgba(18,35,45,.91);color:#eef8fb;border-top:1px solid rgba(198,223,232,.32);
+   -webkit-backdrop-filter:blur(16px) saturate(1.1);backdrop-filter:blur(16px) saturate(1.1);
+   box-shadow:0 -4px 18px rgba(0,0,0,.14);font:500 11px/1.5 system-ui,-apple-system,sans-serif;
+   overflow:hidden;animation:coordInfoRise .19s cubic-bezier(.22,1,.36,1);
+ }
+ #coordMobileInfoBar .mobileInfoInner{display:flex;align-items:center;gap:7px;flex-wrap:wrap;max-width:100%;min-width:0}
+ #coordMobileInfoBar .mobileInfoName{color:#a6f4e9;font-size:11px;font-weight:750}
+ #coordMobileInfoBar .mobileInfoPosition{font:600 10.5px/1.45 ui-monospace,monospace;color:#f7fbfd;overflow-wrap:anywhere}
+ #coordMobileInfoBar .mobileInfoDimensions{color:#bcd1db;font-size:10.5px}
+ #coordMobileInfoBar .mobileInfoSep{height:12px;width:1px;background:rgba(255,255,255,.2);flex:0 0 1px}
+ @keyframes coordInfoRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+}
+@media(prefers-reduced-motion:reduce){#coordMobileInfoBar{animation:none!important}}
+/* Accessible global day/night switch, never affects annotated pixels or image data. */
+.headerActions{display:flex;align-items:center;gap:12px;min-width:0}
+.themeToggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:0 0 auto;
+ height:36px;padding:0 12px;border:1px solid #cbdde2;border-radius:10px;
+ background:#f4f9f9;color:#16545d;font:700 12px/1.1 Arial,sans-serif;
+ box-shadow:0 1px 3px rgba(27,66,79,.05);cursor:pointer;transition:background .22s,border-color .22s,transform .17s,color .22s}
+.themeToggle:hover{background:#e6f3f1;border-color:#a6cfcc}
+.themeToggle:active{transform:scale(.97)}
+.themeToggle:focus-visible{outline:3px solid #4ebdb1;outline-offset:2px}
+@media(max-width:800px){header.appHeader{flex-direction:row!important;align-items:center!important;flex-wrap:wrap;gap:12px}.headerActions{margin-left:auto}.offlineTag{max-width:100%}}
+@media(max-width:560px){.headerActions{width:100%;justify-content:space-between}.headerActions .offlineTag{font-size:10px}.themeToggle{height:34px;padding:0 10px}}
+/* Palette */
+html[data-theme="dark"]{color-scheme:dark;--ink:#f0f0f0;--muted:#bababa;--blue:#6ea4ff;--line:#394951;--bg:#151c21;--soft:#2d3b43;--warn:#e4c07c}
+html[data-theme="dark"] body{background:#151c21;color:#f0f0f0}
+html[data-theme="dark"] .appHeader,html[data-theme="dark"] header{background:#1b272e;border-color:#394951;color:#f1f1f1}
+html[data-theme="dark"] .brand small,html[data-theme="dark"] .offlineTag{color:#b2b2b2}
+html[data-theme="dark"] .hero{color:#f0f0f0}
+html[data-theme="dark"] .hero h1,html[data-theme="dark"] .sectionLabel h2,html[data-theme="dark"] .sectionHead h2{color:#f6f6f6}
+html[data-theme="dark"] .hero .intro,html[data-theme="dark"] .sectionLabel p,html[data-theme="dark"] .sectionHead p{color:#b9b9b9}
+html[data-theme="dark"] .workflowStrip,html[data-theme="dark"] .workflowStrip>div{background:#253139;border-color:#394951;color:#f3f3f3}
+html[data-theme="dark"] .workflowStrip small{color:#b7b7b7}
+html[data-theme="dark"] .panel,html[data-theme="dark"] #coordsSection.coords,html[data-theme="dark"] .coords{background:#202c33!important;color:#f0f0f0!important;border-color:#394951!important}
+html[data-theme="dark"] .panel h2,html[data-theme="dark"] .panel h3,html[data-theme="dark"] .coords h1{color:#f2f2f2}
+html[data-theme="dark"] .small,html[data-theme="dark"] .panel p,html[data-theme="dark"] .coords p,
+html[data-theme="dark"] .intro,html[data-theme="dark"] .count{color:#bababa}
+html[data-theme="dark"] .drop,html[data-theme="dark"] .importZone{background:#2c2c2c;border-color:#626262;color:#f5f5f5}
+html[data-theme="dark"] .drop.over,html[data-theme="dark"] .importZone.dragOver{background:#203c47;border-color:#71c1c4}
+html[data-theme="dark"] .drop h3,html[data-theme="dark"] .importHead strong{color:#f4f4f4}
+html[data-theme="dark"] .drop .count{color:#cacaca}
+html[data-theme="dark"] button:not(.primary):not(.jumpToggle):not(.themeToggle):not(.coordMobileButton):not(.coordToolBtn):not(.coordMoreToggle):not(.coordMoreMenu button),
+html[data-theme="dark"] .filebtn{background:#2d3b43;color:#ededed;border-color:#545454}
+html[data-theme="dark"] button:not(.primary):not(.jumpToggle):not(.themeToggle):not(.coordMobileButton):hover:not(:disabled){background:#414141}
+html[data-theme="dark"] input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),
+html[data-theme="dark"] textarea,html[data-theme="dark"] select{background:#232323;color:#f4f4f4;border-color:#5c5c5c;caret-color:#d6d6d6}
+html[data-theme="dark"] input::placeholder,html[data-theme="dark"] textarea::placeholder{color:#a2a2a2;opacity:1}
+html[data-theme="dark"] button.primary,html[data-theme="dark"] .coords .pick{background:#087f7e;color:#fff;border-color:#147d7e}
+html[data-theme="dark"] .hint,html[data-theme="dark"] .notice:not(.error),html[data-theme="dark"] .coordInputFeedback{background:#243b43;color:#cbdee5;border-color:#49616c}
+html[data-theme="dark"] .notice.error,html[data-theme="dark"] .coordSmallWarning{background:#3c2d2c;color:#ffccc3;border-color:#85504c}
+html[data-theme="dark"] .helpDetails,html[data-theme="dark"] .settingsFold,html[data-theme="dark"] .analysisFold,
+html[data-theme="dark"] .helpDetails summary,html[data-theme="dark"] .settingsFold summary,html[data-theme="dark"] .analysisFold summary{background:#29383f;color:#efefef;border-color:#565656}
+html[data-theme="dark"] .helpBody,html[data-theme="dark"] .foldBody{background:#272727;color:#e4e4e4;border-color:#565656}
+html[data-theme="dark"] .helpBody p,html[data-theme="dark"] .foldBody p{color:#d3d3d3}
+html[data-theme="dark"] .helpSymbol{color:#d6d6d6;background:#404040;border-color:#606060}
+html[data-theme="dark"] code{background:#383838;color:#dcdcdc}
+html[data-theme="dark"] .tablewrap,html[data-theme="dark"] .empty,html[data-theme="dark"] .matchList,
+html[data-theme="dark"] .matchPane,html[data-theme="dark"] .matchCrop{background:#253139;color:#f1f1f1;border-color:#535353}
+html[data-theme="dark"] th,html[data-theme="dark"] .matchPane h3,html[data-theme="dark"] .coords .coordTableWrap th{background:#3a3a3a;color:#e9e9e9;border-color:#515151}
+html[data-theme="dark"] td,html[data-theme="dark"] .coords .coordTableWrap td{border-color:#394951;color:#e7e7e7}
+html[data-theme="dark"] tr.detailrow,html[data-theme="dark"] .detailrow{background:#313131}
+html[data-theme="dark"] .matchSelected,html[data-theme="dark"] .coords .coordTableWrap tr.isSelected{background:#444444}
+html[data-theme="dark"] .matchScore,html[data-theme="dark"] .matchLegendB,html[data-theme="dark"] .matchActions{background:#333333;color:#e8e8e8}
+html[data-theme="dark"] .jumpPanel,html[data-theme="dark"] #jumpPanel{background:#202c33;border-color:#525252;box-shadow:0 10px 28px #0007}
+html[data-theme="dark"] .jumpLink,html[data-theme="dark"] .jumpLink:link{color:#e6e6e6!important}
+html[data-theme="dark"] .jumpLink span{background:#393939;color:#cfcfcf}
+html[data-theme="dark"] .jumpLink:hover,html[data-theme="dark"] .jumpLink.isActive{color:#f7f7f7!important}
+html[data-theme="dark"] #jumpActiveIndicator{background:#27524f}
+html[data-theme="dark"] .coords .bar,html[data-theme="dark"] .coords .result,
+html[data-theme="dark"] .coords .coordCompactBar,html[data-theme="dark"] .coords .coordCompactBar,
+html[data-theme="dark"] .coordStageShell{background:#253139;border-color:#515151;color:#eaeaea}
+html[data-theme="dark"] .coords #coord_stage{background:#363636;border-color:#5d5d5d}
+html[data-theme="dark"] .coords #coord_empty,html[data-theme="dark"] .coords #coord_meta,
+html[data-theme="dark"] .coords #coord_labelMeta,html[data-theme="dark"] #coord_source{color:#c7c7c7}
+html[data-theme="dark"] .coords .coordInputPanel,html[data-theme="dark"] .coords .coordMultiPanel{background:#2d2d2d;border-color:#5b5b5b;color:#f0f0f0}
+html[data-theme="dark"] .coords .coordAxisCheck,html[data-theme="dark"] .coords #coord_widthCheck{background:#3a3a3a;border-color:#696969;color:#dbdbdb}
+html[data-theme="dark"] .coords #coord_heightCheck.isSmall{background:#50332e;color:#f2c0b7;border-color:#8c5b51}
+html[data-theme="dark"] .coords .coordTableWrap,html[data-theme="dark"] .coords .coordTableWrap td{background:#253139;border-color:#535353}
+html[data-theme="dark"] .coords .coordTableWrap tr:hover{background:#414141}
+html[data-theme="dark"] #coord_raw,html[data-theme="dark"] #coord_status{color:#d2d2d2}
+html[data-theme="dark"] #coordsSection .coordFloatingTools:not(.isDocked),html[data-theme="dark"] #coordsSection .coordFloatingTools.coordMobileCollapsed{background:#313131;border-color:#616161;color:#f1f1f1}
+html[data-theme="dark"] #coordsSection .coordMobileFlyout{background:rgba(26,45,55,.97);border-color:#676767;color:#f0f0f0;box-shadow:0 13px 35px #0008}
+html[data-theme="dark"] #coordsSection .coordMobileFlyout .coordFlyHeading{color:#f1f1f1}
+html[data-theme="dark"] #coordsSection .coordMobileFlyout .coordFlyRow{background:#3b3b3b;color:#ececec}
+html[data-theme="dark"] #coordsSection .coordMobileFlyout .coordFlyRow[aria-selected=true]{background:#27524f;color:#f4f4f4;border-color:#898989}
+html[data-theme="dark"] #coordsSection .coordMobileFlyout .coordFlyMeta,
+html[data-theme="dark"] #coordsSection .coordMobileFlyout .coordFlyZoomMarks{color:#c2c2c2}
+html[data-theme="dark"] #coordsSection .coordMobileFlyout .coordFlyInfo{background:#3b3b3b;color:#e7e7e7}
+html[data-theme="dark"] #coordsSection .coordMobileRail button[data-active=false]{background:#313131;color:#b5b5b5;border-color:#5c5c5c}
+html[data-theme="dark"] #coordsSection .coordMobileRail .coordMobileCollapse{background:#414141;color:#e2e2e2;border-color:#676767}
+html[data-theme="dark"] #coordsSection .coordMoreMenu{background:#313131;border-color:#5f5f5f;color:#e7e7e7}
+html[data-theme="dark"] #coordsSection .coordMoreMenu button{color:#eaeaea}
+html[data-theme="dark"] #coordsSection .coordMoreContext{color:#c9c9c9;border-color:#626262}
+html[data-theme="dark"] #coordsSection .coordToolbarScroll select{background:#353535;color:#f6f6f6}
+html[data-theme="dark"] #coordsSection .coordZoomButtons{background:#3c3c3c;border-color:#676767}
+html[data-theme="dark"] #coordsSection .coordZoomButtons button{color:#ececec}
+html[data-theme="dark"] .themeToggle{background:#383838;color:#ededed;border-color:#646464}
+html[data-theme="dark"] .themeToggle:hover{background:#4d4d4d}
+html[data-theme="dark"] .notice,html[data-theme="dark"] .coordSmallWarning{white-space:pre-wrap}

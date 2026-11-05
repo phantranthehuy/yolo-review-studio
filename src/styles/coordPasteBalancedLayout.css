@@ -1,0 +1,26 @@
+
+#coordsSection .coordExtras>.foldBody{padding:20px!important}
+#coordsSection #coord_inputFeedback:empty{display:none!important}
+#coordsSection .coordExtras .coordInputPanel{
+ display:grid!important;grid-template-columns:minmax(0,1.8fr) minmax(260px,1fr);
+ gap:18px 28px;align-items:start;
+}
+#coordsSection .coordInputPanel>#coord_inputTitle{grid-column:1/-1;margin:0!important;font-size:17px;line-height:1.4}
+#coordsSection .coordInputPanel>p{grid-column:1/-1;margin:-10px 0 0!important;max-width:100ch;line-height:1.7}
+#coordsSection .coordPasteArea{min-width:0}
+#coordsSection .coordPasteArea label.field{margin:0;gap:8px;font-size:13px}
+#coordsSection #coord_quick{
+ display:block;width:100%;min-height:172px!important;padding:12px 14px;
+ border-radius:10px;line-height:1.65;font-size:13px;
+}
+#coordsSection .coordPasteActions{display:flex;align-items:flex-start;gap:12px;margin:12px 0 0}
+#coordsSection #coord_makeBox{flex:0 0 40px;margin:0}
+#coordsSection #coord_inputFeedback{flex:1;min-width:0;line-height:1.6;padding-top:7px}
+#coordsSection .coordInputNotes{padding:28px 0 0 22px;border-left:1px solid var(--line);min-width:0}
+#coordsSection .coordInputNotes p{margin:0 0 14px!important;line-height:1.75}
+#coordsSection .coordInputNotes p:last-child{margin-bottom:0!important}
+@media(max-width:850px){
+ #coordsSection .coordExtras .coordInputPanel{grid-template-columns:minmax(0,1fr);gap:16px}
+ #coordsSection .coordInputNotes{padding:14px 0 0;border-left:0;border-top:1px solid var(--line)}
+ #coordsSection #coord_quick{min-height:142px!important}
+}

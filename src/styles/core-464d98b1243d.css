@@ -1,0 +1,11 @@
+
+/* Bốn mức zoom dạng nút nằm cùng thanh định dạng tọa độ. */
+.coords .coordViewOptions{gap:16px;align-items:center}
+.coords .coordZoomControl{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:#536273}
+.coords .coordZoomButtons{display:inline-flex;gap:4px;padding:3px;border:1px solid #cbd8df;border-radius:9px;background:#eef2f5;flex-wrap:wrap}
+.coords .coordZoomButtons button{background:transparent;border:1px solid transparent;color:#365061;padding:7px 10px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap;line-height:1.25}
+.coords .coordZoomButtons button:hover{background:#fff;color:#075e5b}
+.coords .coordZoomButtons button.is-active,.coords .coordZoomButtons button[aria-pressed="true"]{background:#08756c;color:#fff;border-color:#08675f}
+.coords .coordZoomButtons button.is-active:hover{background:#05635c;color:#fff}
+.coords .coordZoomInternal{display:none!important}
+@media(max-width:620px){.coords .coordZoomButtons{gap:1px}.coords .coordZoomButtons button{padding:7px 8px}}

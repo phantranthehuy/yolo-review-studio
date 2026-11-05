@@ -1,0 +1,94 @@
+
+/* Keep the scenic glass panel without making the desktop position:fixed
+   annotation dock relative to #coordsSection (backdrop-filter creates a
+   containing block for fixed descendants). */
+body #coordsSection.coords{
+  background:transparent!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+  position:relative;isolation:isolate;
+}
+body #coordsSection.coords::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  border-radius:inherit;pointer-events:none;
+  background:rgba(249,253,253,.83);
+  backdrop-filter:blur(18px) saturate(.95);-webkit-backdrop-filter:blur(18px) saturate(.95);
+}
+html[data-theme="dark"] body #coordsSection.coords::before{background:rgba(25,38,45,.82)}
+@media(min-width:1160px){
+  #coordsSection .coordFloatingTools.isDocked{
+    position:fixed!important;inset:auto 0 0 0!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100vw!important;max-width:100vw!important;
+    margin:0!important;border:0!important;border-top:1px solid rgba(86,133,137,.32)!important;
+    border-radius:0!important;box-sizing:border-box!important;
+    background:rgba(235,249,247,.73)!important;
+    -webkit-backdrop-filter:blur(26px) saturate(1.35)!important;
+    backdrop-filter:blur(26px) saturate(1.35)!important;
+    box-shadow:0 -5px 24px rgba(17,50,57,.13)!important;
+    color:#173744!important;z-index:5200!important;
+  }
+  /* A single glass pane: do not pile semiopaque nested panes over the toolbar. */
+  #coordsSection .coordFloatingTools.isDocked > .coordCompactBar,
+  #coordsSection .coordFloatingTools.isDocked > #coord_selectionInfo{
+    background:transparent!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    color:#173744!important;
+    border-right-color:rgba(54,98,103,.25)!important;
+  }
+  #coordsSection .coordFloatingTools.isDocked .coordCompactTitle,
+  #coordsSection .coordFloatingTools.isDocked #coord_selectedName,
+  #coordsSection .coordFloatingTools.isDocked #coord_coord,
+  #coordsSection .coordFloatingTools.isDocked .coordToggleGroup,
+  #coordsSection .coordFloatingTools.isDocked .coordToggleGroup label{
+    color:#173c49!important;
+  }
+  #coordsSection .coordFloatingTools.isDocked #coord_boxCount,
+  #coordsSection .coordFloatingTools.isDocked #coord_details,
+  #coordsSection .coordFloatingTools.isDocked .coordToggleGroupLabel{
+    color:#365765!important;
+  }
+  #coordsSection .coordFloatingTools.isDocked .coordToolbarDivider{
+    background:rgba(54,93,103,.26)!important;
+  }
+  #coordsSection .coordFloatingTools.isDocked .coordToolBtn:disabled{
+    opacity:.65!important;
+  }
+  #coordsSection .coordFloatingTools.isDocked .coordToggleGroup input[type=checkbox]{
+    accent-color:#087671!important;
+  }
+  html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked{
+    background:rgba(16,36,43,.65)!important;
+    color:#eff7f8!important;
+    border-top-color:rgba(187,224,224,.27)!important;
+    box-shadow:0 -5px 24px rgba(0,0,0,.23)!important;
+  }
+  html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked > .coordCompactBar,
+  html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked > #coord_selectionInfo{
+    background:transparent!important;color:#eff7f8!important;
+    border-right-color:rgba(198,228,231,.2)!important;
+  }
+  html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked :is(
+     .coordCompactTitle,#coord_selectedName,#coord_coord,.coordToggleGroup,.coordToggleGroup label){
+    color:#eaf6f7!important;
+  }
+  html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked :is(
+     #coord_boxCount,#coord_details,.coordToggleGroupLabel){
+    color:#b6d3d9!important;
+  }
+  html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked .coordToolbarDivider{
+    background:rgba(220,242,245,.24)!important;
+  }
+}
+/* Secondary labels: no faint gray-on-white captions in daylight. */
+html:not([data-theme="dark"]) .settingsFold > summary small,
+html:not([data-theme="dark"]) #coordsSection .sectionHead p,
+html:not([data-theme="dark"]) .workflowStrip small{
+  color:#486071!important;
+}
+/* Secondary copy in the light theme: reliable contrast on scenic glass. */
+html:not([data-theme="dark"]) .sectionLabel>p,
+html:not([data-theme="dark"]) .hero .intro,
+html:not([data-theme="dark"]) #coordsSection .coordSourceBar #coord_meta,
+html:not([data-theme="dark"]) #coordsSection #coord_labelMeta{
+  color:#345365!important;
+}
