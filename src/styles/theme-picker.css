@@ -1,1 +1,144 @@
-.hero{position:relative}.appearancePicker{float:right;margin:0 0 16px 24px;text-align:center}.appearancePicker strong{display:block;font-size:13px;margin-bottom:10px}.appearancePicker>div{display:flex;gap:8px}.appearancePicker a{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:58px;height:70px;border:1px solid #75aaa6;border-radius:12px;text-decoration:none;color:#08746f;background:#e4f3ef;font-size:22px}.appearancePicker span{font-size:11px;margin-top:5px}.appearancePicker a[aria-current]{outline:2px solid #08746f;outline-offset:2px}.appearancePicker a:last-child{font-size:12px;font-weight:bold}.hero .workflowStrip{clear:both}@media(max-width:1000px){.appearancePicker{float:none;margin:0 0 18px;text-align:left}}@media(max-width:720px){.appearancePicker span,.appearancePicker strong{display:none}.appearancePicker a{height:44px;min-width:48px}}
+/* Màu giao diện sáng */
+.appearancePicker {
+  --picker-text: #245052;
+  --picker-bg: #edf5f3;
+  --picker-border: #a8c8c3;
+  --picker-hover: #dceee9;
+  --picker-active: #08746f;
+
+  float: right;
+  margin: 0 0 16px 24px;
+  color: var(--picker-text);
+  text-align: center;
+}
+
+/* Màu giao diện tối */
+html[data-theme="dark"] .appearancePicker {
+  --picker-text: #c9e9e3;
+  --picker-bg: #203337;
+  --picker-border: #466366;
+  --picker-hover: #2c4649;
+  --picker-active: #83d3c8;
+}
+
+.appearancePicker > strong {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.appearanceOptions {
+  display: flex;
+  gap: 10px;
+}
+
+.appearanceOptions > a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  width: 64px;
+  min-height: 72px;
+  padding: 10px 6px;
+  border: 1px solid var(--picker-border);
+  border-radius: 12px;
+
+  background: var(--picker-bg);
+  color: var(--picker-text);
+  text-decoration: none;
+
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.appearanceOptions > a:hover {
+  background: var(--picker-hover);
+  border-color: var(--picker-active);
+}
+
+.appearanceOptions > a[aria-current="page"] {
+  border-color: var(--picker-active);
+  outline: 2px solid var(--picker-active);
+  outline-offset: 3px;
+}
+
+.appearanceOptions > a:focus-visible {
+  outline: 3px solid var(--picker-active);
+  outline-offset: 3px;
+}
+
+/* SVG lấy màu từ thuộc tính color của nút */
+.appearanceIcon {
+  display: block;
+  flex: none;
+  width: 26px;
+  height: 26px;
+  background-color: currentColor;
+
+  -webkit-mask: var(--picker-icon) center / contain no-repeat;
+  mask: var(--picker-icon) center / contain no-repeat;
+}
+
+.iconForest {
+  --picker-icon: url("../icons/forest.svg");
+}
+
+.iconSakura {
+  --picker-icon: url("../icons/sakura.svg");
+}
+
+.iconFlower {
+  --picker-icon: url("../icons/flower.svg");
+}
+
+.appearanceLabel {
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.appearanceDefault {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hero .workflowStrip {
+  clear: both;
+}
+
+@media (max-width: 1000px) {
+  .appearancePicker {
+    float: none;
+    margin: 0 0 18px;
+    text-align: left;
+  }
+}
+
+/* Mobile chỉ hiện biểu tượng và nút Default */
+@media (max-width: 720px) {
+  .appearancePicker > strong,
+  .appearanceLabel {
+    display: none;
+  }
+
+  .appearanceOptions > a {
+    width: 48px;
+    min-height: 46px;
+    padding: 8px 4px;
+  }
+
+  .appearanceIcon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .appearanceOptions > a {
+    transition: none;
+  }
+}

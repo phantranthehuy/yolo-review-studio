@@ -13,7 +13,39 @@
 <link rel="stylesheet" href="assets/styles/core-5ee5cc5901fd.css">
 <main>
 <section class="hero" aria-labelledby="pageTitle">
-  <nav class="appearancePicker" aria-label="Chọn giao diện"><strong>Chọn giao diện</strong><div><a aria-current="page" href="forest.html" aria-label="Forest">🌲<span>Forest</span></a><a href="sakura.html" aria-label="Sakura">🌸<span>Sakura</span></a><a href="flower.html" aria-label="Flower">❀<span>Flower</span></a><a href="default.html" aria-label="Default">Default</a></div></nav><div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1</div>
+  <nav class="appearancePicker" aria-label="Chọn giao diện">
+  <strong>Chọn giao diện</strong>
+
+  <div class="appearanceOptions">
+    <a aria-current="page" href="forest.html"
+       aria-label="Giao diện Forest"
+       title="Forest">
+      <span class="appearanceIcon iconForest" aria-hidden="true"></span>
+      <span class="appearanceLabel">Forest</span>
+    </a>
+
+    <a href="sakura.html"
+       aria-label="Giao diện Sakura"
+       title="Sakura">
+      <span class="appearanceIcon iconSakura" aria-hidden="true"></span>
+      <span class="appearanceLabel">Sakura</span>
+    </a>
+
+    <a href="flower.html"
+       aria-label="Giao diện Flower"
+       title="Flower">
+      <span class="appearanceIcon iconFlower" aria-hidden="true"></span>
+      <span class="appearanceLabel">Flower</span>
+    </a>
+
+    <a href="default.html"
+       aria-label="Giao diện Default"
+       title="Default">
+      <span class="appearanceDefault">Default</span>
+    </a>
+  </div>
+</nav>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1</div>
   <h1 id="pageTitle">Rà soát nhãn YOLO.<br><span>Rõ từng bước, đúng từng box.</span></h1>
   <p class="intro">Chuẩn bị nhãn, chấm F1 / Precision / Recall và xác nhận các thay đổi trước – sau. Tất cả xử lý ngay trên trình duyệt.</p>
   <div class="workflowStrip" aria-label="Quy trình sử dụng"><div><b>01</b><span><strong>Nạp dữ liệu</strong><small>Trước sửa · sau sửa</small></span></div><div><b>02</b><span><strong>Chuẩn bị & chấm</strong><small>QC · nhãn tham chiếu</small></span></div><div><b>03</b><span><strong>Rà soát & xuất</strong><small>Đối chiếu box · review_log</small></span></div></div>
