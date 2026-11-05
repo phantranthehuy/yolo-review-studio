@@ -250,3 +250,25 @@ html[data-theme="dark"] #coordsSection .coordSourceBar{
  #coordsSection .coordSourceBar #coord_meta,#coordsSection .coordSourceBar #coord_labelMeta{flex:1 1 100%}
 }
 @media(prefers-reduced-motion:reduce){#jumpActiveIndicator{transition:none!important}}
+
+.feedbackLink {
+ position: fixed;
+ bottom: calc(16px + env(safe-area-inset-bottom));
+ left: calc(16px + env(safe-area-inset-left));
+ z-index: 110;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ min-height: 44px;
+ padding: 0 15px;
+ border: 1px solid #1b7779;
+ border-radius: 999px;
+ background: #075e62;
+ color: #fff;
+ box-shadow: 0 3px 12px #183f4940;
+ font: 700 14px/1.2 system-ui, sans-serif;
+ text-decoration: none;
+}
+.feedbackLink[hidden] { display: none; }
+.feedbackLink:hover { background: #064a4e; color: #fff; }
+.feedbackLink:focus-visible { outline: 3px solid #2b9498; outline-offset: 3px; }

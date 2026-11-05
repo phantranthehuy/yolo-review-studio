@@ -80,4 +80,18 @@ window.addEventListener('scroll',()=>{
 },{passive:true});
 window.addEventListener('resize',()=>requestAnimationFrame(()=>{updateScrollSpy();positionIndicator(panel.querySelector('.jumpLink.isActive')||links[0]);}));
 updateScrollSpy();
+
+const feedbackLink=document.getElementById('feedbackLink');
+const coordsSection=document.getElementById('coordsSection');
+function updateFeedbackVisibility(){
+ feedbackLink.hidden=coordsSection.getBoundingClientRect().top<window.innerHeight;
+}
+window.addEventListener('scroll',updateFeedbackVisibility,{passive:true});
+window.addEventListener('resize',updateFeedbackVisibility);
+window.addEventListener('pageshow',updateFeedbackVisibility);
+if(window.ResizeObserver){
+ const feedbackLayoutObserver=new ResizeObserver(updateFeedbackVisibility);
+ feedbackLayoutObserver.observe(coordsSection.closest('main'));
+}
+updateFeedbackVisibility();
 })();
