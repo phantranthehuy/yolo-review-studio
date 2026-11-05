@@ -171,7 +171,7 @@ function addDrawnBox(r,source){
  $('status').textContent=`Đã vẽ Box #${String(b.id).padStart(2,'0')} ${tuple()}; nút sao chép và Xóa hiện ngay trên ảnh${isSmall(b.rect)?' — ⚠ '+axisWarnings(b.rect).join('; '):''}.`;
  return true;
 }
-function clear(){if(active!==null&&c.hasPointerCapture(active))c.releasePointerCapture(active);rect=null;selected=-1;selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;operation=null;regionSource='none';start=null;active=null;overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';$('fallback').hidden=true;$('status').textContent='';redraw();renderDrawnList();}
+function clear(){if(operation?.kind==='pan')c.style.cursor='grab';if(active!==null&&c.hasPointerCapture(active))c.releasePointerCapture(active);rect=null;selected=-1;selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;operation=null;regionSource='none';start=null;active=null;overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';$('fallback').hidden=true;$('status').textContent='';redraw();renderDrawnList();}
 function syncSourcePicks(){
  const imagePick=document.getElementById('coord_imagePick');
  const labelPick=document.getElementById('coord_labelPick');
@@ -230,7 +230,7 @@ function redraw(){
  updateSizePopup(small);
  $('applyNote').disabled=!valid;$('boxSelect').disabled=!img||!labels.length;$('showBoxes').disabled=!labels.length;
  
- $('selectedName').textContent=selected>=0?`Box TXT dòng ${labels[selected].line}`:selectedDrawId!==null?`Box #${String(selectedDrawId).padStart(2,'0')} đang chọn`:active!==null?'Đang khoanh vùng mới':'Chưa chọn box';
+ $('selectedName').textContent=selected>=0?`Box TXT dòng ${labels[selected].line}`:selectedDrawId!==null?`Box #${String(selectedDrawId).padStart(2,'0')} đang chọn`:operation?.kind==='draw'?'Đang khoanh vùng mới':'Chưa chọn box';
  $('coord').textContent=valid?tuple():'—';$('details').textContent=valid?`Rộng ${Number((rect.x2-rect.x1).toFixed(6))} px; cao ${Number((rect.y2-rect.y1).toFixed(6))} px`:'';
   $('raw').textContent=selected>=0?'Nhãn YOLO: '+labels[selected].raw:'';
  const outside=selected>=0&&rect&&(rect.x1<0||rect.y1<0||rect.x2>img.naturalWidth||rect.y2>img.naturalHeight);$('overflow').hidden=!outside;$('overflow').textContent=outside?'Box gốc có phần vượt ảnh. Giữ nguyên tọa độ từ TXT; không tự cắt biên.':'';
@@ -261,7 +261,8 @@ function setToolMode(value,shouldClear=true){
  if(!img&&shouldClear){$('status').textContent='Chọn ảnh gốc trước khi sử dụng công cụ bàn tay hoặc bút vẽ.';return;}
  const changed=$('mode').value!==value;
  $('mode').value=value;syncToolButtons();
- if(changed&&shouldClear){clear();$('status').textContent=value==='select'?'Đã bật bàn tay: bấm box để chọn, kéo box để di chuyển hoặc chỉnh cạnh sau khi chọn.':'Đã bật bút vẽ: kéo chuột để khoanh box mới; các box cũ vẫn được giữ.';}
+ if(changed&&shouldClear){clear();$('status').textContent=value==='select'?'Đã bật bàn tay. Kéo ngoài box để di chuyển ảnh, kéo box tự vẽ để chỉnh box.':'Đã bật bút vẽ: kéo chuột để khoanh box mới; các box cũ vẫn được giữ.';}
+ c.style.cursor=value==='select'?'grab':'crosshair';
 }
 $('toolSelect').onclick=()=>setToolMode('select');
 $('toolDraw').onclick=()=>setToolMode('draw');
@@ -287,17 +288,30 @@ c.addEventListener('pointerdown',e=>{
  }
  if($('mode').value==='select'){
   hoverDrawId=null;hoverLabel=-1;
-  if(!labels.length){clear();$('status').textContent='Đã bỏ chọn. Chọn biểu tượng bút vẽ để khoanh box mới.';return;}
-  overlap=hitCandidates(labels,point,img.naturalWidth,img.naturalHeight);
-  if(!overlap.length){clear();$('status').textContent='Điểm bấm không nằm trong box đã lưu hoặc box TXT.';return;}
-  selectBox(overlap[0]);setOverlap();return;
+  overlap=$('showBoxes').checked?hitCandidates(labels,point,img.naturalWidth,img.naturalHeight):[];
+  if(overlap.length){selectBox(overlap[0]);setOverlap();return;}
+  clear();
+  const stage=$('stage');
+  operation={kind:'pan',x:e.clientX,y:e.clientY,left:stage.scrollLeft,top:stage.scrollTop};
+  active=e.pointerId;c.setPointerCapture(active);
+  c.style.cursor='grabbing';
+  return;
  }
  selected=-1;selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;regionSource='draw';overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';
  active=e.pointerId;c.setPointerCapture(active);start=point;operation={kind:'draw'};rect=normalized(start,start);
  $('status').textContent='Đang khoanh box mới; thả chuột để lưu. Chỉ cảnh báo khi chiều cao dưới 12 px.';redraw();
 });
+function panImage(e){
+ const stage=$('stage');
+ stage.scrollLeft=operation.left+operation.x-e.clientX;
+ stage.scrollTop=operation.top+operation.y-e.clientY;
+}
 c.addEventListener('pointermove',e=>{
  if(!img)return;
+ if(operation?.kind==='pan'){
+  if(active===e.pointerId)panImage(e);
+  return;
+ }
  const point=bounds(e);
  if(active===e.pointerId){
   if(operation?.kind==='draw'&&start)rect=normalized(start,point);
@@ -309,7 +323,7 @@ c.addEventListener('pointermove',e=>{
    ? hitCandidates(labels,point,img.naturalWidth,img.naturalHeight)[0]??-1 : -1;
  if(hoverDrawId!==nextHover||hoverLabel!==nextLabel){hoverDrawId=nextHover;hoverLabel=nextLabel;syncToolbar();}
  if(hit){const edge=hit.id===selectedDrawId?resizeEdges(point,hit.rect):'';c.style.cursor=edge?cursorForEdge(edge):'move';}
- else c.style.cursor=$('mode').value==='select'?'pointer':'crosshair';
+ else c.style.cursor=$('mode').value==='select'?(nextLabel>=0?'pointer':'grab'):'crosshair';
 });
 c.addEventListener('pointerleave',e=>{if(e.relatedTarget===$('boxActions')||$('boxActions').contains(e.relatedTarget))return;if(active===null){hoverDrawId=null;hoverLabel=-1;syncToolbar();}});
 $('boxActions').addEventListener('pointerleave',e=>{
@@ -318,7 +332,15 @@ $('boxActions').addEventListener('pointerleave',e=>{
 });
 function end(e){
  if(active!==e.pointerId)return;
- const op=operation,point=img?bounds(e):null;
+ const op=operation;
+ if(op?.kind==='pan'){
+  if(e.type==='pointerup')panImage(e);
+  active=null;operation=null;
+  if(c.hasPointerCapture(e.pointerId))c.releasePointerCapture(e.pointerId);
+  c.style.cursor='grab';
+  return;
+ }
+ const point=img?bounds(e):null;
  if(e.type==='pointerup'&&op?.kind==='draw'&&start){const fresh=normalized(start,point);start=null;active=null;operation=null;if(c.hasPointerCapture(e.pointerId))c.releasePointerCapture(e.pointerId);
   if(fresh.x2>fresh.x1&&fresh.y2>fresh.y1){addDrawnBox(fresh,'draw');}else{rect=null;regionSource='none';$('status').textContent='Vùng có chiều rộng hoặc cao bằng 0 px, chưa lưu.';redraw();}
   return;
@@ -333,6 +355,7 @@ function end(e){
  start=null;active=null;operation=null;if(c.hasPointerCapture(e.pointerId))c.releasePointerCapture(e.pointerId);redraw();renderDrawnList();
 }
 c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+c.addEventListener('lostpointercapture',e=>{if(operation?.kind==='pan')end(e);});
 // Nhấn vùng trống trên trang để bỏ chọn, trừ nút nổi và các điều khiển phải giữ box để thao tác.
 document.addEventListener('click',e=>{
  if(!rect||active!==null||e.target===c)return;
