@@ -267,13 +267,13 @@ function setToolMode(value,shouldClear=true){
  $('mode').value=value;syncToolButtons();
  if(changed&&shouldClear){clear();$('status').textContent=value==='select'?'Đã bật bàn tay. Kéo ngoài box để di chuyển ảnh, kéo box tự vẽ để chỉnh box.':'Đã bật bút vẽ: kéo chuột để khoanh box mới; các box cũ vẫn được giữ.';}
  c.style.cursor=value==='select'?'grab':'crosshair';
+ if(changed)$('mode').dispatchEvent(new Event('change',{bubbles:true}));
 }
 $('toolSelect').onclick=()=>setToolMode('select');
 $('toolDraw').onclick=()=>setToolMode('draw');
-$('mode').onchange=()=>setToolMode($('mode').value);
 document.addEventListener('keydown',e=>{
  if(e.altKey||e.metaKey||e.ctrlKey||e.repeat||e.target.closest('input,textarea,select,[contenteditable="true"]'))return;
- if(e.key==='v'||e.key==='V')setToolMode('select');
+ if(['v','d'].includes(e.key.toLowerCase()))setToolMode('select');
  if(e.key==='b'||e.key==='B')setToolMode('draw');
 });
 syncToolButtons();
@@ -368,8 +368,29 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('stageShell').classList.contains('coordExpanded')&&(!e.target.closest('input,textarea,select')||e.target===c))clear();});
 function syncZoomButtons(){document.querySelectorAll('[data-coord-zoom]').forEach(btn=>{const on=btn.dataset.coordZoom===$('zoom').value;btn.classList.toggle('is-active',on);btn.setAttribute('aria-pressed',String(on));});}
-document.querySelectorAll('[data-coord-zoom]').forEach(btn=>btn.addEventListener('click',()=>{$('zoom').value=btn.dataset.coordZoom;syncZoomButtons();layout();}));
-$('zoom').onchange=()=>{syncZoomButtons();layout();};syncZoomButtons();
+const zoomSelect=$('zoom');
+function setZoom(value){
+ if(zoomSelect.value===value)return;
+ zoomSelect.value=value;
+ zoomSelect.dispatchEvent(new Event('change',{bubbles:true}));
+}
+document.querySelectorAll('[data-coord-zoom]').forEach(btn=>btn.addEventListener('click',()=>setZoom(btn.dataset.coordZoom)));
+zoomSelect.onchange=()=>{syncZoomButtons();layout();};syncZoomButtons();
+document.addEventListener('keydown',e=>{
+ if(!img||e.altKey||!(e.ctrlKey||e.metaKey)||e.target.closest('input:not([type="range"]),textarea,[contenteditable="true"]'))return;
+ const zoomIn=e.key==='+'||e.key==='='||e.code==='NumpadAdd';
+ const zoomOut=e.key==='-'||e.key==='−'||e.code==='NumpadSubtract';
+ if(!zoomIn&&!zoomOut)return;
+ const stage=$('stage').getBoundingClientRect();
+ if(stage.bottom<=0||stage.top>=window.innerHeight)return;
+ e.preventDefault();
+ const levels=Array.from(zoomSelect.options).slice(1);
+ const next=zoomIn
+  ? levels.find(option=>Number(option.value)>scale)
+  : levels.reverse().find(option=>Number(option.value)<scale);
+ if(next)setZoom(next.value);
+ else if(zoomOut&&zoomSelect.value!=='fit')setZoom('fit');
+});
 window.addEventListener('resize',()=>{if($('zoom').value==='fit')layout();});
 function setInputFeedback(message,error=false){$('inputFeedback').textContent=message;$('inputFeedback').classList.toggle('error',error);}
 function parsedCoord(raw){

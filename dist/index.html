@@ -139,7 +139,7 @@
 <link rel="stylesheet" href="assets/styles/core-8822e09edcbc.css">
 
 <section id="coordsSection" class="coords panel" style="margin:24px 0"><div class="coordContent"><div class="sectionHead"><div><span class="stepTag">05 / XỬ LÝ NGOẠI LỆ</span><h2>Chọn box & tọa độ pixel</h2><p>Khoanh vùng cần phân xử hoặc lấy tọa độ chính xác trên ảnh gốc.</p></div></div>
-<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Chọn ảnh gốc, sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. “Ảnh khác” đổi ảnh đang xem. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
+<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Chọn ảnh gốc, sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. “Ảnh khác” đổi ảnh đang xem. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V hoặc D) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to. Dùng Ctrl hoặc ⌘ cùng phím +/− để đổi mức zoom khi vùng vẽ đang hiển thị.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
 <div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_file" id="coord_imagePick" data-action-icon="image">Chọn ảnh gốc</label><input id="coord_file" type="file" accept="image/*"><span id="coord_meta">Chưa chọn ảnh</span></div>
 <div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_labelFile" id="coord_labelPick" data-action-icon="upload">Chọn nhãn .txt của ảnh</label><input id="coord_labelFile" type="file" accept=".txt"><button id="coord_useBefore" class="secondary">Dùng nhãn ban đầu đã tải</button><button id="coord_useAfter" class="secondary">Dùng nhãn sau sửa đã tải</button><span id="coord_labelMeta">Chưa có nhãn cho ảnh này</span></div>
 <details class="settingsFold coordExtras" hidden><summary><span>⌗</span> Nhập tọa độ thủ công <small>Dán tọa độ để thêm box</small></summary><div class="foldBody"><div class="bar coordInputPanel" aria-labelledby="coord_inputTitle">
@@ -161,7 +161,7 @@
   <div class="coordToolbarScroll" tabindex="0" aria-label="Thanh công cụ tọa độ, vuốt ngang để xem thêm">
    <div class="coordToolGroup" role="group" aria-label="Chế độ thao tác">
     <div class="coordToolSwitch">
-     <button id="coord_toolSelect" class="coordToolBtn is-active" type="button" disabled aria-pressed="true" aria-label="Bàn tay: chọn và di chuyển box" title="Bàn tay — chọn / di chuyển box (phím V)">
+     <button id="coord_toolSelect" class="coordToolBtn is-active" type="button" disabled aria-pressed="true" aria-label="Bàn tay: chọn và di chuyển box" title="Bàn tay — chọn / di chuyển box (phím V hoặc D)">
       <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13V6a1.7 1.7 0 0 1 3.4 0v5-6.5a1.7 1.7 0 0 1 3.4 0V11 7a1.7 1.7 0 0 1 3.4 0v4-1a1.7 1.7 0 0 1 3.4 0v5c0 4.2-3.4 7.5-7.5 7.5h-2.3c-2.4 0-4.4-1-5.8-2.8l-3.9-5a1.9 1.9 0 0 1 2.9-2.4L8 16"/></svg>
      </button>
      <button id="coord_toolDraw" class="coordToolBtn" type="button" disabled aria-pressed="false" aria-label="Bút vẽ: khoanh vùng box mới" title="Bút vẽ — khoanh box mới (phím B)">
@@ -177,9 +177,13 @@
    <div class="coordZoomControl"><div class="coordZoomButtons" role="group" aria-label="Mức phóng đại ảnh">
     <button type="button" data-coord-zoom="fit" class="is-active" aria-pressed="true">Vừa khung</button>
     <button type="button" data-coord-zoom="1" aria-pressed="false">100%</button>
+    <button type="button" data-coord-zoom="1.5" aria-pressed="false">150%</button>
     <button type="button" data-coord-zoom="2" aria-pressed="false">200%</button>
+    <button type="button" data-coord-zoom="2.5" aria-pressed="false">250%</button>
+    <button type="button" data-coord-zoom="3" aria-pressed="false">300%</button>
+    <button type="button" data-coord-zoom="3.5" aria-pressed="false">350%</button>
     <button type="button" data-coord-zoom="4" aria-pressed="false">400%</button>
-   </div><select id="coord_zoom" class="coordZoomInternal" tabindex="-1" aria-hidden="true"><option value="fit">Vừa khung</option><option value="1">100%</option><option value="2">200%</option><option value="4">400%</option></select></div>
+   </div><select id="coord_zoom" class="coordZoomInternal" tabindex="-1" aria-hidden="true"><option value="fit">Vừa khung</option><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="2.5">250%</option><option value="3">300%</option><option value="3.5">350%</option><option value="4">400%</option></select></div>
    <span class="coordToolbarDivider" aria-hidden="true"></span>
    <span class="coordToggleGroup" role="group" aria-label="Ẩn hoặc hiện lớp thông tin">
     <span class="coordToggleGroupLabel">Ẩn/hiện:</span>
@@ -212,7 +216,7 @@
 <div id="coord_sizeWarning" class="coordSmallWarning" hidden role="status" aria-live="polite"></div>
 <div id="coord_workspace" hidden><div id="coord_overlapWrap" class="bar" hidden><label>Box chồng nhau tại điểm bấm <select id="coord_overlap"></select></label><span class="hint">Chọn đúng số dòng để tránh lấy nhầm khung xe bên cạnh.</span></div>
 
-<details class="helpDetails coordAdvancedHelp"><summary><span class="helpSymbol">?</span> Hướng dẫn thao tác box và quy tắc 12 px</summary><div class="helpBody"><p>Dùng <strong>bàn tay (V)</strong> để chọn box và <strong>bút (B)</strong> để khoanh vùng mới. Với vùng tự vẽ hoặc nhập tay, kéo bên trong để di chuyển hoặc kéo cạnh hay góc sau khi chọn để đổi kích thước. <strong>Chép tọa độ · Chép ID + box · Xóa</strong> hiện cạnh box khi rê chuột hoặc chạm để chọn. Menu ⋯ cũng có các thao tác cho box đang chọn. Giữ Shift và kéo trên box cũ để vẽ box chồng. Nhãn TXT gốc không bị sửa.</p><p>Khi khoanh tay hoặc nhập tọa độ, chỉ cảnh báo nếu <strong>chiều cao (dọc) dưới 12 px</strong>. Chiều rộng vẫn được hiển thị nhưng không dùng để cảnh báo. Cảnh báo không chặn thao tác; kích thước tính trên ảnh gốc, không theo zoom.</p><p><strong>Toạ độ thập phân:</strong> giữ độ chính xác từ nhãn YOLO / box gốc, không tự làm tròn. <strong>Toạ độ số nguyên:</strong> làm tròn ra phía ngoài (xmin/ymin xuống, xmax/ymax lên) để bao trọn vùng pixel. Hai chế độ chỉ thay đổi cách hiển thị và sao chép, không sửa nội dung TXT.</p><p>Tọa độ luôn theo ảnh gốc, không thay đổi theo zoom. Mỗi box đã vẽ được giữ lại đến khi bạn xóa. Box chọn từ TXT không tự thêm vào danh sách vùng mới. Gốc (0, 0) ở góc trên trái. Esc bỏ chọn hiện tại (không xóa danh sách).</p></div></details>
+<details class="helpDetails coordAdvancedHelp"><summary><span class="helpSymbol">?</span> Hướng dẫn thao tác box và quy tắc 12 px</summary><div class="helpBody"><p>Dùng <strong>bàn tay (V hoặc D)</strong> để chọn box và <strong>bút (B)</strong> để khoanh vùng mới. Với vùng tự vẽ hoặc nhập tay, kéo bên trong để di chuyển hoặc kéo cạnh hay góc sau khi chọn để đổi kích thước. <strong>Chép tọa độ · Chép ID + box · Xóa</strong> hiện cạnh box khi rê chuột hoặc chạm để chọn. Menu ⋯ cũng có các thao tác cho box đang chọn. Giữ Shift và kéo trên box cũ để vẽ box chồng. Nhãn TXT gốc không bị sửa.</p><p>Khi khoanh tay hoặc nhập tọa độ, chỉ cảnh báo nếu <strong>chiều cao (dọc) dưới 12 px</strong>. Chiều rộng vẫn được hiển thị nhưng không dùng để cảnh báo. Cảnh báo không chặn thao tác; kích thước tính trên ảnh gốc, không theo zoom.</p><p><strong>Toạ độ thập phân:</strong> giữ độ chính xác từ nhãn YOLO / box gốc, không tự làm tròn. <strong>Toạ độ số nguyên:</strong> làm tròn ra phía ngoài (xmin/ymin xuống, xmax/ymax lên) để bao trọn vùng pixel. Hai chế độ chỉ thay đổi cách hiển thị và sao chép, không sửa nội dung TXT.</p><p>Tọa độ luôn theo ảnh gốc, không thay đổi theo zoom. Mỗi box đã vẽ được giữ lại đến khi bạn xóa. Box chọn từ TXT không tự thêm vào danh sách vùng mới. Gốc (0, 0) ở góc trên trái. Esc bỏ chọn hiện tại (không xóa danh sách).</p></div></details>
 <p id="coord_raw" class="hint" style="overflow-wrap:anywhere"></p><p id="coord_overflow" class="notice" hidden></p>
 <div id="coord_status" hidden aria-hidden="true"></div><div id="coord_copyToast" class="coordCopyToast" role="status" aria-live="polite" aria-atomic="true" hidden><span class="coordCopyToastIcon" aria-hidden="true">✓</span><span id="coord_copyToastText">Đã sao chép</span></div><textarea id="coord_fallback" hidden readonly aria-label="Nội dung để sao chép thủ công"></textarea>
 
@@ -350,7 +354,7 @@
 </div></div>
 <script src="assets/scripts/core-a67fe933b7b3.js"></script>
 <script src="assets/scripts/core-a7504b369507.js"></script>
-<script src="assets/scripts/core-3d9ebc9d3147.js"></script>
+<script src="assets/scripts/core-3d9ebc9d3147.js?v=zoom"></script>
 
 <script src="assets/scripts/core-fbdd1da5a5fb.js"></script>
 <script src="assets/scripts/responsiveJumpNavScript.js?v=feedback"></script>
@@ -360,7 +364,7 @@
 <script src="assets/scripts/smoothAccordionScript.js"></script>
 
 <link rel="stylesheet" href="assets/styles/coordResponsiveDockV41.css">
-<script src="assets/scripts/coordMobileToolUi.js"></script>
+<script src="assets/scripts/coordMobileToolUi.js?v=zoom"></script>
 <link rel="stylesheet" href="assets/styles/coordConsolidatedInfoV41.css">
 <link rel="stylesheet" href="assets/styles/coordPolishV41.css">
 <script src="assets/scripts/coordInfoIntoMenuV41.js"></script>

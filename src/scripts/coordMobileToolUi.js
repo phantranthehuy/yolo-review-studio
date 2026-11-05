@@ -21,7 +21,7 @@ float.append(rail,fly);
 if(fly.showPopover)fly.setAttribute('popover','manual');
 function add(id,content,title,click){let b=document.createElement('button');b.type='button';b.className='coordMobileButton';b.id='coord_m_'+id;b.title=title;b.setAttribute('aria-label',title);b.innerHTML=content;b.addEventListener('click',click);rail.append(b);return b;}
 const buttons={};let expanded=true,activeFly='',lastOrigin=null,manualRail=false;
-function closeFly(){if(fly.hidePopover&&fly.matches(':popover-open'))fly.hidePopover();fly.hidden=true;activeFly='';lastOrigin=null;for(const b of Object.values(buttons))b.setAttribute('aria-expanded','false');}
+function closeFly(){if(fly.hidePopover&&fly.matches(':popover-open'))fly.hidePopover();fly.hidden=true;activeFly='';lastOrigin=null;syncZoomSlider=null;for(const b of Object.values(buttons))b.setAttribute('aria-expanded','false');}
 let railMotion,railReveal,railTransition=0;
 function collapse(next,userAction=true){
  if(userAction)manualRail=true;
@@ -64,8 +64,8 @@ function collapse(next,userAction=true){
  }).catch(()=>{});
 }
 buttons.collapse=add('collapse',icons.arrow,'Thu gọn thành nút hình cọ',()=>collapse(true));buttons.collapse.classList.add('coordMobileCollapse');buttons.collapse.setAttribute('aria-expanded','true');
-buttons.hand=add('hand',icons.hand,'Bàn tay — chọn hoặc di chuyển box',()=>{$('coord_toolSelect').click();closeFly();sync()});
-buttons.brush=add('brush',icons.brush,'Bút vẽ — khoanh box',()=>{$('coord_toolDraw').click();closeFly();sync()});
+buttons.hand=add('hand',icons.hand,'Bàn tay — chọn hoặc di chuyển box (V hoặc D)',()=>{$('coord_toolSelect').click();closeFly();sync()});
+buttons.brush=add('brush',icons.brush,'Bút vẽ — khoanh box (B)',()=>{$('coord_toolDraw').click();closeFly();sync()});
 buttons.txt=add('txt','<strong class="coordMobileTxt">TXT</strong>','Chọn box theo dòng TXT',()=>showFly('txt',buttons.txt));
 buttons.format=add('format',icons.crosshair,'Chọn loại tọa độ',()=>showFly('format',buttons.format));
 buttons.zoom=add('zoom',icons.search,'Chọn độ phóng đại',()=>showFly('zoom',buttons.zoom));
@@ -77,8 +77,8 @@ buttons.orb=add('open',icons.brush,'Mở thanh công cụ tọa độ',()=>colla
 function toggleCheck(id){const checkbox=$(id);if(checkbox.disabled)return;checkbox.checked=!checkbox.checked;checkbox.dispatchEvent(new Event('change',{bubbles:true}));sync();}
 function row(text,fn,selected=false,disabled=false){const b=document.createElement('button');b.type='button';b.className='coordFlyRow';b.textContent=text;b.disabled=disabled;b.setAttribute('aria-selected',String(selected));b.onclick=()=>{fn();closeFly();sync();};fly.append(b);return b;}
 function info(text){const p=document.createElement('div');p.className='coordFlyInfo';p.textContent=text;fly.append(p);}
-let zoomApplyTimer;
-function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hidden){closeFly();return;}activeFly=name;lastOrigin=origin;fly.replaceChildren();
+let syncZoomSlider;
+function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hidden){closeFly();return;}activeFly=name;lastOrigin=origin;syncZoomSlider=null;fly.replaceChildren();
  const close=document.createElement('button');close.type='button';close.className='coordFlyClose';close.textContent='×';close.setAttribute('aria-label','Đóng bảng');close.onclick=closeFly;fly.append(close);
  const title=document.createElement('h3');title.className='coordFlyHeading';title.textContent=({txt:'Chọn dòng TXT',format:'Định dạng tọa độ',zoom:'Độ phóng đại',more:'Khác'})[name]||'';fly.append(title);
  if(name==='txt'){
@@ -90,21 +90,28 @@ function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hid
  }else if(name==='format'){
    const choices=document.createElement('div');choices.className='coordFormatChoices';choices.append('Toạ độ:');for(const val of ['integer','exact']){const b=document.createElement('button');b.type='button';b.textContent=val==='integer'?'N':'0.123';b.title=val==='integer'?'Toạ độ số nguyên':'Toạ độ thập phân';b.setAttribute('aria-pressed',String($('coord_format').value===val));b.onclick=()=>{$('coord_format').value=val;$('coord_format').dispatchEvent(new Event('change',{bubbles:true}));choices.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button===b)));};choices.append(b);}fly.append(choices);
  }else if(name==='zoom'){
-   const levels=['fit','1','2','4'],labels=['Vừa khung','100%','200%','400%'];
-   const value=$('coord_zoom').value;
-   const slider=document.createElement('input');slider.type='range';slider.min='0';slider.max='3';slider.step='1';slider.value=String(Math.max(0,levels.indexOf(value)));slider.setAttribute('aria-label','Kéo chọn mức zoom');
-   slider.setAttribute('aria-valuetext',labels[Number(slider.value)]);
-   slider.oninput=()=>{
-     const i=Number(slider.value);
-     slider.setAttribute('aria-valuetext',labels[i]);
-     clearTimeout(zoomApplyTimer);
-     zoomApplyTimer=setTimeout(()=>{
-       $('coord_zoom').value=levels[i];
-       $('coord_zoom').dispatchEvent(new Event('change',{bubbles:true}));
-       sync();
-     },500);
-   };fly.append(slider);
-   const marks=document.createElement('div');marks.className='coordFlyZoomMarks';labels.forEach(l=>{const t=document.createElement('span');t.textContent=l;marks.append(t)});fly.append(marks);
+   const zoom=$('coord_zoom');
+   const levels=Array.from(zoom.options);
+   const slider=document.createElement('input');slider.type='range';slider.min='0';slider.max=String(levels.length-1);slider.step='1';slider.setAttribute('aria-label','Kéo chọn mức zoom');
+   const marks=document.createElement('div');marks.className='coordFlyZoomMarks';
+   const current=document.createElement('strong');
+   marks.append(levels[0].textContent,current,levels[levels.length-1].textContent);
+   function showZoomValue(){
+     const label=levels[Number(slider.value)].textContent;
+     slider.setAttribute('aria-valuetext',label);
+     current.textContent=label;
+   }
+   slider.oninput=showZoomValue;
+   slider.onchange=()=>{
+     zoom.value=levels[Number(slider.value)].value;
+     zoom.dispatchEvent(new Event('change',{bubbles:true}));
+   };
+   fly.append(slider,marks);
+   syncZoomSlider=()=>{
+     slider.value=String(zoom.selectedIndex);
+     showZoomValue();
+   };
+   syncZoomSlider();
  }else if(name==='more'){
    const fullscreen=$('coord_fullscreen');
    row(fullscreen.textContent,()=>fullscreen.click()).dataset.actionIcon=fullscreen.dataset.actionIcon;
@@ -132,12 +139,15 @@ function positionFly(){
 }
 function sync(){
  const mode=$('coord_mode').value;
+ buttons.hand.setAttribute('aria-pressed',String(mode==='select'));
+ buttons.brush.setAttribute('aria-pressed',String(mode==='draw'));
  for(const [id,isOn] of [['hand',mode==='select'],['brush',mode==='draw'],['box',$('coord_showBoxes').checked],['lines',$('coord_showNumbers').checked],['tags',$('coord_showRegionLabels').checked]])buttons[id].dataset.active=String(isOn);
  const hasTxt=!$('coord_boxSelect').disabled;buttons.txt.disabled=!hasTxt;buttons.hand.disabled=$('coord_toolSelect').disabled;buttons.brush.disabled=$('coord_toolDraw').disabled;
  // When pointer exits section 05, mobile rail and flyout disappear together.
  if(float.classList.contains('coordMobileOffscreen'))closeFly();
 }
 for(const id of ['coord_showBoxes','coord_showNumbers','coord_showRegionLabels','coord_boxSelect','coord_mode','coord_zoom','coord_format'])$(id).addEventListener('change',sync);
+$('coord_zoom').addEventListener('change',()=>syncZoomSlider?.());
 for(const id of ['coord_toolSelect','coord_toolDraw'])$(id).addEventListener('click',()=>requestAnimationFrame(sync));
 // Dock is a compact brush over the upload/settings panel; expand near the image only.
 // Never override a user's explicit expand/collapse choice.
