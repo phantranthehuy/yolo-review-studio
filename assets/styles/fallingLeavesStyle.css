@@ -1,0 +1,6 @@
+
+/* Decoration only: no mouse capture; no effect on label-annotation canvases. */
+#fallingLeaves{position:fixed;inset:0;width:100%;height:100%;pointer-events:none!important;z-index:820;opacity:.68}
+html[data-theme="dark"] #fallingLeaves{opacity:.75}
+@media(prefers-reduced-motion:reduce){#fallingLeaves{display:none}}
+@media print{#fallingLeaves{display:none}}

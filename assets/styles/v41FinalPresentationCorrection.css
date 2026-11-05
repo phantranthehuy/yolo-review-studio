@@ -1,0 +1,270 @@
+
+/* Consistent icon sizing for accordion tabs and step tabs ONLY.
+   Keep the coordinate editor's right-side toolbar icon dimensions unchanged. */
+.helpDetails>summary,.settingsFold>summary,.analysisFold>summary{
+ gap:11px!important;min-height:50px!important;align-items:center!important;
+}
+.helpDetails>summary .helpSymbol{
+ display:grid!important;place-items:center!important;flex:0 0 30px!important;
+ width:30px!important;min-width:30px!important;height:30px!important;
+ font:800 16px/1 system-ui,sans-serif!important;
+ border-radius:50%!important;
+}
+.settingsFold>summary>span:first-child{
+ display:grid!important;place-items:center!important;flex:0 0 30px!important;
+ min-width:30px!important;width:30px!important;height:30px!important;
+ font:700 20px/1 system-ui,sans-serif!important;
+ background:#e6f3f2;border:1px solid #c9e3df;border-radius:9px;
+ color:#076e70;text-align:center;
+}
+html[data-theme="dark"] .settingsFold>summary>span:first-child{
+ background:#424242;border-color:#5f5f5f;color:#dfdfdf;
+}
+.jumpLink>span{
+ display:grid!important;place-items:center!important;flex:0 0 31px!important;
+ min-width:31px!important;width:31px!important;height:28px!important;
+ font-size:12px!important;font-weight:750!important;padding:0!important;
+ border-radius:7px!important;
+}
+/* Keep both strokes of the disclosure chevron the same length. */
+:is(.helpDetails,.settingsFold,.analysisFold)>summary::after,
+.configPanel details details>summary::after,main>details>summary::after{
+ box-sizing:border-box;width:9px!important;height:9px!important;min-width:0!important;
+ flex:none!important;padding:0!important;
+}
+:is(.helpDetails,.settingsFold,.analysisFold)>summary{border-radius:11px!important}
+:is(.helpDetails,.settingsFold,.analysisFold)[open]>summary{border-radius:11px 11px 0 0!important}
+:is(.helpBody,.foldBody):last-child{border-radius:0 0 11px 11px}
+html[data-theme="dark"] :is(.requiredFields,#empty,#vm_message.notice:not(.error)){
+ background:#282828;color:#dedede;border-color:#394951;
+}
+html[data-theme="dark"] .requiredFields label{color:#ededed}
+html[data-theme="dark"] #coordsSection :is(.coordToolSwitch,.coordZoomButtons,.pick){
+ background:#29383f!important;color:#eee!important;border-color:#555!important;
+}
+html[data-theme="dark"] #coordsSection .coordToolSwitch .coordToolBtn:not(.is-active){color:#ddd}
+html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked .coordMoreToggle{
+ background:#343434!important;color:#eee!important;
+}
+html[data-theme="dark"] #coordsSection .coordFloatingTools:not(.coordMobileCollapsed){
+ background:#202c33!important;border-color:#505050!important;
+}
+html[data-theme="dark"] #coordsSection .coordMobileRail .coordMobileButton[data-active=false]{
+ background:#29383f!important;color:#ccc!important;border-color:#505050!important;
+}
+#coordsSection #coord_raw,#coordsSection #coord_status{position:static!important;z-index:auto!important}
+/* On desktops the contextual controls appear only in the bottom status strip. */
+@media(min-width:1160px){
+ #coordsSection .coordFloatingTools:not(.isDocked){display:none!important}
+ #coordsSection .coordFloatingTools.isDocked{
+  position:fixed!important;inset:auto 0 0 0!important;width:100%!important;
+  border-radius:0!important;z-index:5200!important;
+ }
+}
+/* On mobile keep the RIGHT-SIDE VERTICAL FLOATING TOOLBAR.
+   The informational box data is a separate, full-width footer. */
+@media(width < 1160px){
+ #coordsSection .coordFloatingTools,#coordsSection .coordFloatingTools.isDocked{
+  display:block!important;position:fixed!important;
+  right:0!important;left:auto!important;bottom:auto!important;
+  top:var(--coord-mobile-center,50%)!important;
+  width:50px!important;max-width:50px!important;height:auto!important;
+  min-height:0!important;max-height:calc(100dvh - 100px)!important;
+  padding:0!important;margin:0!important;
+  transform:translateY(-50%)!important;animation:none!important;
+  border:1px solid rgba(197,217,222,.85)!important;border-right:0!important;
+  border-radius:15px 0 0 15px!important;
+  background:rgba(249,253,253,.94)!important;color:#284a56!important;
+  box-shadow:-5px 4px 22px rgba(20,49,62,.18)!important;
+  backdrop-filter:blur(15px)!important;-webkit-backdrop-filter:blur(15px)!important;
+  z-index:6200!important;overflow:visible!important;
+ }
+ #coordsSection .coordFloatingTools[hidden]{display:none!important}
+ #coordsSection .coordFloatingTools.railOutsideCanvas,
+ #coordsSection .coordFloatingTools.coordMobileOffscreen{
+  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+ }
+ #coordsSection .coordFloatingTools>.coordToolbarScroll,
+ #coordsSection .coordFloatingTools>.coordCompactBar,
+ #coordsSection .coordFloatingTools>.coordMoreWrap{display:none!important}
+ #coordsSection .coordMobileRail{
+  display:flex!important;flex-direction:column!important;align-items:center!important;
+  order:initial!important;gap:3px!important;width:49px!important;
+  height:auto!important;box-sizing:border-box;max-height:min(var(--coord-rail-height,100dvh),calc(100dvh - 106px))!important;
+  padding:5px 3px!important;overflow-y:auto!important;overflow-x:hidden!important;
+  scrollbar-width:none!important;
+ }
+ #coordsSection .coordMobileRail button{
+  display:grid!important;place-items:center!important;flex:0 0 39px!important;
+  width:39px!important;min-width:39px!important;height:39px!important;min-height:39px!important;
+  padding:0!important;border-radius:10px!important;
+ }
+ /* Existing approved sizes on the editor rail; do not rescale them along with tab icons. */
+ #coordsSection .coordMobileRail button svg{width:25px!important;height:25px!important}
+ #coordsSection .coordMobileRail .coordMobileCollapse svg{width:23px!important;height:23px!important}
+ #coordsSection .coordMobileRail .coordMobileCompactBrush svg{width:26px!important;height:26px!important}
+ #coordsSection .coordMobileRail .coordMobileTxt{font-size:15px!important}
+ #coordsSection .coordMobileRail .coordMobileLabelText{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:29px!important;height:27px!important;font-size:11px!important;
+ }
+ #coordsSection .coordMobileRail .coordMobileCollapse{
+  flex:0 0 29px!important;height:29px!important;min-height:29px!important;
+  margin-bottom:2px!important;
+ }
+ #coordsSection .coordFloatingTools.coordMobileCollapsed{
+  display:block!important;right:0!important;left:auto!important;
+  width:52px!important;max-width:52px!important;height:auto!important;
+  border:0!important;border-radius:50%!important;
+  background:transparent!important;box-shadow:none!important;
+  backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+ }
+ #coordsSection .coordMobileCollapsed .coordMobileRail{
+  width:52px!important;height:auto!important;overflow:visible!important;
+  padding:3px!important;max-height:none!important;
+ }
+ #coordsSection .coordMobileCollapsed .coordMobileRail>button:not(.coordMobileCompactBrush){display:none!important}
+ #coordsSection .coordMobileCollapsed .coordMobileRail>.coordMobileCompactBrush{
+  display:grid!important;flex:0 0 43px!important;width:43px!important;
+  min-width:43px!important;height:43px!important;min-height:43px!important;
+  border-radius:50%!important;background:#087674!important;color:#fff!important;
+ }
+ #coordsSection .coordMobileFlyout{
+  position:fixed!important;right:58px!important;left:auto!important;
+  bottom:auto!important;width:min(270px,calc(100vw - 78px))!important;
+  max-height:min(360px,calc(100dvh - 115px))!important;
+  transform:translateY(-50%);z-index:6400!important;
+ }
+ #coordMobileInfoBar:not([hidden]){
+  display:flex!important;position:fixed!important;
+  left:0!important;right:0!important;top:auto!important;bottom:0!important;
+  width:100%!important;max-height:85px!important;min-height:40px!important;
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))!important;
+  margin:0!important;z-index:8000!important;
+  border:0!important;border-top:1px solid rgba(211,239,243,.34)!important;
+  border-radius:0!important;background:rgba(17,34,43,.94)!important;
+  color:#f0fafb!important;backdrop-filter:blur(18px)!important;
+  -webkit-backdrop-filter:blur(18px)!important;
+  box-shadow:0 -5px 20px rgba(7,26,34,.18)!important;
+  overflow-y:auto!important;
+  pointer-events:none!important;
+ }
+ #coordMobileInfoBar .mobileInfoInner{display:flex!important;flex-wrap:wrap!important;gap:5px 8px!important}
+ #coordsSection .coordFloatingTools:not(.coordMobileCollapsed){
+   width:auto!important;max-width:none!important;max-height:none!important;
+ }
+ #coordsSection .coordFloatingTools:not(.coordMobileCollapsed) .coordMobileRail{
+   display:grid!important;grid-template-columns:repeat(var(--rail-cols,1),39px);
+   width:auto!important;max-height:none!important;overflow:visible!important;align-items:center;
+ }
+ #coordsSection .coordFloatingTools:not(.coordMobileCollapsed) .coordMobileCompactBrush{display:none!important}
+ #coordsSection #coord_mobileFlyout{
+   margin:0;top:auto;left:auto!important;right:var(--fly-right,58px)!important;
+   width:min(270px,calc(100vw - var(--fly-right,58px) - 8px))!important;
+   max-height:var(--fly-limit,85dvh)!important;box-sizing:border-box;animation:none!important;
+ }
+ #coordsSection .coordStageShell:has(.coordMobileFlyout:not([hidden])){z-index:2}
+ /* Neither hints nor labels can overlap the bottom information strip. */
+ #coordsSection .helpDetails,#coordsSection .settingsFold{
+   position:relative!important;z-index:1!important;
+ }
+}
+@media(prefers-reduced-motion:reduce){#coordMobileInfoBar:not([hidden]){animation:none!important}}
+
+html[data-theme="dark"] #coordsSection #coord_status:not(:empty),
+html[data-theme="dark"] #coordsSection #coord_raw:not(:empty){
+ background:#193735;border-color:#365a56;color:#bde9df;
+}
+html[data-theme="dark"] #jumpPanel .jumpLink.isActive{
+ background:#27524f!important;color:#ddfaf3!important;
+}
+html[data-theme="dark"] .goldOptions button,
+html[data-theme="dark"] #coordsSection .coordAdvancedHelp{
+ background:#253139;color:#e0ebee;
+}
+
+/* Dark interaction surfaces use paired text and background colors. */
+html[data-theme="dark"] #jumpPanel .jumpLink:is(:hover,:focus-visible){
+ background:#354850!important;color:#f3f9fa!important;
+}
+html[data-theme="dark"] #jumpPanel .jumpLink.isActive:is(:hover,:focus-visible){
+ background:#305b57!important;color:#f1fffa!important;
+}
+html[data-theme="dark"] #jumpPanel .jumpLink:focus-visible{
+ outline:2px solid #91d9d0;outline-offset:-3px;
+}
+html[data-theme="dark"] :is(.goldOptions button,.filebtn,.helpDetails>summary,.settingsFold>summary,.analysisFold>summary):is(:hover,:focus-visible),
+html[data-theme="dark"] #coordsSection :is(.coordFlyRow,.coordMoreMenu button,.coordMoreToggle,.coordZoomButtons button,.coordToolBtn):not(:disabled):is(:hover,:focus-visible){
+ background:#354850!important;color:#f3f9fa!important;
+}
+html[data-theme="dark"] #coordsSection :is(.is-active,[aria-selected=true]):is(.coordFlyRow,button):is(:hover,:focus-visible){
+ background:#305b57!important;color:#f1fffa!important;
+}
+html[data-theme="dark"] #coordsSection .coordMoreMenu .coordDangerAction:not(:disabled):is(:hover,:focus-visible){
+ background:#563637!important;color:#ffe1dc!important;
+}
+html[data-theme="dark"] .importCount{color:#94ddd3}
+html[data-theme="dark"] #coordsSection .sectionHead p,
+html[data-theme="dark"] #coordsSection #coord_empty :is(span,small),
+html[data-theme="dark"] footer{color:#bbcbd1}
+html[data-theme="dark"] #coordsSection #coord_empty strong{color:#ecf3f5}
+
+html[data-theme="dark"] #coordsSection #coord_boxActions{
+ background:#202b30;border-color:#56666c;
+}
+html[data-theme="dark"] #coord_boxActions button{
+ --action-bg:#125859;--action-hover:#196567;--action-press:#10494b;
+ --action-text:#edffff;--action-border:#458487;
+ background:var(--action-bg)!important;color:var(--action-text)!important;
+ border:1px solid var(--action-border)!important;
+}
+html[data-theme="dark"] #coord_boxActions #coord_actionNote{
+ --action-bg:#293f50;--action-hover:#354e61;--action-press:#223440;
+ --action-text:#e4f2ff;--action-border:#526e83;
+}
+html[data-theme="dark"] #coord_boxActions #coord_actionDelete{
+ --action-bg:#4c282e;--action-hover:#63323b;--action-press:#3f2228;
+ --action-text:#ffd4d6;--action-border:#9a555e;
+}
+html[data-theme="dark"] #coord_boxActions button:hover{background:var(--action-hover)!important}
+html[data-theme="dark"] #coord_boxActions button:active{background:var(--action-press)!important}
+html[data-theme="dark"] #coordsSection button.copySuccess,
+html[data-theme="dark"] #coordsSection #coord_boxActions button.copySuccess,
+html[data-theme="dark"] #coordsSection .coordCopyToast{
+ background:#20483e!important;color:#d0f4df!important;border-color:#518471!important;
+}
+html[data-theme="dark"] #coordsSection .coordCopyToastIcon{background:#305c4d;color:#d0f4df}
+html[data-theme="dark"] #coordsSection button.copyFailure,
+html[data-theme="dark"] #coordsSection #coord_boxActions button.copyFailure,
+html[data-theme="dark"] #coordsSection .coordCopyToast.copyFailed,
+html[data-theme="dark"] #coordsSection .coordCopyToast.copyFailed .coordCopyToastIcon{
+ background:#513531!important;color:#ffdbca!important;border-color:#915e50!important;
+}
+html[data-theme="dark"] #coordsSection #coord_dimensionChecks{
+ background:#202b30;border-color:#405159;
+}
+html[data-theme="dark"] #coordsSection #coord_widthCheck{
+ background:#2b383e;border-color:#495b62;color:#e0e9ec;
+}
+html[data-theme="dark"] #coordsSection #coord_heightCheck:not(.isSmall){
+ background:#263934;border-color:#495e53;color:#dfede4;
+}
+
+/* Shared offline action icons inherit the button text color in both themes. */
+[data-action-icon="image"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.8%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%2218%22%20height%3D%2218%22%20rx%3D%223%22%2F%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%221.5%22%2F%3E%3Cpath%20d%3D%22m4%2017%205-5%203%203%204-5%205%206%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="upload"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.8%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M12%2016V3m-5%205%205-5%205%205M4%2015v5h16v-5%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="download"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.8%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M12%203v13m-5-5%205%205%205-5M4%2016v4h16v-4%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon="folder"]{--action-icon:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.8%22%20stroke-linejoin%3D%22round%22%20stroke-linecap%3D%22round%22%3E%3Cpath%20d%3D%22M3%207V5h6l2%202h10v12a1%201%200%200%201-1%201H4a1%201%200%200%201-1-1V7Zm0%203h18%22%2F%3E%3C%2Fsvg%3E")}
+[data-action-icon]::before{content:"";display:inline-block;width:1.12em;height:1.12em;flex:none;vertical-align:-.18em;margin-inline-end:.45em;background:currentColor;-webkit-mask:var(--action-icon) center/contain no-repeat;mask:var(--action-icon) center/contain no-repeat}
+[data-action-icon].filebtn,#coordsSection .coordSourcePick[data-action-icon]{gap:0}
+
+.zipLicense{width:100%;min-width:0}
+.zipLicense .licenseBody{padding:0 16px 14px;font:400 14px/1.65 system-ui,sans-serif;overflow-wrap:anywhere}
+.zipLicense .licenseBody p{margin:.7em 0;text-align:justify;hyphens:auto}
+.zipLicense .licenseBody h3{margin:1.25em 0 .4em}
+
+/* Frost only the navigation surface, leaving its labels and active tab crisp. */
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ #jumpPanel{background-color:rgba(250,253,253,.79);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+ html[data-theme="dark"] #jumpPanel{background-color:rgba(32,44,51,.76)}
+}

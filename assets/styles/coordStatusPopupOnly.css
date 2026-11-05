@@ -1,0 +1,3 @@
+
+/* Status notices belong to the body-level popup stack in every toolbar mode. */
+html body #coordsSection #coord_status{display:none!important}

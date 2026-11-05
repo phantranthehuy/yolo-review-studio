@@ -1,0 +1,19 @@
+
+@media(width < 1160px){
+ #coordsSection .coordFloatingTools:not(.coordMobileCollapsed) .coordMobileCollapse{
+  grid-column:1 / -1;justify-self:center;
+  width:100%!important;min-width:0!important;height:26px!important;min-height:26px!important;
+  margin:0!important;padding:0!important;
+  border:0!important;box-shadow:none!important;background:transparent!important;
+ }
+ #coordsSection .coordFloatingTools[data-rail-layout="horizontal"]:not(.coordMobileCollapsed) .coordMobileRail{
+  grid-template-columns:29px repeat(4,39px)!important;
+ }
+ #coordsSection .coordFloatingTools[data-rail-layout="horizontal"]:not(.coordMobileCollapsed) .coordMobileCollapse{
+  grid-column:1;grid-row:1 / span 3;
+  width:29px!important;height:100%!important;align-self:stretch;
+ }
+ #coordsSection .coordFloatingTools[data-rail-layout="horizontal"] .coordMobileCollapse svg{transform:rotate(-90deg)}
+ #coordsSection .coordMobileCollapse:hover{background:rgba(100,150,155,.12)!important}
+ #coordsSection .coordMobileCollapse:focus-visible{outline:2px solid #60bdb4;outline-offset:-2px}
+}

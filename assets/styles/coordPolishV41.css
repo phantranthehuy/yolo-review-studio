@@ -1,0 +1,15 @@
+
+/* Compact annotation canvas when dock has moved to viewport bottom. */
+@media (min-width:1160px) {
+ #coordsSection .coordStageShell.has-image:has(.coordFloatingTools.isDocked) #coord_stage {
+   padding-top:0!important;scroll-padding-top:0!important;
+ }
+}
+@media (width < 1160px){
+ /* Popover stays to the left of the mobile toolbar, within the screen. */
+ #coordsSection .coordMobileFlyout {overflow-wrap:anywhere;max-width:calc(100vw - 73px)}
+ #coordsSection .coordFloatingTools,#coordsSection .coordFloatingTools.isDocked{top:var(--coord-mobile-center,50%)!important}
+ #coordsSection .coordMobileRail .coordMobileButton:disabled {opacity:.36;cursor:not-allowed}
+ #coordsSection .coordMobileRail .coordMobileLabelText {display:flex;align-items:center;justify-content:center;letter-spacing:-.35px;border:1.5px solid currentColor;border-radius:4px;width:26px;height:24px}
+ #coordsSection .coordMobileRail .coordMobileButton[data-active=false]:is(#coord_m_box,#coord_m_lines,#coord_m_tags) {color:#85959e;border-color:#d9e3e6;background:#f5f7f8}
+}

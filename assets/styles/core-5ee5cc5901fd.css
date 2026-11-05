@@ -1,0 +1,8 @@
+
+html{scroll-behavior:smooth}#prepSection,#evalSection,#matchSection,#coordsSection{scroll-margin-top:16px}
+.jumpDock{position:fixed;left:14px;bottom:18px;z-index:999;width:min(244px,calc(100vw - 28px));font-family:Arial,sans-serif;pointer-events:none}
+.jumpDock>*{pointer-events:auto}.jumpToggle{display:flex;align-items:center;gap:10px;border:1px solid #0a666d;background:#086b6b;color:white;box-shadow:0 4px 16px #102f4140;border-radius:11px;padding:10px 13px;font:700 13px Arial,sans-serif;cursor:pointer;min-height:43px}.jumpToggle:hover{background:#06545b}.jumpToggle #jumpArrow{margin-left:10px}
+.jumpPanel{margin-bottom:9px;padding:8px;background:white;border:1px solid #cbd7e0;border-radius:12px;box-shadow:0 9px 30px #15263733;max-height:min(45vh,310px);overflow:auto}
+.jumpPanel[hidden]{display:none!important}.jumpHeading{font:700 10px Arial,sans-serif;color:#67778a;letter-spacing:1px;padding:7px 9px 9px}
+.jumpLink{display:flex;align-items:center;gap:9px;text-decoration:none!important;color:#1c3448!important;font:600 12px/1.35 Arial,sans-serif;padding:10px 8px;border-radius:7px}.jumpLink span{font-size:10px;color:#657b90;background:#eef2f7;border-radius:5px;padding:5px}.jumpLink:hover,.jumpLink:focus-visible,.jumpLink.isActive{background:#e7f4f2;color:#075d64!important}.jumpLink.isActive span{background:#086b6b;color:white}
+@media(max-width:650px){.jumpDock{left:8px;bottom:8px;width:min(226px,calc(100vw - 16px))}.jumpPanel{max-height:45vh}.jumpToggle{padding:9px 11px}}

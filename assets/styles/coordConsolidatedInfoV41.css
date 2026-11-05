@@ -1,0 +1,8 @@
+
+/* When the selected-box dock appears, move the two duplicate result strips into its info menu. */
+#coordsSection:has(.coordFloatingTools.isDocked:not(.coordMobileCollapsed)) #coord_raw,
+#coordsSection:has(.coordFloatingTools.isDocked:not(.coordMobileCollapsed)) #coord_status {display:none!important}
+#coordsSection .coordMoreContext {padding:8px 9px 4px;margin-top:4px;border-top:1px solid #e4ebed;
+  color:#4e6572;font:500 11px/1.55 system-ui,sans-serif;overflow-wrap:anywhere;
+  max-height:125px;overflow-y:auto;white-space:pre-wrap}
+#coordsSection .coordMoreContext[hidden]{display:none!important}

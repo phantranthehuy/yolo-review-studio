@@ -1,0 +1,25 @@
+
+#coordsSection .coordExtras .coordInputPanel,
+html[data-theme="dark"] #coordsSection .coordExtras .coordInputPanel{
+ background:transparent!important;border:0!important;border-radius:0!important;
+ padding:0!important;margin:0!important;box-shadow:none!important;
+}
+#coordsSection #coord_makeBox{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;min-width:40px;padding:0;border-radius:10px}
+#coordsSection #coord_makeBox svg{display:block}
+#configSection label.check{display:flex;align-items:flex-start;gap:10px;margin:16px 0}
+#configSection label.check>input{flex:0 0 18px;width:18px;height:18px;margin:3px 0 0}
+#configSection label.check>span{flex:1;min-width:0;line-height:1.6}
+#configSection .foldBody>.fileline,.evalExtras .fileline{
+ display:grid;grid-template-columns:minmax(220px,320px) minmax(0,1fr) auto;align-items:center;
+ gap:12px 16px;margin:18px 0;padding:14px 0;border-bottom:1px solid var(--line);
+}
+#configSection .foldBody>.fileline .filebtn,.evalExtras .fileline .filebtn{justify-content:flex-start;margin:0;white-space:normal}
+#configSection .foldBody>.fileline .small,.evalExtras .fileline .small{line-height:1.65;margin:0}
+#configSection .foldBody>details>summary{padding:12px 16px;border-radius:8px}
+#configSection .foldBody>details>ul{padding:8px 24px 12px 36px;margin:0}
+.evalExtras .hint{padding:14px 16px;line-height:1.7}
+.evalExtras .hint p{margin:8px 0}
+@media(max-width:720px){
+ #configSection .foldBody>.fileline,.evalExtras .fileline{grid-template-columns:minmax(0,1fr);gap:10px}
+ #configSection .foldBody>.fileline>button,.evalExtras .fileline>button{justify-self:start}
+}

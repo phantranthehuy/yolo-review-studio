@@ -1,0 +1,22 @@
+
+
+.coords .coordDimensionChecks{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;padding:10px;border-radius:10px;background:#f1f6fa;border:1px solid #d3e0e8}
+.coords .coordAxisCheck{flex:1 1 220px;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border:1px solid #b7dccc;background:#eaf8f1;color:#106144;border-radius:8px;font-size:13px;font-weight:600}
+.coords .coordAxisCheck.isSmall{background:#fff0e9;border-color:#efb2a5;color:#a12f1f}
+.coords #coord_widthCheck{background:#f5f7fa;border-color:#d3dce5;color:#526071}
+.coords .coordAxisCheck .coordAxisResult{font-size:12px;text-align:right;font-weight:700}
+.coords .coordMultiPanel{display:block;border:1px solid #cbd9e4;background:#fff;padding:16px;border-radius:12px;margin:16px 0}
+.coords .coordMultiPanel h3{margin:0;font-size:17px}.coords .coordMultiTop{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.coords .coordMultiActions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.coords .coordMultiActions button{font-size:12px;padding:8px 10px}
+.coords .coordSelectedStrip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;padding:10px 12px;border:1px solid #cfe2e0;background:#f3faf9;border-radius:9px}
+.coords #coord_coord{font:600 13px/1.5 ui-monospace,monospace;min-width:0;color:#174454;overflow-wrap:anywhere}.coords #coord_details{font-size:12px}
+.coords .coordSelectedStrip #coord_selectedName{font-size:12px;color:#075e60}.coords .coordLabelActions{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}.coords .coordLabelActions button{font-size:12px;padding:6px 9px}
+.coords .coordTableWrap{max-height:335px;overflow:auto;border:1px solid #d6dfe9;border-radius:9px;margin-top:12px}
+.coords .coordTableWrap table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}.coords .coordTableWrap th{text-align:left;background:#eff5f8;color:#34495c;position:sticky;top:0;z-index:1;padding:10px;border-bottom:1px solid #d6dfe9}
+.coords .coordTableWrap td{padding:9px 10px;border-bottom:1px solid #e0e6ec;vertical-align:middle}
+.coords .coordTableWrap tr.isSelected{background:#e2f6f2;box-shadow:inset 4px 0 #086b6b}.coords .coordTableWrap tbody tr{cursor:pointer}.coords .coordTableWrap tbody tr:hover{background:#eef8f6}
+.coords .coordTableWrap button{padding:5px 8px;font-size:11px;border-radius:6px}.coords .coordTableButtons{display:flex;gap:5px;flex-wrap:wrap}
+.coords .coordIdPill{display:inline-flex;align-items:center;gap:5px;background:#076b68;color:white;border-radius:6px;padding:4px 7px;font-weight:bold;white-space:nowrap}.coords .coordIdPill.smallBox{background:#b43424}
+.coords .coordMono{font:600 12px ui-monospace,monospace;white-space:nowrap}.coords .coordSizeNote{font-size:11px;color:#647482;white-space:nowrap}.coords .coordMiniWarn{color:#aa3728;font-weight:bold;font-size:11px}.coords .coordEmptyList{padding:22px;text-align:center;color:#607081;font-size:13px}
+.coords .coordMultiPanel button:disabled{opacity:.45}.coords .coordMultiHint{font-size:12px;color:#667889;margin:10px 0 0!important}
+@media(max-width:800px){.coords .coordMultiPanel{padding:12px}.coords .coordTableWrap{max-height:360px}}
