@@ -1,0 +1,13 @@
+# Operating system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+
+# Editor swap files
+*.swp
+*.swo
