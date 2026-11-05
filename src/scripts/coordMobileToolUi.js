@@ -106,6 +106,8 @@ function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hid
    };fly.append(slider);
    const marks=document.createElement('div');marks.className='coordFlyZoomMarks';labels.forEach(l=>{const t=document.createElement('span');t.textContent=l;marks.append(t)});fly.append(marks);
  }else if(name==='more'){
+   const fullscreen=$('coord_fullscreen');
+   row(fullscreen.textContent,()=>fullscreen.click());
    const actions=[['Chép tọa độ box đang chọn','coord_actionCopy'],['Chép ID + box','coord_actionNote'],['Chép tất cả tọa độ','coord_copyAll'],['Ghi vùng vào notes trong log','coord_applyNote'],['Xóa box đã vẽ đang chọn','coord_actionDelete'],['Xóa tất cả box đã vẽ','coord_deleteAll']];
    for(const [label,id] of actions)row(label,()=>{$(id).click()},false,!!$(id).disabled || ((id==='coord_actionCopy'||id==='coord_actionNote')&&$('coord_selectedName').textContent==='Chưa chọn box') || (id==='coord_actionDelete' && !/^Box #/.test($('coord_selectedName').textContent))).dataset.actionIcon=({"coord_actionCopy": "coord-copy", "coord_actionNote": "coord-id", "coord_actionDelete": "coord-delete", "coord_copyAll": "coord-copy-all", "coord_applyNote": "coord-note", "coord_deleteAll": "coord-delete-all"})[id];
    const context=[$('coord_raw').textContent,$('coord_status').textContent].filter(v=>v&&v.trim()).join(' · ');

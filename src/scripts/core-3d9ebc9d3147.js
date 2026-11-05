@@ -201,9 +201,10 @@ function coordUpdateDock(){
  const section=document.getElementById('coordsSection');
  if(!shell||!floating||!section)return;
  const r=section.getBoundingClientRect(),vh=window.innerHeight||document.documentElement.clientHeight;
- const sectionVisible=r.bottom>75&&r.top<vh-75;
+ const fullscreen=shell.classList.contains('coordExpanded');
+ const sectionVisible=fullscreen||(r.bottom>75&&r.top<vh-75);
  const hasSelected=!!(img&&rect&&(selected>=0||selectedDrawId!==null));
- const enabled=!!(img&&sectionVisible&&(hasSelected||coordCanvasEngaged));
+ const enabled=!!(img&&sectionVisible&&(fullscreen||hasSelected||coordCanvasEngaged));
  const wasDocked=floating.classList.contains('isDocked');
  const previousOffscreen=floating.classList.contains('coordMobileOffscreen');
  const usesFloatingRail=window.matchMedia('(width < 1160px)').matches;
@@ -244,7 +245,10 @@ function redraw(){
  if(active!==null&&rect){const r=rect,clr=isSmall(r)?'#b93422':'#00826e';ctx.lineWidth=2*dpr;ctx.strokeStyle=clr;ctx.fillStyle='rgba(0,150,125,.15)';ctx.fillRect(r.x1*sx,r.y1*sy,(r.x2-r.x1)*sx,(r.y2-r.y1)*sy);ctx.strokeRect(r.x1*sx,r.y1*sy,(r.x2-r.x1)*sx,(r.y2-r.y1)*sy);drawTag(`${operation?.kind==='draw'?'Đang vẽ':'Đang chỉnh'} ${tupleFor(r,'integer')} | RỘNG ${fmtPx(r.x2-r.x1)}px | CAO ${fmtPx(r.y2-r.y1)}px ${r.y2-r.y1<MIN_BOX?'⚠':''}`,r.x1*sx,r.y1*sy,clr,dpr);}
  syncToolbar();
 }
-function layout(){if(!img)return;scale=$('zoom').value==='fit'?Math.min(1,Math.max(1,$('stage').clientWidth-2)/img.naturalWidth):Number($('zoom').value);const w=img.naturalWidth*scale,h=img.naturalHeight*scale,dpr=window.devicePixelRatio||1;$('canvasWrap').style.width=w+'px';$('canvasWrap').style.height=h+'px';c.style.width=w+'px';c.style.height=h+'px';c.width=Math.max(1,Math.round(w*dpr));c.height=Math.max(1,Math.round(h*dpr));redraw();}
+function layout(){if(!img)return;const stage=$('stage'),fullscreen=$('stageShell').classList.contains('coordExpanded');
+ const widthScale=Math.max(1,stage.clientWidth-2)/img.naturalWidth;
+ const fitScale=fullscreen?Math.min(widthScale,Math.max(1,stage.clientHeight-2)/img.naturalHeight):Math.min(1,widthScale);
+ scale=$('zoom').value==='fit'?fitScale:Number($('zoom').value);const w=img.naturalWidth*scale,h=img.naturalHeight*scale,dpr=window.devicePixelRatio||1;$('canvasWrap').style.width=w+'px';$('canvasWrap').style.height=h+'px';c.style.width=w+'px';c.style.height=h+'px';c.width=Math.max(1,Math.round(w*dpr));c.height=Math.max(1,Math.round(h*dpr));redraw();}
 $('file').addEventListener('change',()=>{coordCanvasEngaged=false;const file=$('file').files[0];if(!file)return;const seq=++loadSeq,url=URL.createObjectURL(file),next=new Image();next.onload=()=>{URL.revokeObjectURL(url);if(seq!==loadSeq)return;rememberImage();img=next;filename=file.name;restoreImage();clear();if(labelFile&&imageId(labelFile.name)!==imageId(filename))resetLabels();$('empty').hidden=true;$('canvasWrap').hidden=false;c.hidden=false;$('toolSelect').disabled=false;$('toolDraw').disabled=false;$('workspace').hidden=false;document.getElementById('coord_floatingTools').hidden=false;document.getElementById('coord_stageShell').classList.add('has-image');document.querySelector('.coordExtras').hidden=false;$('meta').textContent=`${filename}; ${img.naturalWidth} × ${img.naturalHeight} px`;syncSourcePicks();$('fallback').hidden=true;if(!labelFile)useLoaded('before',true);setOptions();layout();renderDrawnList();$('status').textContent=`Đã mở ảnh. Có ${drawnBoxes.length} box đã khoanh/nhập trên ảnh này.`;};next.onerror=()=>{URL.revokeObjectURL(url);if(seq===loadSeq)$('status').textContent='Không mở được ảnh. Chọn JPG/PNG hợp lệ.';};next.src=url;});
 $('labelFile').addEventListener('change',async()=>{const file=$('labelFile').files[0];if(!file)return;const seq=++labelSeq;try{const text=await file.text();if(seq!==labelSeq)return;attachLabels({name:file.name,path:file.name,text});}catch(e){if(seq!==labelSeq)return;resetLabels();$('status').textContent=e.message;}});
 $('useBefore').onclick=()=>useLoaded('before');$('useAfter').onclick=()=>useLoaded('after');
@@ -362,7 +366,7 @@ document.addEventListener('click',e=>{
  if(e.target.closest('#coord_boxActions, #coord_floatingTools, #coord_overlapWrap, #coord_boxSelect, #coord_applyNote, #coord_format, .coordZoomControl'))return;
  clear();
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(!e.target.closest('input,textarea,select')||e.target===c))clear();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('stageShell').classList.contains('coordExpanded')&&(!e.target.closest('input,textarea,select')||e.target===c))clear();});
 function syncZoomButtons(){document.querySelectorAll('[data-coord-zoom]').forEach(btn=>{const on=btn.dataset.coordZoom===$('zoom').value;btn.classList.toggle('is-active',on);btn.setAttribute('aria-pressed',String(on));});}
 document.querySelectorAll('[data-coord-zoom]').forEach(btn=>btn.addEventListener('click',()=>{$('zoom').value=btn.dataset.coordZoom;syncZoomButtons();layout();}));
 $('zoom').onchange=()=>{syncZoomButtons();layout();};syncZoomButtons();
@@ -525,6 +529,31 @@ $('actionDelete').onclick=()=>{const t=actionTarget;if(t?.kind==='draw')deleteBo
 $('copyAll').onclick=()=>{if(drawnBoxes.length)copy(drawnBoxes.map(b=>`#${String(b.id).padStart(2,'0')} ${tupleFor(b.rect,$('format').value)}${isSmall(b.rect)?' [CẢNH BÁO: '+axisWarnings(b.rect).join('; ')+ ' dưới 12 px]':''}`).join('\n'),$('copyAll'));};
 // Menu thao tác bổ sung; giữ trạng thái chọn box khi tương tác thanh nổi.
 const moreToggle=$('moreToggle'),moreMenu=$('moreMenu');
+const fullscreenShell=$('stageShell'),fullscreenButton=$('fullscreen');
+function updateFullscreen(expanded){
+ fullscreenShell.classList.toggle('coordExpanded',expanded);
+ fullscreenButton.textContent=expanded?'Thoát toàn màn hình':'Toàn màn hình';
+ layout();
+}
+document.addEventListener('fullscreenchange',()=>updateFullscreen(document.fullscreenElement===fullscreenShell));
+fullscreenButton.addEventListener('click',async()=>{
+ setMoreOpen(false);
+ const menuButton=window.matchMedia('(width < 1160px)').matches?$('m_more'):moreToggle;
+ menuButton?.focus({preventScroll:true});
+ if(document.fullscreenElement===fullscreenShell){
+  await document.exitFullscreen();
+ }else if(fullscreenShell.classList.contains('coordExpanded')){
+  updateFullscreen(false);
+ }else{
+  if(document.fullscreenEnabled&&fullscreenShell.requestFullscreen){
+   try{await fullscreenShell.requestFullscreen();return;}catch(_){}
+  }
+  updateFullscreen(true);
+ }
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'&&!document.fullscreenElement&&fullscreenShell.classList.contains('coordExpanded'))updateFullscreen(false);
+});
 function setMoreOpen(open){moreMenu.hidden=!open;moreToggle.setAttribute('aria-expanded',String(open));}
 moreToggle.addEventListener('click',event=>{event.stopPropagation();setMoreOpen(moreMenu.hidden);});
 document.addEventListener('pointerdown',event=>{if(!event.target.closest('#coord_moreWrap'))setMoreOpen(false);});
