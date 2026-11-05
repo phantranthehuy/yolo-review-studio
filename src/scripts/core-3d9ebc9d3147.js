@@ -533,6 +533,7 @@ const fullscreenShell=$('stageShell'),fullscreenButton=$('fullscreen');
 function updateFullscreen(expanded){
  fullscreenShell.classList.toggle('coordExpanded',expanded);
  fullscreenButton.textContent=expanded?'Thoát toàn màn hình':'Toàn màn hình';
+ fullscreenButton.dataset.actionIcon=expanded?'coord-fullscreen-exit':'coord-fullscreen';
  layout();
 }
 document.addEventListener('fullscreenchange',()=>updateFullscreen(document.fullscreenElement===fullscreenShell));
