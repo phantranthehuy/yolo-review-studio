@@ -97,7 +97,10 @@ function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hid
    const marks=document.createElement('div');marks.className='coordFlyZoomMarks';
    const current=document.createElement('strong');
    current.className='coordFlyZoomValue';
-   marks.append(slider.min+'%',slider.max+'%');
+   const minimum=document.createElement('span');
+   const maximum=document.createElement('span');
+   minimum.textContent=slider.min+'%';maximum.textContent=slider.max+'%';
+   marks.append(minimum,maximum);
    function showZoomValue(){
      const label=slider.value+'%';
      slider.setAttribute('aria-valuetext',label);current.textContent=label;

@@ -301,4 +301,4 @@ html:has(#coord_stageShell.coordExpanded){overflow:hidden}
  display:block;margin:0 0 6px;text-align:center;font-size:17px;line-height:1.4;
  font-variant-numeric:tabular-nums;
 }
-#coordsSection .coordMobileFlyout .coordFlyZoomMarks{margin-top:2px}
+#coordsSection .coordMobileFlyout .coordFlyZoomMarks{display:flex;justify-content:space-between;gap:12px;width:100%;margin-top:2px}
