@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>YOLO Review Studio | G11 · v4.1</title>
+<title>YOLO Review Studio | G11 · v4.1.2</title>
 <link rel="stylesheet" href="assets/styles/core-8c3715a44704.css">
 <link rel="stylesheet" href="assets/styles/theme-picker.css"></head>
 <body>
@@ -45,10 +45,32 @@
     </a>
   </div>
 </nav>
-<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1</div>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.2</div>
   <h1 id="pageTitle">Rà soát nhãn YOLO.<br><span>Rõ từng bước, đúng từng box.</span></h1>
   <p class="intro">Chuẩn bị nhãn, chấm F1 / Precision / Recall và xác nhận các thay đổi trước – sau. Tất cả xử lý ngay trên trình duyệt.</p>
-  <div class="workflowStrip" aria-label="Quy trình sử dụng"><div><b>01</b><span><strong>Nạp dữ liệu</strong><small>Trước sửa · sau sửa</small></span></div><div><b>02</b><span><strong>Chuẩn bị & chấm</strong><small>QC · nhãn tham chiếu</small></span></div><div><b>03</b><span><strong>Rà soát & xuất</strong><small>Đối chiếu box · review_log</small></span></div></div>
+  <section class="releaseNotes" aria-label="Cập nhật gần đây">
+   <div class="releaseNotesViewport" id="releaseNotesViewport" tabindex="0" aria-label="Nhật ký cập nhật. Rê chuột để dừng, cuộn để xem thêm.">
+    <div class="releaseNotesTrack">
+     <div class="releaseNotesGroup">
+      <article class="releaseNote">
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.2</span><span class="releaseNew">New</span></div>
+       <h2>Zoom mượt, giữ trọn vùng đang xem.</h2>
+       <p>Chụm hai ngón trên trackpad hoặc điện thoại, giữ Ctrl/⌘ khi lăn chuột. Zoom tới 3200%, giữ tâm ảnh và hiển thị rõ từng pixel từ 200%.</p>
+      </article>
+      <article class="releaseNote">
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.1</span></div>
+       <h2>Thêm không gian cho từng chi tiết.</h2>
+       <p>Vùng vẽ toàn màn hình, phím V/D và B, zoom nhanh bằng Ctrl/⌘ +/−. Gửi góp ý qua nút Feedback.</p>
+      </article>
+      <article class="releaseNote">
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1</span></div>
+       <h2>Rà soát nhãn, theo dõi từng thay đổi.</h2>
+       <p>Đối chiếu box trước và sau, chấm F1 / Precision / Recall, khoanh vùng ngoại lệ và xuất review_log.</p>
+      </article>
+     </div>
+    </div>
+   </div>
+  </section>
 </section>
 <nav id="jumpDock" class="jumpDock" aria-label="Điều hướng nhanh giữa các mục">
   <button id="jumpToggle" class="jumpToggle" type="button" aria-expanded="false" aria-controls="jumpPanel" title="Mở hoặc đóng điều hướng nhanh"><svg class="jumpMenuIcon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg><span class="jumpMenuText">Chuyển đến mục</span><span id="jumpArrow" aria-hidden="true"></span></button>
@@ -139,7 +161,7 @@
 <link rel="stylesheet" href="assets/styles/core-8822e09edcbc.css">
 
 <section id="coordsSection" class="coords panel" style="margin:24px 0"><div class="coordContent"><div class="sectionHead"><div><span class="stepTag">05 / XỬ LÝ NGOẠI LỆ</span><h2>Chọn box & tọa độ pixel</h2><p>Khoanh vùng cần phân xử hoặc lấy tọa độ chính xác trên ảnh gốc.</p></div></div>
-<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Chọn ảnh gốc, sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. “Ảnh khác” đổi ảnh đang xem. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V hoặc D) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to. Dùng Ctrl hoặc ⌘ cùng phím +/− để đổi mức zoom khi vùng vẽ đang hiển thị.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
+<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Chọn ảnh gốc, sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. “Ảnh khác” đổi ảnh đang xem. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V hoặc D) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to. Chụm hoặc mở hai ngón trên ảnh hay trackpad để zoom. Với chuột, giữ Ctrl hoặc ⌘ khi lăn trên ảnh. Thanh zoom giữ tâm vùng đang xem. Bạn cũng có thể dùng Ctrl hoặc ⌘ cùng phím +/−.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
 <div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_file" id="coord_imagePick" data-action-icon="image">Chọn ảnh gốc</label><input id="coord_file" type="file" accept="image/*"><span id="coord_meta">Chưa chọn ảnh</span></div>
 <div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_labelFile" id="coord_labelPick" data-action-icon="upload">Chọn nhãn .txt của ảnh</label><input id="coord_labelFile" type="file" accept=".txt"><button id="coord_useBefore" class="secondary">Dùng nhãn ban đầu đã tải</button><button id="coord_useAfter" class="secondary">Dùng nhãn sau sửa đã tải</button><span id="coord_labelMeta">Chưa có nhãn cho ảnh này</span></div>
 <details class="settingsFold coordExtras" hidden><summary><span>⌗</span> Nhập tọa độ thủ công <small>Dán tọa độ để thêm box</small></summary><div class="foldBody"><div class="bar coordInputPanel" aria-labelledby="coord_inputTitle">
@@ -354,7 +376,7 @@
 </div></div>
 <script src="assets/scripts/core-a67fe933b7b3.js"></script>
 <script src="assets/scripts/core-a7504b369507.js"></script>
-<script src="assets/scripts/core-3d9ebc9d3147.js?v=zoom"></script>
+<script src="assets/scripts/core-3d9ebc9d3147.js?v=trackpad-fast"></script>
 
 <script src="assets/scripts/core-fbdd1da5a5fb.js"></script>
 <script src="assets/scripts/responsiveJumpNavScript.js?v=feedback"></script>
@@ -364,7 +386,7 @@
 <script src="assets/scripts/smoothAccordionScript.js"></script>
 
 <link rel="stylesheet" href="assets/styles/coordResponsiveDockV41.css">
-<script src="assets/scripts/coordMobileToolUi.js?v=zoom"></script>
+<script src="assets/scripts/coordMobileToolUi.js?v=zoom-300ms"></script>
 <link rel="stylesheet" href="assets/styles/coordConsolidatedInfoV41.css">
 <link rel="stylesheet" href="assets/styles/coordPolishV41.css">
 <script src="assets/scripts/coordInfoIntoMenuV41.js"></script>
@@ -381,7 +403,7 @@
 
 <script src="assets/scripts/yoloV41FinalDockPatch.js"></script>
 
-<link rel="stylesheet" href="assets/styles/v41FinalPresentationCorrection.css">
+<link rel="stylesheet" href="assets/styles/v41FinalPresentationCorrection.css?v=pixelzoom">
 <script src="assets/scripts/v41FinalPresentationCorrectionJS.js"></script>
 
 <link rel="stylesheet" href="assets/styles/floatingThemeAndCoordGlass.css">
@@ -436,6 +458,9 @@
 
 
 <link rel="stylesheet" href="assets/styles/zipFooterFade.css">
+
+<link rel="stylesheet" href="assets/styles/releaseNotes.css">
+<script src="assets/scripts/releaseNotes.js"></script>
 
 <link rel="stylesheet" href="assets/styles/fallingLeavesStyle.css">
 <canvas id="fallingLeaves" aria-hidden="true"></canvas>

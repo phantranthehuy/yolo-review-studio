@@ -77,7 +77,7 @@ buttons.orb=add('open',icons.brush,'Mở thanh công cụ tọa độ',()=>colla
 function toggleCheck(id){const checkbox=$(id);if(checkbox.disabled)return;checkbox.checked=!checkbox.checked;checkbox.dispatchEvent(new Event('change',{bubbles:true}));sync();}
 function row(text,fn,selected=false,disabled=false){const b=document.createElement('button');b.type='button';b.className='coordFlyRow';b.textContent=text;b.disabled=disabled;b.setAttribute('aria-selected',String(selected));b.onclick=()=>{fn();closeFly();sync();};fly.append(b);return b;}
 function info(text){const p=document.createElement('div');p.className='coordFlyInfo';p.textContent=text;fly.append(p);}
-let syncZoomSlider;
+let syncZoomSlider,zoomApplyTimer;
 function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hidden){closeFly();return;}activeFly=name;lastOrigin=origin;syncZoomSlider=null;fly.replaceChildren();
  const close=document.createElement('button');close.type='button';close.className='coordFlyClose';close.textContent='×';close.setAttribute('aria-label','Đóng bảng');close.onclick=closeFly;fly.append(close);
  const title=document.createElement('h3');title.className='coordFlyHeading';title.textContent=({txt:'Chọn dòng TXT',format:'Định dạng tọa độ',zoom:'Độ phóng đại',more:'Khác'})[name]||'';fly.append(title);
@@ -90,25 +90,26 @@ function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hid
  }else if(name==='format'){
    const choices=document.createElement('div');choices.className='coordFormatChoices';choices.append('Toạ độ:');for(const val of ['integer','exact']){const b=document.createElement('button');b.type='button';b.textContent=val==='integer'?'N':'0.123';b.title=val==='integer'?'Toạ độ số nguyên':'Toạ độ thập phân';b.setAttribute('aria-pressed',String($('coord_format').value===val));b.onclick=()=>{$('coord_format').value=val;$('coord_format').dispatchEvent(new Event('change',{bubbles:true}));choices.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button===b)));};choices.append(b);}fly.append(choices);
  }else if(name==='zoom'){
-   const zoom=$('coord_zoom');
-   const levels=Array.from(zoom.options);
-   const slider=document.createElement('input');slider.type='range';slider.min='0';slider.max=String(levels.length-1);slider.step='1';slider.setAttribute('aria-label','Kéo chọn mức zoom');
+   const slider=document.createElement('input');slider.type='range';
+   slider.min=String(Math.max(1,Math.floor(Math.min(.1,window.YoloCoords.getFitScale())*100)));
+   slider.max=String(Math.ceil(window.YoloCoords.getMaxZoom()*100));
+   slider.step='1';slider.setAttribute('aria-label','Kéo chọn mức zoom');
    const marks=document.createElement('div');marks.className='coordFlyZoomMarks';
    const current=document.createElement('strong');
-   marks.append(levels[0].textContent,current,levels[levels.length-1].textContent);
+   marks.append(slider.min+'%',current,slider.max+'%');
    function showZoomValue(){
-     const label=levels[Number(slider.value)].textContent;
-     slider.setAttribute('aria-valuetext',label);
-     current.textContent=label;
+     const label=slider.value+'%';
+     slider.setAttribute('aria-valuetext',label);current.textContent=label;
    }
-   slider.oninput=showZoomValue;
-   slider.onchange=()=>{
-     zoom.value=levels[Number(slider.value)].value;
-     zoom.dispatchEvent(new Event('change',{bubbles:true}));
+   slider.oninput=()=>{
+     showZoomValue();
+     clearTimeout(zoomApplyTimer);
+     const value=Number(slider.value)/100;
+     zoomApplyTimer=setTimeout(()=>window.YoloCoords.setZoom(value),300);
    };
    fly.append(slider,marks);
    syncZoomSlider=()=>{
-     slider.value=String(zoom.selectedIndex);
+     slider.value=String(Math.round(window.YoloCoords.getZoom()*100));
      showZoomValue();
    };
    syncZoomSlider();
@@ -147,7 +148,8 @@ function sync(){
  if(float.classList.contains('coordMobileOffscreen'))closeFly();
 }
 for(const id of ['coord_showBoxes','coord_showNumbers','coord_showRegionLabels','coord_boxSelect','coord_mode','coord_zoom','coord_format'])$(id).addEventListener('change',sync);
-$('coord_zoom').addEventListener('change',()=>syncZoomSlider?.());
+$('coord_zoom').addEventListener('change',()=>{clearTimeout(zoomApplyTimer);syncZoomSlider?.();});
+$('coord_file').addEventListener('change',()=>clearTimeout(zoomApplyTimer));
 for(const id of ['coord_toolSelect','coord_toolDraw'])$(id).addEventListener('click',()=>requestAnimationFrame(sync));
 // Dock is a compact brush over the upload/settings panel; expand near the image only.
 // Never override a user's explicit expand/collapse choice.

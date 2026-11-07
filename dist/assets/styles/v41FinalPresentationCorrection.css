@@ -283,3 +283,12 @@ html:has(#coord_stageShell.coordExpanded){overflow:hidden}
 @media(min-width:1160px){
  #coordsSection #coord_stageShell.coordExpanded{padding-bottom:43px}
 }
+
+#coordsSection .coordStageShell.has-image #coord_stage{touch-action:none;overflow-anchor:none;scroll-behavior:auto}
+
+#coordsSection .coordSourceImage{
+ position:absolute;inset:0;display:block;width:100%;height:100%;max-width:none;
+ pointer-events:none;user-select:none;
+}
+#coordsSection .coordSourceImage.coordPixelImage{image-rendering:pixelated;image-rendering:crisp-edges}
+#coordsSection #coord_canvas{position:relative}
