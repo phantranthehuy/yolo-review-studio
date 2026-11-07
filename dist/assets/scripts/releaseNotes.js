@@ -7,7 +7,7 @@
  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
  let cycleHeight=0,position=0,frame=0,lastTime=0;
  let visible=false,hovered=false,focused=false,scrollingDown=false,touchPaused=false;
- let touchTimer=0,lastPageY=window.scrollY;
+ let touchTimer=0,lastPageY=Math.max(0,window.scrollY);
 
  // Copies above and below let readers scroll either way without a blank edge.
  const before=group.cloneNode(true),after=group.cloneNode(true);
@@ -21,14 +21,14 @@
   return cycleHeight+(value%cycleHeight+cycleHeight)%cycleHeight;
  }
  function tick(time){
-  if(lastTime)position=wrap(position+Math.min(time-lastTime,64)*.012);
+  if(lastTime)position=wrap(position+Math.min(time-lastTime,64)*(reducedMotion.matches ? .006 : .012));
   lastTime=time;
   viewport.scrollTop=position;
   frame=requestAnimationFrame(tick);
  }
  function updatePlayback(){
   const running=visible&&!hovered&&!focused&&!scrollingDown&&!touchPaused
-   &&!document.hidden&&!reducedMotion.matches&&cycleHeight>0;
+   &&!document.hidden&&cycleHeight>0;
   if(running&&!frame){
    position=viewport.scrollTop;lastTime=0;
    frame=requestAnimationFrame(tick);
@@ -52,9 +52,9 @@
  });
  viewport.addEventListener('pointerleave',event=>{
   if(event.pointerType==='touch')return;
-  hovered=false;updatePlayback();
+  hovered=false;focused=viewport.matches(':focus-visible');updatePlayback();
  });
- viewport.addEventListener('focusin',()=>{focused=true;updatePlayback();});
+ viewport.addEventListener('focusin',()=>{focused=viewport.matches(':focus-visible');updatePlayback();});
  viewport.addEventListener('focusout',()=>{focused=false;updatePlayback();});
  viewport.addEventListener('scroll',()=>{
   if(frame||!cycleHeight)return;
@@ -73,9 +73,9 @@
  window.addEventListener('pointerup',resumeAfterTouch);
  window.addEventListener('pointercancel',resumeAfterTouch);
  window.addEventListener('scroll',()=>{
-  const nextY=window.scrollY;
+  const nextY=Math.max(0,window.scrollY);
   if(nextY===lastPageY)return;
-  scrollingDown=nextY>lastPageY;
+  scrollingDown=nextY>0&&nextY>lastPageY;
   lastPageY=nextY;updatePlayback();
  },{passive:true});
  document.addEventListener('visibilitychange',updatePlayback);

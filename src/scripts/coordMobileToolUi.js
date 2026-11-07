@@ -96,7 +96,8 @@ function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hid
    slider.step='1';slider.setAttribute('aria-label','Kéo chọn mức zoom');
    const marks=document.createElement('div');marks.className='coordFlyZoomMarks';
    const current=document.createElement('strong');
-   marks.append(slider.min+'%',current,slider.max+'%');
+   current.className='coordFlyZoomValue';
+   marks.append(slider.min+'%',slider.max+'%');
    function showZoomValue(){
      const label=slider.value+'%';
      slider.setAttribute('aria-valuetext',label);current.textContent=label;
@@ -107,7 +108,7 @@ function showFly(name,origin){if(!expanded)return; if(activeFly===name&&!fly.hid
      const value=Number(slider.value)/100;
      zoomApplyTimer=setTimeout(()=>window.YoloCoords.setZoom(value),300);
    };
-   fly.append(slider,marks);
+   fly.append(current,slider,marks);
    syncZoomSlider=()=>{
      slider.value=String(Math.round(window.YoloCoords.getZoom()*100));
      showZoomValue();
