@@ -5,7 +5,7 @@ let img=null,rect=null,start=null,active=null,filename='',scale=1,loadSeq=0,labe
 let labels=[],labelFile=null,selected=-1,overlap=[],regionSource='none';
 let drawnBoxes=[],nextBoxNo=1,selectedDrawId=null,hoverDrawId=null,operation=null;
 let actionTarget=null,hoverLabel=-1;
-const savedRegions=new Map(),MIN_BOX=12,MAX_ZOOM=32;
+const savedRegions=new Map(),MIN_BOX=12,MAX_ZOOM=32,INVALID_BOX_REMOVE_DELAY=500;
 function imageId(name){return cleanId(name.replace(/\.(?:png|jpe?g|webp|bmp|gif|avif)$/i,'.txt'),true);}
 function imageKey(){return img&&filename?imageId(filename)+'|'+img.naturalWidth+'x'+img.naturalHeight:'';}
 function rememberImage(){const k=imageKey();if(k)savedRegions.set(k,{boxes:drawnBoxes.map(b=>({...b,rect:{...b.rect}})),nextBoxNo});}
@@ -17,7 +17,7 @@ function renumberBoxes(){
  nextBoxNo=drawnBoxes.length+1;
  actionTarget=null;
 }
-function restoreImage(){const item=savedRegions.get(imageKey());drawnBoxes=item?item.boxes.map(b=>({...b,rect:{...b.rect}})):[];selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;actionTarget=null;renumberBoxes();}
+function restoreImage(){cancelAllInvalidBoxRemovals();const item=savedRegions.get(imageKey());drawnBoxes=item?item.boxes.map(b=>({...b,rect:{...b.rect}})):[];selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;actionTarget=null;renumberBoxes();drawnBoxes.forEach(scheduleInvalidBoxRemoval);}
 function normalized(a,b){return {x1:Math.floor(Math.min(a.x,b.x)),y1:Math.floor(Math.min(a.y,b.y)),x2:Math.ceil(Math.max(a.x,b.x)),y2:Math.ceil(Math.max(a.y,b.y))};}
 function pixelBox(box,width,height){
  // Exact decimal conversion of finite YOLO decimals; never clamps or edits source labels.
@@ -37,6 +37,28 @@ function dimensionCheck(r){
 function isSmall(r){return !!r&&dimensionCheck(r).heightSmall;}
 function fmtPx(n){return Number(n.toFixed(5));}
 function axisWarnings(r){const d=dimensionCheck(r);return d.heightSmall?[`chiều cao (dọc) ${fmtPx(d.height)} px`]:[];}
+// Box tự khoanh/nhập cao dưới 12px chỉ tồn tại thêm 0,5 giây để người dùng thấy lỗi.
+// Dùng tham chiếu object thay vì id vì id sẽ được đánh số lại khi xóa box khác.
+const invalidBoxRemovalTimers=new Map();
+function cancelInvalidBoxRemoval(box){
+ const timer=invalidBoxRemovalTimers.get(box);
+ if(timer!==undefined){clearTimeout(timer);invalidBoxRemovalTimers.delete(box);}
+}
+function cancelAllInvalidBoxRemovals(){
+ for(const timer of invalidBoxRemovalTimers.values())clearTimeout(timer);
+ invalidBoxRemovalTimers.clear();
+}
+function scheduleInvalidBoxRemoval(box){
+ if(!box||!isSmall(box.rect)){if(box)cancelInvalidBoxRemoval(box);return;}
+ if(invalidBoxRemovalTimers.has(box))return;
+ const timer=setTimeout(()=>{
+  invalidBoxRemovalTimers.delete(box);
+  if(!drawnBoxes.includes(box)||!isSmall(box.rect))return;
+  // Không hiện thông báo xóa khác: cảnh báo kích thước vẫn đếm 5 giây như cũ.
+  deleteBox(box.id,true);
+ },INVALID_BOX_REMOVE_DELAY);
+ invalidBoxRemovalTimers.set(box,timer);
+}
 const sizePopup=$('sizeWarning');
 const toastStack=document.createElement('div');
 toastStack.id='coord_toastStack';document.body.append(toastStack);
@@ -167,7 +189,7 @@ function addDrawnBox(r,source){
   return false;
  }
  const b={id:nextBoxNo++,rect:{x1:r.x1,y1:r.y1,x2:r.x2,y2:r.y2},source};
- drawnBoxes.push(b);rememberImage();selectDraw(b.id,false);renderDrawnList();
+ drawnBoxes.push(b);rememberImage();selectDraw(b.id,false);renderDrawnList();scheduleInvalidBoxRemoval(b);
  $('status').textContent=`Đã vẽ Box #${String(b.id).padStart(2,'0')} ${tuple()}; nút sao chép và Xóa hiện ngay trên ảnh${isSmall(b.rect)?' — ⚠ '+axisWarnings(b.rect).join('; '):''}.`;
  return true;
 }
@@ -317,6 +339,7 @@ c.addEventListener('pointerdown',e=>{
  e.preventDefault();hoverLabel=-1;const point=bounds(e),hit=e.shiftKey?null:hitDrawn(point);
  if(hit){
   const previouslySelected=hit.id===selectedDrawId;
+  cancelInvalidBoxRemoval(hit); // Tạm ngưng tự xóa khi người dùng đang chỉnh sửa box.
   hoverDrawId=hit.id;selectDraw(hit.id,true);
   const edge=previouslySelected?resizeEdges(point,hit.rect):'';
   active=e.pointerId;c.setPointerCapture(active);
@@ -385,7 +408,7 @@ function end(e){
  if(op&&(op.kind==='move'||op.kind==='resize')){
   if(e.type==='pointercancel'){const b=savedBox(op.id);if(b)b.rect={...op.orig};}
   else applyDrag(point);
-  const b=savedBox(op.id);if(b){rect={...b.rect};regionSource=b.source;rememberImage();}
+  const b=savedBox(op.id);if(b){rect={...b.rect};regionSource=b.source;rememberImage();scheduleInvalidBoxRemoval(b);}
   const what=op.kind==='move'?'di chuyển':'đổi kích thước';
   $('status').textContent=op.changed&&b?`Đã ${what} Box #${String(b.id).padStart(2,'0')} → ${tupleFor(b.rect,$('format').value)}${isSmall(b.rect)?' · ⚠ '+axisWarnings(b.rect).join('; '):''}.`:`Đã chọn Box #${String(op.id).padStart(2,'0')}.`;
  }
@@ -561,7 +584,7 @@ function drawTypedBox(){
   const parts=[`Đã thêm ${added.length}/${batches.length} box màu tím.`];
   if(overlaps.length)parts.push(`Bỏ qua ${overlaps.length} box trùng/chồng lấn (mục dán → box đã có): ${overlaps.join(', ')}.`);
   if(invalid.length)parts.push(`Bỏ qua ${invalid.length} tọa độ không hợp lệ: ${invalid.join('; ')}.`);
-  if(heightWarnings.length)parts.push(`⚠ Chiều cao < 12 px tại mục: ${heightWarnings.join(', ')} (vẫn được tạo để rà soát).`);
+  if(heightWarnings.length)parts.push(`⚠ Chiều cao < 12 px tại mục: ${heightWarnings.join(', ')} (box tự xóa sau 0,5 giây).`);
   const summary=parts.join(' ');
   setInputFeedback(summary,!!(overlaps.length||invalid.length));
   $('status').textContent=summary;
@@ -652,13 +675,14 @@ async function copy(text,button){
  return success;
 }
 function noteFor(r,source,id=null,line=null){return `image_id: ${imageId(filename)}\n${id!==null?'box_ref: #'+String(id).padStart(2,'0')+'\n':''}region_xyxy: ${tupleFor(r,$('format').value)}\ncoordinate_source: ${source==='label'?'existing_yolo_box':source==='input'?'typed_pixel_region':'manual_region'}${line!==null?'\nlabel_line: '+labels[line].line+'\nclass_id: '+labels[line].c+'\nyolo: '+labels[line].raw:''}\nreason: `;}
-function deleteBox(id){
+function deleteBox(id,silent=false){
  const b=savedBox(id);if(!b)return;
- drawnBoxes=drawnBoxes.filter(x=>x.id!==id);
+ cancelInvalidBoxRemoval(b);
+ drawnBoxes=drawnBoxes.filter(x=>x!==b);
  if(selectedDrawId===id){selectedDrawId=null;rect=null;regionSource='none';}
  hoverDrawId=null;hoverLabel=-1;renumberBoxes();rememberImage();
  $('status').textContent='';
- showActionFeedback(`Đã xóa Box #${String(id).padStart(2,'0')}. Đã đánh số lại ${drawnBoxes.length} box còn lại từ #01.`);
+ if(!silent)showActionFeedback(`Đã xóa Box #${String(id).padStart(2,'0')}. Đã đánh số lại ${drawnBoxes.length} box còn lại từ #01.`);
  redraw();renderDrawnList();
 }
 $('actionCopy').onclick=()=>{
@@ -707,7 +731,7 @@ document.addEventListener('pointerdown',event=>{if(!event.target.closest('#coord
 document.addEventListener('keydown',event=>{if(event.key==='Escape')setMoreOpen(false);});
 for(const id of ['copyAll','applyNote','deleteAll'])$(id).addEventListener('click',()=>setMoreOpen(false));
 
-$('deleteAll').onclick=()=>{if(!drawnBoxes.length)return;if(!window.confirm(`Xóa toàn bộ ${drawnBoxes.length} box đã vẽ trên ảnh này? Việc này không sửa nhãn TXT.`))return;drawnBoxes=[];nextBoxNo=1;rememberImage();clear();$('status').textContent='';showActionFeedback('Đã xóa toàn bộ box được khoanh/nhập trên ảnh này.');};
+$('deleteAll').onclick=()=>{if(!drawnBoxes.length)return;if(!window.confirm(`Xóa toàn bộ ${drawnBoxes.length} box đã vẽ trên ảnh này? Việc này không sửa nhãn TXT.`))return;cancelAllInvalidBoxRemovals();drawnBoxes=[];nextBoxNo=1;rememberImage();clear();$('status').textContent='';showActionFeedback('Đã xóa toàn bộ box được khoanh/nhập trên ảnh này.');};
 $('applyNote').onclick=()=>{if(!rect||rect.x2<=rect.x1||rect.y2<=rect.y1)return;const context=selected>=0?`box TXT dòng ${labels[selected].line}, lớp ${labelName(labels[selected])}`:selectedDrawId!==null?`box #${String(selectedDrawId).padStart(2,'0')}, ${regionSource==='input'?'nhập tọa độ':'khoanh tay'}`:'vùng khoanh tay';const ok=applyPixelRegion(filename,tuple(),context);$('status').textContent=ok?'Đã ghi tọa độ box đang chọn vào notes đúng ảnh.':'Chưa thấy ảnh trong log. Chạy So sánh nhãn và dùng đúng ID ảnh.';};
 window.YoloCoords={normalized,pixelBox,tupleFor,hitCandidates,tuple,refresh:redraw,setZoom:queueZoom,getZoom:()=>scale,getFitScale:()=>img?fitImageScale():1,getMaxZoom:()=>img?Math.max(MAX_ZOOM,fitImageScale()):MAX_ZOOM,getRegions:()=>drawnBoxes.map(b=>({...b,rect:{...b.rect}}))};redraw();renderDrawnList();
 })();
