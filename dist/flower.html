@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>YOLO Review Studio | G11 · v4.1.3</title>
+<title>YOLO Review Studio | G11 · v4.1.5</title>
 <link rel="stylesheet" href="assets/styles/core-8c3715a44704.css">
 <link rel="stylesheet" href="assets/styles/theme-picker.css"></head>
 <body>
@@ -45,7 +45,7 @@
     </a>
   </div>
 </nav>
-<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.3</div>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.5</div>
   <h1 id="pageTitle">Rà soát nhãn YOLO.<br><span>Rõ từng bước, đúng từng box.</span></h1>
   <p class="intro">Chuẩn bị nhãn, chấm F1 / Precision / Recall và xác nhận các thay đổi trước – sau. Tất cả xử lý ngay trên trình duyệt.</p>
   <section class="releaseNotes" aria-label="Cập nhật gần đây">
@@ -53,7 +53,17 @@
     <div class="releaseNotesTrack">
      <div class="releaseNotesGroup">
       <article class="releaseNote">
-       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.3</span><span class="releaseNew">New</span></div>
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.5</span><span class="releaseNew">New</span></div>
+       <h2>Zoom ảnh toàn cảnh khi rà soát box ở mục 04.</h2>
+       <p>Một nút Zoom, trackpad và chuột, phím Z / + / − / 0. Kéo ảnh để di chuyển; xem box rõ mà không đổi tọa độ gốc.</p>
+      </article>
+      <article class="releaseNote">
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.4</span></div>
+       <h2>Xác nhận xong, tự mở box chưa ghép tiếp theo.</h2>
+       <p>Áp dụng sau khi ghép B–A, xác nhận box B đã xóa hoặc box A mới thêm. Có thể tắt chuyển tự động khi cần xem lại cặp đang chọn.</p>
+      </article>
+      <article class="releaseNote">
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.3</span></div>
        <h2>Dùng chung ảnh mục 04 và 05, mở ngay theo ID.</h2>
        <p>Chọn thư mục ảnh một lần, mở ảnh tọa độ bằng image_id, chuyển các nút tải CSV/ZIP xuống cuối mục 04.</p>
       </article>
@@ -142,12 +152,13 @@
 <section id="matchSection" class="panel" style="margin:24px 0"><div class="sectionHead"><div><span class="stepTag">04 / RÀ SOÁT THỦ CÔNG</span><h2>Đối chiếu box trước / sau</h2><p>Kiểm tra khung xe và xác nhận các cặp ghép theo đúng đối tượng.</p></div></div>
 <details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách đối chiếu cùng một xe giữa hai phiên bản</summary><div class="helpBody"><p><strong>1. Mở đúng ảnh.</strong> Chạy “So sánh nhãn” ở mục 01, bấm “Tải ảnh gốc để đối chiếu” rồi chọn ảnh cần xem. Công cụ ghép ảnh theo ID. Chỉ chọn “Ảnh sau riêng” khi cần dùng ảnh khác cho phiên bản sau sửa.</p><p><strong>2. Theo dõi một xe.</strong> B là box cũ màu xanh, A là box mới màu cam nét đứt. Khi nhiều xe sát nhau, chọn theo số dòng B và A, xem hai vùng cắt rồi kiểm tra đó có phải cùng một xe. Một box dịch chuyển xa vẫn có thể thuộc cùng đối tượng.</p><p><strong>3. Ghi quyết định.</strong> Chọn “Xác nhận B và A là cùng box” nếu hai khung bao cùng xe. Nếu một xe chỉ có ở bản trước hoặc bản sau, dùng “Xác nhận box B đã xóa” hoặc “Xác nhận box A mới thêm”. Nếu ghép nhầm, gỡ cặp B rồi chọn lại.</p><p>Các quyết định cập nhật kết quả so sánh và nhật ký. Muốn tính F1, dùng bộ tham chiếu ở mục 03.</p></div></details>
 <div class="matchControls"><label class="filebtn" data-action-icon="image">Tải ảnh gốc để đối chiếu<input id="vm_images" class="sr" type="file" accept="image/*" multiple></label><label class="filebtn" data-action-icon="image">Ảnh sau riêng (tùy chọn)<input id="vm_imagesAfter" class="sr" type="file" accept="image/*" multiple></label><label class="filebtn" data-action-icon="folder">Chọn thư mục ảnh<input id="vm_imageFolder" class="sr" type="file" accept="image/*" webkitdirectory multiple></label><span id="vm_imageMeta" class="matchUploadHint">Có thể tải nhiều ảnh. Tự ghép theo image_id, kể cả tên có .rf. Ảnh gốc dùng chung cho trước/sau nếu không tải ảnh sau riêng.</span></div>
-<div id="vm_filters" hidden><div class="matchControls"><label>Ảnh <select id="vm_imageSelect"><option value="">Chạy So sánh nhãn phía trên trước</option></select></label><button id="vm_open">Mở / làm mới đối chiếu</button><label>Hiển thị <select id="vm_view"><option value="overlay">Chồng hai bộ khung</option><option value="split">Hai khung nhìn cạnh nhau</option><option value="before">Chỉ nhãn ban đầu</option><option value="after">Chỉ nhãn sau sửa</option></select></label><label>Zoom <select id="vm_zoom"><option value="fit">Vừa khung</option><option value="1">100%</option><option value="2">200%</option><option value="4">400%</option></select></label></div>
+<div id="vm_filters" hidden><div class="matchControls"><label>Ảnh <select id="vm_imageSelect"><option value="">Chạy So sánh nhãn phía trên trước</option></select></label><button id="vm_open">Mở / làm mới đối chiếu</button><label>Hiển thị <select id="vm_view"><option value="overlay">Chồng hai bộ khung</option><option value="split">Hai khung nhìn cạnh nhau</option><option value="before">Chỉ nhãn ban đầu</option><option value="after">Chỉ nhãn sau sửa</option></select></label><button id="vm_zoomTool" type="button" class="matchZoomTool" aria-pressed="false" aria-keyshortcuts="Z">⌕ Zoom · Vừa khung</button></div>
 <div class="matchControls"><label><input id="vm_showBefore" type="checkbox" checked><span class="matchLegendB">B: khung cũ màu xanh</span></label><label><input id="vm_showAfter" type="checkbox" checked><span class="matchLegendA">A: khung mới màu cam, nét đứt</span></label><label><input id="vm_numbers" type="checkbox" checked>Số dòng TXT / mã cặp P</label><label><input id="vm_links" type="checkbox">Nối tâm các cặp đã ghép</label><label>Box trên ảnh <select id="vm_filter"><option value="all">Tất cả</option><option value="selected">Chỉ cặp đang chọn</option><option value="unmatched">Chỉ box chưa ghép</option><option value="matched">Chỉ box đã ghép</option></select></label><label>Bấm ảnh để chọn <select id="vm_clickSide"><option value="before">Box cũ B</option><option value="after">Box mới A</option></select></label></div></div>
+<p class="matchZoomHelp">Ảnh toàn cảnh: <strong>Zoom</strong> hoặc <kbd>Z</kbd> · cuộn chuột/trackpad để phóng to · <kbd>+</kbd>/<kbd>−</kbd> tăng/giảm · <kbd>0</kbd> vừa khung · kéo ảnh để di chuyển khi bật Zoom.</p>
 <div id="vm_message" class="notice" role="status" aria-live="polite">Chạy So sánh nhãn, tải ảnh gốc và chọn ảnh cần đối chiếu. Các cặp tự động cũng cần được kiểm tra khi khung xe chồng nhau.</div>
 <div id="vm_stats" class="matchScore" hidden></div>
 <div id="vm_stage" class="matchStage" hidden><div id="vm_beforePane" class="matchPane"><h3 id="vm_beforeTitle">Khung cũ B / khung mới A</h3><canvas id="vm_canvasBefore" width="800" height="300"></canvas></div><div id="vm_afterPane" class="matchPane" hidden><h3>Nhãn sau sửa A</h3><canvas id="vm_canvasAfter" width="800" height="300"></canvas></div></div>
-<div id="vm_reviewTools" hidden><div class="matchControls"><label>Box cũ <select id="vm_beforeSelect"></select></label><label>Box mới <select id="vm_afterSelect"></select></label><button id="vm_showPair">Xem cặp đang chọn</button><label><input id="vm_onlyUnmatched" type="checkbox" checked>Chỉ đề xuất box chưa ghép</label></div>
+<div id="vm_reviewTools" hidden><div class="matchControls"><label>Box cũ <select id="vm_beforeSelect"></select></label><label>Box mới <select id="vm_afterSelect"></select></label><button id="vm_showPair">Xem cặp đang chọn</button><label><input id="vm_onlyUnmatched" type="checkbox" checked>Chỉ đề xuất box chưa ghép</label><label><input id="vm_autoNext" type="checkbox" checked>Tự chuyển sang box chưa ghép tiếp theo</label></div>
 <div class="matchGrid"><div><h3 class="matchLegendB">Chi tiết box cũ đang chọn</h3><canvas id="vm_cropBefore" class="matchCrop" width="600" height="220"></canvas><p id="vm_beforeInfo" class="matchBoxInfo"></p></div><div><h3 class="matchLegendA">Chi tiết box mới đang chọn</h3><canvas id="vm_cropAfter" class="matchCrop" width="600" height="220"></canvas><p id="vm_afterInfo" class="matchBoxInfo"></p></div></div>
 <div class="matchActions"><button id="vm_pin" class="primary">Xác nhận B và A là cùng box</button><button id="vm_unlink">Gỡ ghép box B đang chọn</button><button id="vm_remove">Xác nhận box B đã xóa</button><button id="vm_add">Xác nhận box A mới thêm</button><button id="vm_reset">Bỏ toàn bộ quyết định của ảnh này</button></div>
 <p class="small">Ghép thủ công có thể nhận box dời xa dù IoU thấp hoặc bằng 0. Chỉ xác nhận khi nhìn rõ cùng phương tiện. Số đếm trong log cập nhật theo ghép mới; thao tác này không sửa nhãn và không thay đổi phần chấm F1/Recall.</p></div>

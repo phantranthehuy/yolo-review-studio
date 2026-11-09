@@ -1,4 +1,4 @@
-# YOLO Review Studio G11 — v4.1.3
+# YOLO Review Studio G11 — v4.1.5
 
 Ứng dụng chạy offline bằng trình duyệt, không cần npm hay backend.
 
@@ -8,6 +8,21 @@
 2. Chạy: `python3 -m http.server 8000`
 3. Mở: http://localhost:8000
 4. Dừng máy chủ bằng `Control + C`.
+
+## Điểm mới v4.1.5
+
+- Mục 04, vùng **Toàn ảnh**: thay chọn tỷ lệ zoom bằng **một nút Zoom** duy nhất; bấm nút hoặc phím **Z** để bật/tắt chế độ zoom.
+- Cuộn bánh xe chuột hoặc hai ngón trackpad trên ảnh để phóng to / thu nhỏ theo vị trí con trỏ; trackpad pinch qua Ctrl/⌘+wheel và Safari gesture; hai ngón chụm/mở trên cảm ứng.
+- Phím `+`/`-` (và numpad) để tăng giảm, `0` về vừa khung. Khi zoom, kéo chuột / một ngón để di chuyển, Shift+cuộn để pan. Nút Zoom bấm lại đưa ảnh về vừa khung.
+- Zoom toàn cảnh đồng bộ trong chế độ chồng ảnh / tách hai ảnh. Chọn và tự chuyển sang box kế tiếp giữ mức zoom, tự canh box vào giữa ảnh.
+- Chỉ thay vùng xem ảnh; tọa độ nhãn, quyết định ghép, CSV/ZIP và các chức năng mục 05 không thay đổi.
+
+## Điểm mới v4.1.4
+
+- Mục 04: sau khi xác nhận ghép cặp B–A, xác nhận box B đã xóa hoặc box A mới thêm, tự chuyển sang box chưa ghép tiếp theo **trong cùng ảnh** (ưu tiên B cho ghép/xóa, A cho thêm).
+- Hai ảnh crop, box đang chọn và thống kê cập nhật ngay; nếu không còn box chưa ghép, bỏ chọn và thông báo hoàn tất. Các cặp tự động khác vẫn xem thủ công được.
+- Có công tắc **Tự chuyển sang box chưa ghép tiếp theo** (mặc định bật) để người dùng tùy chọn. Nút **Gỡ ghép** vẫn giữ box hiện tại để người dùng chọn ứng viên khác.
+- Không thay đổi cách tính IoU, nội dung nhãn hay định dạng CSV/ZIP.
 
 ## Điểm mới v4.1.3
 

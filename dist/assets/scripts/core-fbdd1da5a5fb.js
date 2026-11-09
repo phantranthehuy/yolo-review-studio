@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const $=id=>document.getElementById('vm_'+id),V={key:'',old:-1,next:-1,images:new Map,imagesAfter:new Map,img:null,imgAfter:null,hiddenB:new Set,hiddenA:new Set,seq:0,hold:false,holdTimer:null,suppressClick:false};
+const $=id=>document.getElementById('vm_'+id),V={key:'',old:-1,next:-1,images:new Map,imagesAfter:new Map,img:null,imgAfter:null,hiddenB:new Set,hiddenA:new Set,seq:0,hold:false,holdTimer:null,suppressClick:false,zoom:1,zoomMode:false,cx:.5,cy:.5,panning:null,touches:new Map,pinch:null,gesture:null,stageHover:false};
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 function entry(){return state.valid?state.rows.find(r=>scopeId(r.data.image_id)===V.key):null;}
 function keyOfImage(name){return cleanId(name.replace(/\.(?:png|jpe?g|webp|bmp|gif|avif)$/i,'.txt'),true);}
@@ -24,20 +24,56 @@ function updateRow(e){
  state.details=state.rows.flatMap(r=>r.events.map(x=>({image_id:r.data.image_id,...x})));state.warnings=state.rows.flatMap(r=>r.alerts.map(w=>({image_id:r.data.image_id,warning:w})));render();
 }
 function selected(e){return {a:e.matching.a[V.old],b:e.matching.b[V.next]};}
+// After a reviewer confirms a decision, keep the same image and select the next
+// still-unresolved box. Work from the recalculated matching, never from stale
+// dropdown indices (manual decisions can change the automatic pair mapping).
+function nextPending(e,kind,previousBefore,previousAfter){
+ const decision=review(),res=e.matching.res;
+ const pendingBefore=res.unmatchedBefore.filter(i=>!decision.removed.includes(e.matching.a[i].line));
+ const pendingAfter=res.unmatchedAfter.filter(j=>!decision.added.includes(e.matching.b[j].line));
+ const nextIndex=(pending,current)=>pending.find(i=>i>current)??pending[0]??-1;
+ const chooseBefore=()=>{const index=nextIndex(pendingBefore,previousBefore);if(index<0)return false;
+  V.old=index;V.next=-1;
+  const proposals=candidateRows(e);V.next=proposals[0]?.j??-1;
+  return true;
+ };
+ const chooseAfter=()=>{const index=nextIndex(pendingAfter,previousAfter);if(index<0)return false;
+  V.old=-1;V.next=index;return true;
+ };
+ const found=kind==='add'?(chooseAfter()||chooseBefore()):(chooseBefore()||chooseAfter());
+ if(!found){V.old=-1;V.next=-1;}
+ if(V.old>=0)V.hiddenB.delete(V.old);
+ if(V.next>=0)V.hiddenA.delete(V.next);
+ // Always show the newly selected area on the image, even if a prior filter was
+ // hiding unmatched boxes. The user can switch the filter manually afterwards.
+ if(found)$('filter').value='selected';
+ const label=V.old>=0?'B'+e.matching.a[V.old].line:'A'+e.matching.b[V.next]?.line;
+ return {found,label,remaining:pendingBefore.length+pendingAfter.length};
+}
 function apply(kind){try{const e=guard();if(!V.img)throw Error('Tải ảnh gốc để kiểm tra trực quan trước khi xác nhận.');if(V.imgAfter&&(V.imgAfter.naturalWidth!==V.img.naturalWidth||V.imgAfter.naturalHeight!==V.img.naturalHeight))throw Error('Ảnh trước/sau khác kích thước. Chọn đúng ảnh gốc tương ứng trước khi xác nhận.');const {a,b}=selected(e),r=JSON.parse(JSON.stringify(review()));
  if(kind==='pin'){if(!a||!b)throw Error('Chọn một box B và một box A.');r.links=r.links.filter(p=>p.before_line!==a.line&&p.after_line!==b.line);r.links.push({before_line:a.line,after_line:b.line});r.removed=r.removed.filter(l=>l!==a.line);r.added=r.added.filter(l=>l!==b.line);r.rejected=r.rejected.filter(p=>p.before_line!==a.line||p.after_line!==b.line);}
  if(kind==='unlink'){if(!a)throw Error('Chọn box B.');const pair=e.matching.res.pairs.find(p=>p[0]===V.old);if(!pair)throw Error('Box B đang chọn chưa được ghép.');const line=e.matching.b[pair[1]].line;r.links=r.links.filter(p=>p.before_line!==a.line);if(!r.rejected.some(p=>p.before_line===a.line&&p.after_line===line))r.rejected.push({before_line:a.line,after_line:line});}
  if(kind==='remove'){if(!a)throw Error('Chọn box B đã xóa.');r.links=r.links.filter(p=>p.before_line!==a.line);if(!r.removed.includes(a.line))r.removed.push(a.line);}
  if(kind==='add'){if(!b)throw Error('Chọn box A mới thêm.');r.links=r.links.filter(p=>p.after_line!==b.line);if(!r.added.includes(b.line))r.added.push(b.line);}
- mergeManualMatches(e.matching.a,e.matching.b,e.matching.res.pairs,r);state.matchReviews.set(V.key,r);updateRow(e);refreshView();message('Đã cập nhật cặp ghép và số đếm trong review_log. Kiểm tra notes, thời gian và trạng thái trước khi xuất.');
+ mergeManualMatches(e.matching.a,e.matching.b,e.matching.res.pairs,r);
+ const oldBefore=V.old,oldAfter=V.next;
+ state.matchReviews.set(V.key,r);updateRow(e);
+ const autoAdvance=['pin','remove','add'].includes(kind)&&$('autoNext').checked;
+ const advance=autoAdvance?nextPending(e,kind,oldBefore,oldAfter):null;
+ refreshView();
+ if(advance?.found)focusSelectedBox(kind==='add'?'after':'before');
+ const base='Đã lưu quyết định và cập nhật review_log.';
+ if(advance?.found)message(base+' Đã tự chuyển sang '+advance.label+' chưa ghép ('+advance.remaining+' box còn chờ xác nhận).');
+ else if(advance&&!advance.found)message(base+' Không còn box chưa ghép ở ảnh này; các cặp tự động vẫn có thể kiểm tra.');
+ else message(base+' Kiểm tra notes, thời gian và trạng thái trước khi xuất.');
  }catch(error){message(error.message,true);}}
 function candidateRows(e){if(V.old<0)return[];const {pb,pa}=maps(e),r=review(),unresolved=$('onlyUnmatched').checked,a=e.matching.a[V.old];if(!a||r.removed.includes(a.line)||pb.get(V.old)?.manual||(unresolved&&pb.has(V.old)))return[];return e.matching.b.map((b,j)=>({j,...spatialCandidate(a,b)})).filter(x=>{const b=e.matching.b[x.j],pair=pa.get(x.j);return !r.added.includes(b.line)&&!pair?.manual&&!r.rejected.some(p=>p.before_line===a.line&&p.after_line===b.line)&&(!unresolved||!pair);}).sort((x,y)=>y.rank-x.rank||x.j-y.j).slice(0,20);}
 function populateSelects(e){const {pb,pa}=maps(e);for(const [side,boxes,pairs,value] of [['before',e.matching.a,pb,V.old],['after',e.matching.b,pa,V.next]]){const select=$(side+'Select');select.replaceChildren();const none=node('option','Chưa chọn');none.value='-1';select.append(none);boxes.forEach((b,i)=>{const p=pairs.get(i),op=node('option',`${side==='before'?'B':'A'}${b.line} | ${name(b)} | ${p?'P'+p.p+(p.manual?' xác nhận':' tự động'):'chưa ghép'}`);op.value=String(i);select.append(op);});select.value=String(value);}}
 function renderStats(e){const r=e.matching.res,decision=review(),ub=r.unmatchedBefore.filter(i=>!decision.removed.includes(e.matching.a[i].line)).length,ua=r.unmatchedAfter.filter(j=>!decision.added.includes(e.matching.b[j].line)).length;const parts=[['Cũ / mới',e.matching.a.length+' / '+e.matching.b.length],['Đã ghép',r.pairs.length],['Thêm (đề xuất)',r.counts.boxes_added],['Xóa (đề xuất)',r.counts.boxes_removed],['Box đã sửa',r.counts.boxes_modified],['Chưa xác nhận thêm/xóa',ub+' / '+ua]];$('stats').replaceChildren(...parts.map(([title,value])=>{const n=node('div');n.append(node('strong',value),node('span',title));return n;}));}
 function renderLists(e){const {pb,pa}=maps(e),r=review();for(const [side,boxes,pairs,hidden,prefix,selectedIndex] of [['before',e.matching.a,pb,V.hiddenB,'B',V.old],['after',e.matching.b,pa,V.hiddenA,'A',V.next]]){const body=$(side+'List'),classSelect=$(side+'Class'),previous=classSelect.value||'all';classSelect.replaceChildren();const any=node('option','Tất cả lớp');any.value='all';classSelect.append(any);for(const c of [...new Set(boxes.map(b=>b.c))].sort((a,b)=>a-b)){const op=node('option',name({c}));op.value=String(c);classSelect.append(op);}classSelect.value=[...new Set(boxes.map(b=>String(b.c)))].includes(previous)?previous:'all';const status=$(side+'Status').value||'all',cls=classSelect.value,q=$(side+'Search').value.trim().toUpperCase();body.replaceChildren();let count=0;boxes.forEach((b,index)=>{const pair=pairs.get(index),verified=(side==='before'?r.removed:r.added).includes(b.line),kind=pair?(pair.manual?'manual':'auto'):verified?'confirmed':'unmatched';if(status!=='all'&&(status==='matched'?!pair:kind!==status))return;if(cls!=='all'&&String(b.c)!==cls)return;if(q&&String(b.line)!==q&&prefix+b.line!==q)return;count++;const tr=node('tr');if(index===selectedIndex)tr.className='matchSelected';const td=node('td'),check=node('input');check.type='checkbox';check.checked=!hidden.has(index);check.setAttribute('aria-label','Hiện '+prefix+b.line);check.onchange=()=>{check.checked?hidden.delete(index):hidden.add(index);draw();};td.append(check);tr.append(td,node('td',prefix+b.line),node('td',name(b)));tr.append(node('td',pair?'P'+pair.p+' → '+(side==='before'?'A'+e.matching.b[pair.other].line:'B'+e.matching.a[pair.other].line)+(pair.manual?' (đã xác nhận)':' (tự động)'):verified?(side==='before'?'Đã xác nhận xóa':'Đã xác nhận thêm'):'Chưa ghép'));const button=node('button','Xem');button.onclick=()=>choose(side,index);const action=node('td');action.append(button);tr.append(action);body.append(tr);});$(side+'Count').textContent=`Hiện ${count} / ${boxes.length} box`;if(!count){const tr=node('tr'),td=node('td','Không có box phù hợp bộ lọc.');td.colSpan=5;tr.append(td);body.append(tr);}}}
 
-function renderCandidates(e){const body=$('candidates');body.replaceChildren();const {pa}=maps(e),a=e.matching.a[V.old];if(!a){const tr=node('tr'),td=node('td','Chọn một box cũ B để xem ứng viên.');td.colSpan=7;tr.append(td);body.append(tr);return;}const w=V.img?.naturalWidth||1,h=V.img?.naturalHeight||1,diag=Math.hypot(w,h);const candidates=candidateRows(e);if(!candidates.length){const {pb}=maps(e),r=review(),resolved=r.removed.includes(a.line)||pb.get(V.old)?.manual;const tr=node('tr'),td=node('td',resolved?'Box B này đã được quyết định. Chọn box B chưa xử lý để xem đề xuất.':pb.has(V.old)&&$('onlyUnmatched').checked?'Box B này đã ghép tự động. Gỡ ghép nếu sai hoặc bỏ bộ lọc để xem các ứng viên chưa được xác nhận.':'Không còn ứng viên phù hợp chưa được quyết định.');td.colSpan=7;tr.append(td);body.append(tr);return;}for(const c of candidates){const b=e.matching.b[c.j],tr=node('tr');if(c.j===V.next)tr.className='matchSelected';const distance=Math.hypot((a.g[0]-b.g[0])*w,(a.g[1]-b.g[1])*h)/diag*100,pair=pa.get(c.j);tr.append(node('td',`B${a.line} → A${b.line}`),node('td',name(a)+' → '+name(b)),node('td',c.iou.toFixed(4)),node('td',distance.toFixed(2)+'%'),node('td',(c.areaRatio*100).toFixed(1)+'%'),node('td',pair?'P'+pair.p+' với B'+e.matching.a[pair.other].line:'Chưa ghép'));const td=node('td'),button=node('button','Xem cặp');button.onclick=()=>{V.next=c.j;$('filter').value='selected';refreshView();};td.append(button);tr.append(td);body.append(tr);}}
-function choose(side,index){const e=entry();if(!e?.matching)return;const {pb,pa}=maps(e);if(side==='before'){V.old=index;const mapped=pb.get(index);if(mapped)V.next=mapped.other;else{V.next=-1;const candidates=candidateRows(e);V.next=candidates[0]?.j??-1;}}else{V.next=index;const mapped=pa.get(index);if(mapped)V.old=mapped.other;}if(V.old>=0)V.hiddenB.delete(V.old);if(V.next>=0)V.hiddenA.delete(V.next);refreshView();}
+function renderCandidates(e){const body=$('candidates');body.replaceChildren();const {pa}=maps(e),a=e.matching.a[V.old];if(!a){const tr=node('tr'),td=node('td','Chọn một box cũ B để xem ứng viên.');td.colSpan=7;tr.append(td);body.append(tr);return;}const w=V.img?.naturalWidth||1,h=V.img?.naturalHeight||1,diag=Math.hypot(w,h);const candidates=candidateRows(e);if(!candidates.length){const {pb}=maps(e),r=review(),resolved=r.removed.includes(a.line)||pb.get(V.old)?.manual;const tr=node('tr'),td=node('td',resolved?'Box B này đã được quyết định. Chọn box B chưa xử lý để xem đề xuất.':pb.has(V.old)&&$('onlyUnmatched').checked?'Box B này đã ghép tự động. Gỡ ghép nếu sai hoặc bỏ bộ lọc để xem các ứng viên chưa được xác nhận.':'Không còn ứng viên phù hợp chưa được quyết định.');td.colSpan=7;tr.append(td);body.append(tr);return;}for(const c of candidates){const b=e.matching.b[c.j],tr=node('tr');if(c.j===V.next)tr.className='matchSelected';const distance=Math.hypot((a.g[0]-b.g[0])*w,(a.g[1]-b.g[1])*h)/diag*100,pair=pa.get(c.j);tr.append(node('td',`B${a.line} → A${b.line}`),node('td',name(a)+' → '+name(b)),node('td',c.iou.toFixed(4)),node('td',distance.toFixed(2)+'%'),node('td',(c.areaRatio*100).toFixed(1)+'%'),node('td',pair?'P'+pair.p+' với B'+e.matching.a[pair.other].line:'Chưa ghép'));const td=node('td'),button=node('button','Xem cặp');button.onclick=()=>{V.next=c.j;$('filter').value='selected';refreshView();focusSelectedBox('after');};td.append(button);tr.append(td);body.append(tr);}}
+function choose(side,index){const e=entry();if(!e?.matching)return;const {pb,pa}=maps(e);if(side==='before'){V.old=index;const mapped=pb.get(index);if(mapped)V.next=mapped.other;else{V.next=-1;const candidates=candidateRows(e);V.next=candidates[0]?.j??-1;}}else{V.next=index;const mapped=pa.get(index);if(mapped)V.old=mapped.other;}if(V.old>=0)V.hiddenB.delete(V.old);if(V.next>=0)V.hiddenA.delete(V.next);refreshView();focusSelectedBox(side);}
 function refreshView(){const e=entry();if(!e?.matching)return;
  $('stats').hidden=false;$('filters').hidden=false;
  $('stage').hidden=!V.img;
@@ -48,13 +84,112 @@ function refreshView(){const e=entry();if(!e?.matching)return;
 function cropRegion(e){const {a,b}=selected(e),rects=[a,b].filter(Boolean).map(corners);if(!rects.length)return null;let x1=Math.min(...rects.map(r=>r[0])),y1=Math.min(...rects.map(r=>r[1])),x2=Math.max(...rects.map(r=>r[2])),y2=Math.max(...rects.map(r=>r[3]));const px=Math.max(.02,(x2-x1)*.25),py=Math.max(.02,(y2-y1)*.25);return [Math.max(0,x1-px),Math.max(0,y1-py),Math.min(1,x2+px),Math.min(1,y2+py)];}
 function visible(side,index,e){if(V.hold)return index===(side==='before'?V.old:V.next);const hidden=side==='before'?V.hiddenB:V.hiddenA;if(hidden.has(index))return false;if(!$(side==='before'?'showBefore':'showAfter').checked)return false;const {pb,pa}=maps(e),paired=(side==='before'?pb:pa).has(index),filter=$('filter').value;return filter==='all'||(filter==='selected'&&index===(side==='before'?V.old:V.next))||(filter==='unmatched'&&!paired)||(filter==='matched'&&paired);}
 function lineBox(ctx,b,width,height,color,dashed,selected,label,showNumber){const [x1,y1,x2,y2]=corners(b);if(selected)color=dashed?'#bc087b':'#008b68';ctx.strokeStyle=color;ctx.lineWidth=selected?5:1.4;ctx.setLineDash(dashed?[7,4]:[]);ctx.strokeRect(x1*width,y1*height,(x2-x1)*width,(y2-y1)*height);if(selected){ctx.fillStyle=dashed?'rgba(225,0,145,.24)':'rgba(0,185,135,.24)';ctx.fillRect(x1*width,y1*height,(x2-x1)*width,(y2-y1)*height);}if(showNumber){ctx.setLineDash([]);ctx.font='12px Arial';const x=Math.max(0,Math.min(width-70,x1*width)),y=Math.max(15,y1*height);ctx.fillStyle=color;ctx.fillRect(x,y-14,ctx.measureText(label).width+6,16);ctx.fillStyle='white';ctx.fillText(label,x+3,y-2);}}
-function paint(canvas,img,sides,e){const context=canvas.getContext('2d');if(!img){canvas.width=700;canvas.height=220;context.clearRect(0,0,700,220);context.fillStyle='#526071';context.font='15px Arial';context.fillText('Tải ảnh gốc cùng ID để hiển thị các khung.',20,50);return;}const pane=canvas.parentElement,width=$('zoom').value==='fit'?Math.min(img.naturalWidth,Math.max(250,pane.clientWidth-2)):img.naturalWidth*Number($('zoom').value),height=width*img.naturalHeight/img.naturalWidth;canvas.width=Math.round(width);canvas.height=Math.round(height);canvas.style.width=canvas.width+'px';canvas.style.height=canvas.height+'px';context.drawImage(img,0,0,canvas.width,canvas.height);const {pb,pa}=maps(e);for(const side of sides){const boxes=side==='before'?e.matching.a:e.matching.b,pairs=side==='before'?pb:pa;boxes.map((b,index)=>({b,index})).sort((x,y)=>Number(x.index===(side==='before'?V.old:V.next))-Number(y.index===(side==='before'?V.old:V.next))).forEach(({b,index})=>{if(!visible(side,index,e))return;const pair=pairs.get(index),label=(side==='before'?'B':'A')+b.line+(pair?' P'+pair.p:'');lineBox(context,b,canvas.width,canvas.height,side==='before'?'#164acb':'#ad5700',side==='after',index===(side==='before'?V.old:V.next),label,$('numbers').checked);});}if(sides.length===2&&$('links').checked){context.strokeStyle='#515b69';context.lineWidth=1;context.setLineDash([3,4]);for(const [i,j] of e.matching.res.pairs){if(!visible('before',i,e)||!visible('after',j,e))continue;context.beginPath();context.moveTo(e.matching.a[i].g[0]*canvas.width,e.matching.a[i].g[1]*canvas.height);context.lineTo(e.matching.b[j].g[0]*canvas.width,e.matching.b[j].g[1]*canvas.height);context.stroke();}}context.setLineDash([]);}
+// Mục 04 uses a viewport camera rather than allocating a giant canvas at high zoom.
+// Source coordinates stay normalized; reviews, labels, and exported data are untouched.
+const MAX_MATCH_ZOOM=32;
+const clamp01=(n,min,max)=>Math.min(max,Math.max(min,n));
+function clampCamera(){
+ const pad=.5/V.zoom;
+ V.cx=clamp01(V.cx,pad,1-pad);
+ V.cy=clamp01(V.cy,pad,1-pad);
+}
+function focusPoint(event,canvas){
+ const rect=canvas.getBoundingClientRect();
+ const cx=Number.isFinite(event.clientX)?event.clientX:rect.left+rect.width/2;
+ const cy=Number.isFinite(event.clientY)?event.clientY:rect.top+rect.height/2;
+ return {x:clamp01((cx-rect.left)/Math.max(1,rect.width),0,1),y:clamp01((cy-rect.top)/Math.max(1,rect.height),0,1)};
+}
+function toSource(canvas,event){
+ const p=focusPoint(event,canvas);
+ return {x:V.cx+(p.x-.5)/V.zoom,y:V.cy+(p.y-.5)/V.zoom};
+}
+function zoomLabel(){return V.zoom<=1.0001?'Vừa khung':Math.round(V.zoom*100)+'%';}
+function syncZoomTool(){
+ const btn=$('zoomTool');
+ btn.classList.toggle('is-active',V.zoomMode);
+ btn.setAttribute('aria-pressed',String(V.zoomMode));
+ btn.textContent='⌕ Zoom · '+zoomLabel();
+ btn.title='Z: bật/tắt zoom · +/−: phóng to/thu nhỏ · 0: vừa khung · cuộn chuột/trackpad: zoom · kéo để di chuyển';
+}
+function changeZoom(zoom,canvas=null,event=null){
+ if(!V.img)return;
+ const next=clamp01(Number(zoom)||1,1,MAX_MATCH_ZOOM);
+ if(Math.abs(next-V.zoom)<1e-7)return;
+ const p=canvas&&event?focusPoint(event,canvas):{x:.5,y:.5};
+ const anchorX=V.cx+(p.x-.5)/V.zoom,anchorY=V.cy+(p.y-.5)/V.zoom;
+ V.zoom=next;
+ V.cx=anchorX+(.5-p.x)/next;V.cy=anchorY+(.5-p.y)/next;
+ clampCamera();syncZoomTool();draw();
+}
+function resetZoom(){V.zoom=1;V.cx=V.cy=.5;syncZoomTool();draw();}
+function toggleZoomTool(){
+ V.zoomMode=!V.zoomMode;
+ if(V.zoomMode){if(V.zoom===1)changeZoom(1.8);}else resetZoom();
+ syncZoomTool();
+}
+function panBy(canvas,dx,dy){
+ if(V.zoom===1)return;
+ const rect=canvas.getBoundingClientRect();
+ V.cx-=dx/(Math.max(1,rect.width)*V.zoom);
+ V.cy-=dy/(Math.max(1,rect.height)*V.zoom);
+ clampCamera();draw();
+}
+function focusSelectedBox(side='before'){
+ if(V.zoom<=1)return;
+ const e=entry();if(!e?.matching)return;
+ const b=side==='after'?(e.matching.b[V.next]||e.matching.a[V.old]):(e.matching.a[V.old]||e.matching.b[V.next]);if(!b)return;
+ V.cx=b.g[0];V.cy=b.g[1];clampCamera();draw();
+}
+function drawBoxInViewport(ctx,b,width,height,color,dashed,selected,label,showNumber){
+ const [x1,y1,x2,y2]=corners(b);
+ const left=V.cx-.5/V.zoom,top=V.cy-.5/V.zoom;
+ const x=(x1-left)*width*V.zoom,y=(y1-top)*height*V.zoom;
+ const rw=(x2-x1)*width*V.zoom,rh=(y2-y1)*height*V.zoom;
+ if(x>width||y>height||x+rw<0||y+rh<0)return;
+ if(selected)color=dashed?'#bc087b':'#008b68';
+ ctx.strokeStyle=color;ctx.lineWidth=selected?4:1.4;
+ ctx.setLineDash(dashed?[7,4]:[]);ctx.strokeRect(x,y,rw,rh);
+ if(selected){ctx.fillStyle=dashed?'rgba(225,0,145,.24)':'rgba(0,185,135,.24)';ctx.fillRect(x,y,rw,rh);}
+ if(showNumber){
+  ctx.setLineDash([]);ctx.font='12px Arial';
+  const tx=Math.max(0,Math.min(width-70,x)),ty=Math.max(15,Math.min(height,y));
+  ctx.fillStyle=color;const labelWidth=ctx.measureText(label).width;
+  ctx.fillRect(tx,ty-14,labelWidth+6,16);ctx.fillStyle='white';ctx.fillText(label,tx+3,ty-2);
+ }
+}
+function paint(canvas,img,sides,e){
+ const context=canvas.getContext('2d');
+ if(!img){canvas.width=700;canvas.height=220;context.clearRect(0,0,700,220);return;}
+ const pane=canvas.parentElement,cssWidth=Math.max(240,pane.clientWidth-2),cssHeight=cssWidth*img.naturalHeight/img.naturalWidth;
+ // Device pixel ratio and canvas allocation are bounded for large source photos.
+ const dpr=Math.max(.25,Math.min(window.devicePixelRatio||1,8192/cssWidth,8192/cssHeight,Math.sqrt(7500000/(cssWidth*cssHeight))));
+ canvas.style.width=cssWidth+'px';canvas.style.height=cssHeight+'px';
+ const backingWidth=Math.max(1,Math.round(cssWidth*dpr)),backingHeight=Math.max(1,Math.round(cssHeight*dpr));
+ if(canvas.width!==backingWidth)canvas.width=backingWidth;
+ if(canvas.height!==backingHeight)canvas.height=backingHeight;
+ context.setTransform(dpr,0,0,dpr,0,0);context.clearRect(0,0,cssWidth,cssHeight);
+ const sw=img.naturalWidth/V.zoom,sh=img.naturalHeight/V.zoom;
+ context.drawImage(img,(V.cx-.5/V.zoom)*img.naturalWidth,(V.cy-.5/V.zoom)*img.naturalHeight,sw,sh,0,0,cssWidth,cssHeight);
+ const {pb,pa}=maps(e);
+ for(const side of sides){const boxes=side==='before'?e.matching.a:e.matching.b,pairs=side==='before'?pb:pa;
+ boxes.map((b,index)=>({b,index})).sort((x,y)=>Number(x.index===(side==='before'?V.old:V.next))-Number(y.index===(side==='before'?V.old:V.next))).forEach(({b,index})=>{
+  if(!visible(side,index,e))return;const pair=pairs.get(index),label=(side==='before'?'B':'A')+b.line+(pair?' P'+pair.p:'');
+  drawBoxInViewport(context,b,cssWidth,cssHeight,side==='before'?'#164acb':'#ad5700',side==='after',index===(side==='before'?V.old:V.next),label,$('numbers').checked);
+ });}
+ if(sides.length===2&&$('links').checked){context.strokeStyle='#515b69';context.lineWidth=1;context.setLineDash([3,4]);
+  for(const [i,j] of e.matching.res.pairs){if(!visible('before',i,e)||!visible('after',j,e))continue;
+   context.beginPath();context.moveTo((e.matching.a[i].g[0]-(V.cx-.5/V.zoom))*cssWidth*V.zoom,(e.matching.a[i].g[1]-(V.cy-.5/V.zoom))*cssHeight*V.zoom);
+   context.lineTo((e.matching.b[j].g[0]-(V.cx-.5/V.zoom))*cssWidth*V.zoom,(e.matching.b[j].g[1]-(V.cy-.5/V.zoom))*cssHeight*V.zoom);context.stroke();
+  }
+ }
+ context.setLineDash([]);
+}
 function paintCrop(canvas,img,box,region,color,dashed){const context=canvas.getContext('2d'),w=canvas.width,h=canvas.height;context.clearRect(0,0,w,h);if(!img||!box||!region){context.fillStyle='#526071';context.font='14px Arial';context.fillText('Chọn ảnh và box để xem chi tiết.',15,40);return;}const [x1,y1,x2,y2]=region,sw=(x2-x1)*img.naturalWidth,sh=(y2-y1)*img.naturalHeight;if(sw<=0||sh<=0)return;const scale=Math.min(w/sw,h/sh),dw=sw*scale,dh=sh*scale,dx=(w-dw)/2,dy=(h-dh)/2;context.drawImage(img,x1*img.naturalWidth,y1*img.naturalHeight,sw,sh,dx,dy,dw,dh);const r=corners(box);context.strokeStyle=color;context.lineWidth=3;context.setLineDash(dashed?[7,4]:[]);context.strokeRect(dx+(r[0]-x1)*img.naturalWidth*scale,dy+(r[1]-y1)*img.naturalHeight*scale,(r[2]-r[0])*img.naturalWidth*scale,(r[3]-r[1])*img.naturalHeight*scale);context.setLineDash([]);}
 function draw(){const e=entry();if(!e?.matching||!V.img)return;const mode=$('view').value;$('stage').classList.toggle('split',mode==='split');$('afterPane').hidden=mode!=='split';$('beforeTitle').textContent=mode==='before'?'Nhãn ban đầu B':mode==='after'?'Nhãn sau sửa A':mode==='split'?'Nhãn ban đầu B':'Chồng khung B (xanh) / A (cam)';paint($('canvasBefore'),mode==='after'?(V.imgAfter||V.img):V.img,mode==='before'||mode==='split'?['before']:mode==='after'?['after']:['before','after'],e);if(mode==='split')paint($('canvasAfter'),V.imgAfter||V.img,['after'],e);const {a,b}=selected(e),region=cropRegion(e);paintCrop($('cropBefore'),V.img,a,region,'#164acb',false);paintCrop($('cropAfter'),V.imgAfter||V.img,b,region,'#ad5700',true);for(const [side,box] of [['before',a],['after',b]]){$(side+'Info').textContent=box?`Dòng ${box.line} | ${name(box)}\nYOLO: ${box.raw}`:'Chưa chọn box.';}if(a&&b)$('afterInfo').textContent+=`\nIoU với B${a.line}: ${iou(a,b).toFixed(6)}. Chỉ số này không chứng minh cùng phương tiện.`;}
 async function decode(file){const url=URL.createObjectURL(file);return new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Không mở được ảnh '+file.name))};img.src=url;});}
-async function openImage(){endHold();const seq=++V.seq;V.key=$('imageSelect').value;V.hiddenB.clear();V.hiddenA.clear();const e=entry();V.old=-1;V.next=-1;V.img=null;V.imgAfter=null;if(!e?.matching){message('Chạy So sánh nhãn trước để tạo danh sách ảnh.');return;}const f=V.images.get(V.key),fa=V.imagesAfter.get(V.key);try{const base=f?await decode(f):null;if(seq!==V.seq)return;const next=fa?await decode(fa):null;if(seq!==V.seq)return;V.img=base;V.imgAfter=next;const {pb}=maps(e);V.old=e.matching.res.unmatchedBefore[0]??(e.matching.a.length?0:-1);const mapped=pb.get(V.old);V.next=mapped?mapped.other:-1;if(V.next<0)V.next=candidateRows(e)[0]?.j??-1;refreshView();if(!V.img)message('Chưa có ảnh gốc cho '+V.key+'. Tải ảnh cùng ID. Bạn vẫn xem được danh sách dòng nhãn.',true);else if(V.imgAfter&&(V.imgAfter.naturalWidth!==V.img.naturalWidth||V.imgAfter.naturalHeight!==V.img.naturalHeight))message('Ảnh trước/sau khác kích thước; cần dùng đúng ảnh gốc. Chưa cho xác nhận ghép.',true);else message('B là nhãn ban đầu; A là nhãn sau chuẩn bị/cắt biên nếu bật. Chọn cặp để xem hai vùng phóng lớn. Tự động ghép chưa phải xác nhận của người rà soát.');}catch(error){V.img=null;V.imgAfter=null;$('stage').hidden=true;$('reviewTools').hidden=true;message(error.message,true);}}
+async function openImage(){endHold();resetZoom();const seq=++V.seq;V.key=$('imageSelect').value;V.hiddenB.clear();V.hiddenA.clear();const e=entry();V.old=-1;V.next=-1;V.img=null;V.imgAfter=null;if(!e?.matching){message('Chạy So sánh nhãn trước để tạo danh sách ảnh.');return;}const f=V.images.get(V.key),fa=V.imagesAfter.get(V.key);try{const base=f?await decode(f):null;if(seq!==V.seq)return;const next=fa?await decode(fa):null;if(seq!==V.seq)return;V.img=base;V.imgAfter=next;const {pb}=maps(e);V.old=e.matching.res.unmatchedBefore[0]??(e.matching.a.length?0:-1);const mapped=pb.get(V.old);V.next=mapped?mapped.other:-1;if(V.next<0)V.next=candidateRows(e)[0]?.j??-1;refreshView();if(!V.img)message('Chưa có ảnh gốc cho '+V.key+'. Tải ảnh cùng ID. Bạn vẫn xem được danh sách dòng nhãn.',true);else if(V.imgAfter&&(V.imgAfter.naturalWidth!==V.img.naturalWidth||V.imgAfter.naturalHeight!==V.img.naturalHeight))message('Ảnh trước/sau khác kích thước; cần dùng đúng ảnh gốc. Chưa cho xác nhận ghép.',true);else message('B là nhãn ban đầu; A là nhãn sau chuẩn bị/cắt biên nếu bật. Chọn cặp để xem hai vùng phóng lớn. Tự động ghép chưa phải xác nhận của người rà soát.');}catch(error){V.img=null;V.imgAfter=null;$('stage').hidden=true;$('reviewTools').hidden=true;message(error.message,true);}}
 function refresh(){const prior=V.key;$('imageSelect').replaceChildren();for(const r of state.rows.filter(x=>x.matching)){const key=scopeId(r.data.image_id),op=node('option',key);op.value=key;$('imageSelect').append(op);}const options=state.rows.filter(x=>x.matching);if(!options.length){stale();return;}V.key=options.some(r=>scopeId(r.data.image_id)===prior)?prior:scopeId(options[0].data.image_id);$('imageSelect').value=V.key;openImage();}
-function stale(){V.seq++;V.img=null;V.imgAfter=null;
+function stale(){V.seq++;V.img=null;V.imgAfter=null;V.zoomMode=false;resetZoom();
  $('stats').replaceChildren();$('stats').hidden=true;$('filters').hidden=true;
  $('stage').hidden=true;$('reviewTools').hidden=true;
  $('analysisFold').hidden=true;$('exportTools').hidden=true;
@@ -64,20 +199,110 @@ async function uploadImages(files,after){try{const target=after?V.imagesAfter:V.
  $('imageMeta').textContent=`Đã tải ${V.images.size} ảnh gốc và ${V.imagesAfter.size} ảnh sau riêng. ID ảnh: tự khớp với nhãn.`;
  if(!after)window.dispatchEvent(new CustomEvent('yolo:images-updated',{detail:{count:V.images.size,ids:[...V.images.keys()]}}));
  await openImage();return true;}catch(error){message(error.message,true);return false;}}
-function pickFromCanvas(event,afterCanvas){if(V.suppressClick){V.suppressClick=false;return;}const e=entry();if(!V.img||!e?.matching)return;const canvas=event.currentTarget,r=canvas.getBoundingClientRect(),p={x:(event.clientX-r.left)/r.width,y:(event.clientY-r.top)/r.height},side=afterCanvas?'after':['before','split'].includes($('view').value)?'before':$('view').value==='after'?'after':$('clickSide').value,boxes=side==='before'?e.matching.a:e.matching.b;const hits=boxes.map((box,i)=>({box,i,r:corners(box)})).filter(x=>visible(side,x.i,e)&&p.x>=x.r[0]&&p.x<=x.r[2]&&p.y>=x.r[1]&&p.y<=x.r[3]).sort((x,y)=>x.box.g[2]*x.box.g[3]-y.box.g[2]*y.box.g[3]);if(!hits.length){message('Điểm bấm không nằm trong box đang hiện. Chọn số dòng ở danh sách nếu khung bị chồng.');return;}choose(side,hits[0].i);if(hits.length>1)message('Có '+hits.length+' box tại điểm bấm. Đã chọn box nhỏ nhất; dùng danh sách số dòng để chọn khung khác.');}
+function pickFromCanvas(event,afterCanvas){if(V.suppressClick){V.suppressClick=false;return;}const e=entry();if(!V.img||!e?.matching)return;const canvas=event.currentTarget,p=toSource(canvas,event),side=afterCanvas?'after':['before','split'].includes($('view').value)?'before':$('view').value==='after'?'after':$('clickSide').value,boxes=side==='before'?e.matching.a:e.matching.b;const hits=boxes.map((box,i)=>({box,i,r:corners(box)})).filter(x=>visible(side,x.i,e)&&p.x>=x.r[0]&&p.x<=x.r[2]&&p.y>=x.r[1]&&p.y<=x.r[3]).sort((x,y)=>x.box.g[2]*x.box.g[3]-y.box.g[2]*y.box.g[3]);if(!hits.length){message('Điểm bấm không nằm trong box đang hiện. Chọn số dòng ở danh sách nếu khung bị chồng.');return;}choose(side,hits[0].i);if(hits.length>1)message('Có '+hits.length+' box tại điểm bấm. Đã chọn box nhỏ nhất; dùng danh sách số dòng để chọn khung khác.');}
 $('images').onchange=e=>uploadImages(e.target.files,false);$('imageFolder').onchange=e=>uploadImages(e.target.files,false);$('imagesAfter').onchange=e=>uploadImages(e.target.files,true);$('open').onclick=openImage;$('imageSelect').onchange=openImage;
-$('beforeSelect').onchange=()=>choose('before',Number($('beforeSelect').value));$('afterSelect').onchange=()=>{V.next=Number($('afterSelect').value);refreshView();};$('showPair').onclick=()=>{$('filter').value='selected';refreshView();};
-for(const id of ['view','zoom','showBefore','showAfter','numbers','links','filter'])$(id).onchange=draw;$('onlyUnmatched').onchange=()=>{const e=entry();if(e)renderCandidates(e);};
+$('beforeSelect').onchange=()=>choose('before',Number($('beforeSelect').value));$('afterSelect').onchange=()=>{V.next=Number($('afterSelect').value);refreshView();focusSelectedBox('after');};$('showPair').onclick=()=>{$('filter').value='selected';refreshView();};
+for(const id of ['view','showBefore','showAfter','numbers','links','filter'])$(id).onchange=draw;$('onlyUnmatched').onchange=()=>{const e=entry();if(e)renderCandidates(e);};
 for(const side of ['before','after']){const filterTable=()=>{const e=entry();if(e?.matching){renderLists(e);$(side+'List').closest?.('.matchList')?.scrollTo?.(0,0);}};for(const kind of ['Status','Class'])$(side+kind).onchange=filterTable;$(side+'Search').oninput=filterTable;$(side+'Clear').onclick=()=>{$(side+'Status').value='all';$(side+'Class').value='all';$(side+'Search').value='';filterTable();};}
 function endHold(){if(V.holdTimer!==null){clearTimeout(V.holdTimer);V.holdTimer=null;}if(V.hold){V.hold=false;draw();}}
-for(const id of ['canvasBefore','canvasAfter']){const c=$(id);c.addEventListener('pointerdown',event=>{if(event.button!==0||!V.img||!entry()?.matching)return;endHold();V.suppressClick=false;const x=event.clientX,y=event.clientY;V.holdOrigin={x,y};c.setPointerCapture(event.pointerId);V.holdTimer=setTimeout(()=>{V.holdTimer=null;V.hold=true;V.suppressClick=true;draw();},600);});c.addEventListener('pointermove',event=>{if(V.holdOrigin&&Math.hypot(event.clientX-V.holdOrigin.x,event.clientY-V.holdOrigin.y)>8)endHold();});c.addEventListener('pointerup',()=>{endHold();V.holdOrigin=null;});c.addEventListener('pointercancel',()=>{endHold();V.holdOrigin=null;});c.addEventListener('lostpointercapture',endHold);c.addEventListener('contextmenu',event=>event.preventDefault());}
-window.addEventListener('blur',endHold);document.addEventListener('keydown',event=>{if(event.key==='Escape')endHold();});
+function eventCanvas(event){return event.currentTarget.closest('.matchPane')?.querySelector('canvas');}
+function tryEndPointer(event){
+ if(V.touches.has(event.pointerId))V.touches.delete(event.pointerId);
+ if(V.touches.size<2&&V.pinch){V.pinch=null;setTimeout(()=>{V.suppressClick=false;},180);}
+ if(V.panning?.id===event.pointerId){
+  if(V.panning.moved){V.suppressClick=true;setTimeout(()=>{V.suppressClick=false;},180);}
+  V.panning=null;
+ }
+ endHold();V.holdOrigin=null;
+}
+for(const id of ['canvasBefore','canvasAfter']){
+ const c=$(id);c.tabIndex=0;c.setAttribute('aria-label','Ảnh đối chiếu, dùng Z để bật Zoom, +/− để phóng và kéo để di chuyển');
+ c.addEventListener('mouseenter',()=>V.stageHover=true);
+ c.addEventListener('mouseleave',()=>V.stageHover=false);
+ c.addEventListener('pointerdown',event=>{
+  if(!V.img||!entry()?.matching)return;
+  if(event.button!==0&&event.button!==1)return;
+  c.focus({preventScroll:true});endHold();V.suppressClick=false;
+  if(event.pointerType==='touch'){
+   V.touches.set(event.pointerId,{x:event.clientX,y:event.clientY});
+   c.setPointerCapture(event.pointerId);
+   if(V.touches.size===2){
+    const touch=[...V.touches.values()],distance=Math.hypot(touch[0].x-touch[1].x,touch[0].y-touch[1].y)||1;
+    const mid={clientX:(touch[0].x+touch[1].x)/2,clientY:(touch[0].y+touch[1].y)/2};
+    V.pinch={distance,zoom:V.zoom,anchor:toSource(c,mid),canvas:c};V.panning=null;V.suppressClick=true;
+   }else if(V.zoom>1)V.panning={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false,canvas:c};
+   return;
+  }
+  V.holdOrigin={x:event.clientX,y:event.clientY};
+  if(V.zoom>1||event.button===1||event.shiftKey){
+   event.preventDefault();c.setPointerCapture(event.pointerId);
+   V.panning={id:event.pointerId,x:event.clientX,y:event.clientY,moved:false,canvas:c};
+   if(event.button===0)V.holdTimer=setTimeout(()=>{V.holdTimer=null;V.hold=true;V.suppressClick=true;draw();},600);
+  }else if(event.button===0){
+   c.setPointerCapture(event.pointerId);
+   V.holdTimer=setTimeout(()=>{V.holdTimer=null;V.hold=true;V.suppressClick=true;draw();},600);
+  }
+ });
+ c.addEventListener('pointermove',event=>{
+  if(event.pointerType==='touch'&&V.touches.has(event.pointerId)){
+   V.touches.set(event.pointerId,{x:event.clientX,y:event.clientY});
+   if(V.pinch&&V.touches.size>=2){
+    const touch=[...V.touches.values()],distance=Math.hypot(touch[0].x-touch[1].x,touch[0].y-touch[1].y)||1;
+    const mid={clientX:(touch[0].x+touch[1].x)/2,clientY:(touch[0].y+touch[1].y)/2};
+    const next=clamp01(V.pinch.zoom*distance/V.pinch.distance,1,MAX_MATCH_ZOOM);
+    const p=focusPoint(mid,V.pinch.canvas);
+    V.zoom=next;V.cx=V.pinch.anchor.x+(.5-p.x)/next;V.cy=V.pinch.anchor.y+(.5-p.y)/next;
+    clampCamera();syncZoomTool();draw();event.preventDefault();return;
+   }
+  }
+  if(V.panning?.id===event.pointerId){
+   const moveX=event.clientX-V.panning.x,moveY=event.clientY-V.panning.y;
+   if(Math.hypot(moveX,moveY)>1){V.panning.moved=true;if(V.holdOrigin&&Math.hypot(event.clientX-V.holdOrigin.x,event.clientY-V.holdOrigin.y)>8)endHold();panBy(V.panning.canvas,moveX,moveY);V.panning.x=event.clientX;V.panning.y=event.clientY;}
+   if(V.panning.moved)event.preventDefault();
+  }else if(V.holdOrigin&&Math.hypot(event.clientX-V.holdOrigin.x,event.clientY-V.holdOrigin.y)>8)endHold();
+ });
+ for(const ev of ['pointerup','pointercancel','lostpointercapture'])c.addEventListener(ev,tryEndPointer);
+ c.addEventListener('contextmenu',event=>event.preventDefault());
+ c.addEventListener('wheel',event=>{
+  if(!V.img||!entry()?.matching)return;
+  if(event.shiftKey||Math.abs(event.deltaX)>Math.abs(event.deltaY)*1.5){
+   if(V.zoom>1){event.preventDefault();panBy(c,-event.deltaX,-event.deltaY);}return;
+  }
+  // Plain wheel = mouse/trackpad zoom; Ctrl/⌘+wheel = trackpad pinch.
+  event.preventDefault();changeZoom(V.zoom*Math.exp(-event.deltaY*(event.ctrlKey||event.metaKey?0.009:0.0025)),c,event);
+ },{passive:false});
+ c.addEventListener('gesturestart',event=>{if(!V.img)return;event.preventDefault();V.gesture={zoom:V.zoom,anchor:toSource(c,event)};},{passive:false});
+ c.addEventListener('gesturechange',event=>{
+  if(!V.gesture)return;event.preventDefault();const zoom=clamp01(V.gesture.zoom*event.scale,1,MAX_MATCH_ZOOM),p=focusPoint(event,c);
+  V.zoom=zoom;V.cx=V.gesture.anchor.x+(.5-p.x)/zoom;V.cy=V.gesture.anchor.y+(.5-p.y)/zoom;
+  clampCamera();syncZoomTool();draw();
+ },{passive:false});
+ c.addEventListener('gestureend',()=>V.gesture=null);
+}
+window.addEventListener('blur',()=>{endHold();V.panning=null;V.touches.clear();V.pinch=null;});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape'){endHold();if(V.zoomMode){V.zoomMode=false;syncZoomTool();}return;}
+ if(event.repeat&&event.key.toLowerCase()==='z')return;
+ if(!V.img||!entry()?.matching)return;
+ const target=event.target;
+ if(target?.closest?.('input,textarea,select,[contenteditable="true"]'))return;
+ const within=!!target?.closest?.('#matchSection')||V.stageHover||V.zoomMode;
+ if(!within)return;
+ const key=event.key.toLowerCase();
+ if(key==='z'){event.preventDefault();toggleZoomTool();}
+ else if(event.key==='+'||event.key==='='||event.code==='NumpadAdd'){
+  event.preventDefault();V.zoomMode=true;changeZoom(V.zoom*1.25);syncZoomTool();
+ }else if(event.key==='-'||event.key==='_'||event.code==='NumpadSubtract'){
+  event.preventDefault();changeZoom(V.zoom/1.25);
+ }else if(key==='0'){event.preventDefault();resetZoom();}
+});
+$('zoomTool').onclick=toggleZoomTool;syncZoomTool();
 $('canvasBefore').addEventListener('click',e=>pickFromCanvas(e,false));$('canvasAfter').addEventListener('click',e=>pickFromCanvas(e,true));
 for(const [id,kind] of [['pin','pin'],['unlink','unlink'],['remove','remove'],['add','add']])$(id).onclick=()=>apply(kind);
 $('reset').onclick=()=>{try{const e=guard();state.matchReviews.delete(V.key);updateRow(e);refreshView();message('Đã bỏ quyết định thủ công của ảnh này và quay về kết quả tự động.');}catch(error){message(error.message,true);}};
 $('export').onclick=()=>{try{if(!state.valid)throw Error('So sánh nhãn trước khi tải quyết định.');download('matching_decisions.json',new Blob([JSON.stringify(exportObject(),null,2)],{type:'application/json'}));}catch(error){message(error.message,true);}};
 $('import').onchange=async event=>{try{if(!state.valid)throw Error('Chạy So sánh nhãn trước khi nạp quyết định.');const f=event.target.files[0];if(!f)return;if(f.size>20*1024*1024)throw Error('File quyết định quá lớn.');const data=JSON.parse(await f.text());if(!state.valid)throw Error('Dữ liệu đã đổi trong khi đọc file. So sánh lại trước khi nạp quyết định.');if(data.format!=='yolo_matching_review_v1'||!Array.isArray(data.images))throw Error('Không đúng định dạng quyết định ghép.');const plan=[],seen=new Set;for(const item of data.images){if(seen.has(item.image_id))throw Error('Trùng image_id trong file quyết định.');seen.add(item.image_id);const e=state.rows.find(r=>scopeId(r.data.image_id)===item.image_id);if(!e?.matching)throw Error('Thiếu ảnh trong lần so sánh này: '+item.image_id);const sig=signature(e);if(JSON.stringify(sig.before_labels)!==JSON.stringify(item.before_labels)||JSON.stringify(sig.after_labels)!==JSON.stringify(item.after_labels))throw Error('Nhãn đã đổi hoặc đổi thứ tự dòng: '+item.image_id+'. Không nạp quyết định cũ.');for(const key of ['links','removed','added','rejected'])if(!Array.isArray(item.decisions?.[key]))throw Error('Thiếu danh sách quyết định '+key);mergeManualMatches(e.matching.a,e.matching.b,e.matching.res.pairs,item.decisions);plan.push([e,item.decisions]);}for(const [e,decision] of plan){state.matchReviews.set(scopeId(e.data.image_id),decision);updateRow(e);}refreshView();message('Đã nạp và kiểm tra quyết định của '+plan.length+' ảnh.');}catch(error){message(error.message,true);}};
-window.addEventListener('resize',()=>{if($('zoom').value==='fit')draw();});
+window.addEventListener('resize',()=>{if(V.img)draw();});
 // Called by core after comparison. No input label is changed by this editor.
 window.MatchReview={refresh,stale,exportEntries,exportObject,mergeManualMatches,spatialCandidate,listImageIds:()=>[...V.images.keys()].sort((a,b)=>a.localeCompare(b)),getImageFile:id=>V.images.get(id)||null,addImages:files=>uploadImages(files,false),updateAvailability(){const usable=!!entry()?.matching&&!!V.img&&!state.busy;for(const id of ['pin','remove','add'])$(id).disabled=!usable;}};
 const originalRefresh=refreshView;refreshView=function(){originalRefresh();const usable=!!entry()?.matching&&!!V.img;for(const id of ['pin','remove','add'])$(id).disabled=!usable;};
