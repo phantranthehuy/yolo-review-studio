@@ -272,3 +272,10 @@ html[data-theme="dark"] #coordsSection .coordSourceBar{
 .feedbackLink[hidden] { display: none; }
 .feedbackLink:hover { background: #064a4e; color: #fff; }
 .feedbackLink:focus-visible { outline: 3px solid #2b9498; outline-offset: 3px; }
+
+/* Dark mode: restore the dark review results panel background. */
+html[data-theme="dark"] #results {
+  background: #202c33 !important;
+  color: #f0f0f0 !important;
+  border-color: #394951 !important;
+}
