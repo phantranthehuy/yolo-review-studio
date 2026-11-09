@@ -1,0 +1,13 @@
+/* v4.1.3 – kho ảnh dùng chung giữa mục 04 và 05, xuất báo cáo sau mục 04. */
+#reviewExport[hidden]{display:none!important}
+.matchExportPanel{margin:20px 0 26px;}
+.matchExportActions{display:flex;flex-wrap:wrap;gap:12px;margin:16px 0 10px;align-items:center}
+.matchExportActions button{min-height:43px}
+.coordSharedImageBar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.coordSharedImageBar > input[type="file"]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+.coordIdLookup{display:flex;flex-direction:column;gap:5px;min-width:min(100%,270px);flex:1 1 270px;font-size:13px;font-weight:650}
+.coordIdLookup input{width:100%;max-width:100%;box-sizing:border-box;min-height:42px;font:inherit;letter-spacing:normal}
+.coordSharedHint{flex:1 1 100%;font-size:12px;line-height:1.55;opacity:.86;overflow-wrap:anywhere}
+.coordSharedImageBar #coord_openById{min-height:42px}
+html[data-theme="dark"] .matchExportPanel,html[data-theme="dark"] .coordSharedImageBar{border-color:#394951}
+@media(max-width:640px){.matchExportActions button{width:100%}.coordIdLookup{flex-basis:100%}.coordSharedImageBar #coord_openById{flex:1}}

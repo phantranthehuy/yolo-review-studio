@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>YOLO Review Studio | G11 · v4.1.2</title>
+<title>YOLO Review Studio | G11 · v4.1.3</title>
 <link rel="stylesheet" href="assets/styles/core-8c3715a44704.css">
 <link rel="stylesheet" href="assets/styles/theme-picker.css"></head>
 <body>
@@ -45,7 +45,7 @@
     </a>
   </div>
 </nav>
-<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.2</div>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.3</div>
   <h1 id="pageTitle">Rà soát nhãn YOLO.<br><span>Rõ từng bước, đúng từng box.</span></h1>
   <p class="intro">Chuẩn bị nhãn, chấm F1 / Precision / Recall và xác nhận các thay đổi trước – sau. Tất cả xử lý ngay trên trình duyệt.</p>
   <section class="releaseNotes" aria-label="Cập nhật gần đây">
@@ -53,7 +53,12 @@
     <div class="releaseNotesTrack">
      <div class="releaseNotesGroup">
       <article class="releaseNote">
-       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.2</span><span class="releaseNew">New</span></div>
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.3</span><span class="releaseNew">New</span></div>
+       <h2>Dùng chung ảnh mục 04 và 05, mở ngay theo ID.</h2>
+       <p>Chọn thư mục ảnh một lần, mở ảnh tọa độ bằng image_id, chuyển các nút tải CSV/ZIP xuống cuối mục 04.</p>
+      </article>
+      <article class="releaseNote">
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.2</span></div>
        <h2>Zoom mượt, giữ trọn vùng đang xem.</h2>
        <p>Chụm hai ngón trên trackpad hoặc điện thoại, giữ Ctrl/⌘ khi lăn chuột. Zoom tới 3200%, giữ tâm ảnh và hiển thị rõ từng pixel từ 200%.</p>
       </article>
@@ -113,7 +118,7 @@
 <p class="small" style="margin-top:12px">Bấm <strong>Tải calibration_ready.zip</strong> sau khi nạp nhãn sau chỉnh sửa ở mục 01. Công cụ kiểm tra nhãn rồi tải gói ZIP về máy. Nếu số tệp khác số ảnh dự kiến hoặc có box vượt biên quá mức cho phép, hãy kiểm tra thông báo, sửa dữ liệu và tải lại.</p></section>
 <section id="results" class="hidden">
 <div id="stats" class="stats"></div>
-<div class="toolbar"><h2 style="margin:0 auto 0 0">Kết quả theo ảnh</h2><button id="downloadCsv" data-action-icon="download" class="primary">Tải review_log_draft.csv</button><button id="downloadAll" data-action-icon="download">Tải toàn bộ báo cáo (.zip)</button></div>
+<div class="toolbar"><h2 style="margin:0">Kết quả theo ảnh</h2></div>
 <p class="small">Chọn “Chi tiết” để xem từng box. Bạn có thể sửa số đếm, trạng thái, thời gian và notes ngay trong bảng trước khi tải.</p>
 <div class="row" style="margin:12px 0"><label class="small" for="search">Tìm ID</label><input id="search" placeholder="Nhập một phần image_id"><label class="check" style="margin:0"><input id="onlyWarnings" type="checkbox">Chỉ hiện ảnh cần kiểm tra</label><span id="visibleCount" class="small"></span></div>
 <div class="tablewrap"><table><thead><tr><th>Ảnh / chi tiết</th><th>Thêm (đề xuất)</th><th>Xóa (đề xuất)</th><th>Sửa</th><th>Đổi lớp</th><th>Hình học</th><th>Trạng thái</th><th>Thời gian / revision</th><th>Notes</th></tr></thead><tbody id="tbody"></tbody></table></div>
@@ -151,7 +156,14 @@
 <p class="matchUploadHint">Cặp đang chọn: B xanh ngọc, A hồng, viền đậm. Nhấn giữ trên ảnh 0,6 giây để tạm ẩn các box khác; thả ra để hiện lại. Bộ lọc bên dưới chỉ lọc bảng, không đổi số đếm.</p><div class="matchGrid"><div><h3>Tất cả box ban đầu B</h3><div class="matchTableFilters"><label>Trạng thái<select id="vm_beforeStatus"><option value="all">Tất cả</option><option value="unmatched">Chưa ghép, chưa xác nhận</option><option value="auto">Ghép tự động</option><option value="manual">Ghép đã xác nhận</option><option value="matched">Tất cả đã ghép</option><option value="confirmed">Đã xác nhận xóa</option></select></label><label>Lớp<select id="vm_beforeClass"><option value="all">Tất cả lớp</option></select></label><label>Dòng TXT<input id="vm_beforeSearch" type="search" placeholder="Ví dụ: B74 hoặc 74" autocomplete="off"></label><button id="vm_beforeClear" type="button">Xóa lọc</button></div><p id="vm_beforeCount" class="matchUploadHint" aria-live="polite"></p><div class="matchList"><table><thead><tr><th>Hiện</th><th>Dòng TXT</th><th>Lớp</th><th>Đã ghép</th><th>Chọn</th></tr></thead><tbody id="vm_beforeList"></tbody></table></div></div><div><h3>Tất cả box sau sửa A</h3><div class="matchTableFilters"><label>Trạng thái<select id="vm_afterStatus"><option value="all">Tất cả</option><option value="unmatched">Chưa ghép, chưa xác nhận</option><option value="auto">Ghép tự động</option><option value="manual">Ghép đã xác nhận</option><option value="matched">Tất cả đã ghép</option><option value="confirmed">Đã xác nhận thêm</option></select></label><label>Lớp<select id="vm_afterClass"><option value="all">Tất cả lớp</option></select></label><label>Dòng TXT<input id="vm_afterSearch" type="search" placeholder="Ví dụ: A74 hoặc 74" autocomplete="off"></label><button id="vm_afterClear" type="button">Xóa lọc</button></div><p id="vm_afterCount" class="matchUploadHint" aria-live="polite"></p><div class="matchList"><table><thead><tr><th>Hiện</th><th>Dòng TXT</th><th>Lớp</th><th>Đã ghép</th><th>Chọn</th></tr></thead><tbody id="vm_afterList"></tbody></table></div></div></div>
 </div></details><div id="vm_exportTools" class="matchControls" hidden><button id="vm_export" data-action-icon="download">Tải quyết định ghép (.json)</button><label class="filebtn" data-action-icon="upload">Nạp lại quyết định ghép<input id="vm_import" class="sr" type="file" accept=".json"></label><span class="small">Tải JSON để lưu công việc trước khi đóng trang. Chỉ nạp lại khi ID, dòng và nội dung nhãn trước/sau còn khớp.</span></div>
 </section>
-
+<section id="reviewExport" class="panel matchExportPanel" aria-labelledby="reviewExportTitle" hidden>
+ <div class="sectionHead"><div><span class="stepTag">04 / XUẤT KẾT QUẢ</span><h2 id="reviewExportTitle">Xuất kết quả rà soát</h2><p class="small">Hoàn thành đối chiếu ở mục 04 rồi lưu bản nháp CSV hoặc báo cáo ZIP.</p></div></div>
+ <div class="matchExportActions">
+  <button id="downloadCsv" data-action-icon="download" class="primary" disabled>Tải review_log_draft.csv</button>
+  <button id="downloadAll" data-action-icon="download" disabled>Tải toàn bộ báo cáo (.zip)</button>
+ </div>
+ <p class="small">CSV nháp có thể lưu khi chưa xác nhận đủ. Báo cáo ZIP kiểm tra dữ liệu trước khi xuất.</p>
+</section>
 
 <link rel="stylesheet" href="assets/styles/core-9f9ae39231d5.css"><link rel="stylesheet" href="assets/styles/core-f84065a36546.css"><link rel="stylesheet" href="assets/styles/core-f42f672bc4c5.css"><link rel="stylesheet" href="assets/styles/core-c33cadf3c14d.css"><link rel="stylesheet" href="assets/styles/core-073dad201f2d.css"><link rel="stylesheet" href="assets/styles/core-464d98b1243d.css">
 <link rel="stylesheet" href="assets/styles/core-51524f937bed.css">
@@ -161,8 +173,17 @@
 <link rel="stylesheet" href="assets/styles/core-8822e09edcbc.css">
 
 <section id="coordsSection" class="coords panel" style="margin:24px 0"><div class="coordContent"><div class="sectionHead"><div><span class="stepTag">05 / XỬ LÝ NGOẠI LỆ</span><h2>Chọn box & tọa độ pixel</h2><p>Khoanh vùng cần phân xử hoặc lấy tọa độ chính xác trên ảnh gốc.</p></div></div>
-<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Chọn ảnh gốc, sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. “Ảnh khác” đổi ảnh đang xem. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V hoặc D) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to. Chụm hoặc mở hai ngón trên ảnh hay trackpad để zoom. Với chuột, giữ Ctrl hoặc ⌘ khi lăn trên ảnh. Thanh zoom giữ tâm vùng đang xem. Bạn cũng có thể dùng Ctrl hoặc ⌘ cùng phím +/−.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
+<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Chọn một ảnh hoặc thư mục ảnh ở mục 04/05; nhập image_id để mở đúng ảnh mà không cần tải lại. Sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. “Ảnh khác” đổi ảnh đang xem. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V hoặc D) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to. Chụm hoặc mở hai ngón trên ảnh hay trackpad để zoom. Với chuột, giữ Ctrl hoặc ⌘ khi lăn trên ảnh. Thanh zoom giữ tâm vùng đang xem. Bạn cũng có thể dùng Ctrl hoặc ⌘ cùng phím +/−.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
 <div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_file" id="coord_imagePick" data-action-icon="image">Chọn ảnh gốc</label><input id="coord_file" type="file" accept="image/*"><span id="coord_meta">Chưa chọn ảnh</span></div>
+<div class="bar coordSourceBar coordSharedImageBar">
+ <label class="pick coordSourcePick" for="coord_imageFolder" data-action-icon="folder">Chọn thư mục ảnh</label><input id="coord_imageFolder" type="file" accept="image/*" webkitdirectory multiple>
+ <label class="coordIdLookup" for="coord_imageId">Mở ảnh theo image_id
+  <input id="coord_imageId" type="search" list="coord_imageIds" placeholder="Nhập hoặc dán image_id" autocomplete="off" spellcheck="false" aria-describedby="coord_imageCount">
+ </label><datalist id="coord_imageIds"></datalist>
+ <button id="coord_openById" type="button" class="secondary">Mở ảnh</button>
+ <span id="coord_imageCount" class="coordSharedHint" role="status" aria-live="polite">Ảnh ở mục 04 và 05 được dùng chung. Nhập ID rồi nhấn Enter để mở, không cần tải ảnh lại.</span>
+</div>
+
 <div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_labelFile" id="coord_labelPick" data-action-icon="upload">Chọn nhãn .txt của ảnh</label><input id="coord_labelFile" type="file" accept=".txt"><button id="coord_useBefore" class="secondary">Dùng nhãn ban đầu đã tải</button><button id="coord_useAfter" class="secondary">Dùng nhãn sau sửa đã tải</button><span id="coord_labelMeta">Chưa có nhãn cho ảnh này</span></div>
 <details class="settingsFold coordExtras" hidden><summary><span>⌗</span> Nhập tọa độ thủ công <small>Dán tọa độ để thêm box</small></summary><div class="foldBody"><div class="bar coordInputPanel" aria-labelledby="coord_inputTitle">
  <h3 id="coord_inputTitle">Thêm box bằng tọa độ</h3>
@@ -233,7 +254,7 @@
    </div>
   </div>
  </div>
- <div id="coord_stage"><div id="coord_empty"><strong>Chưa có ảnh gốc</strong><span>Chọn ảnh ở phía trên để hiển thị box và sử dụng công cụ tọa độ.</span><small>Ảnh và nhãn được xử lý ngay trong trình duyệt.</small></div><div id="coord_canvasWrap" class="coordCanvasWrap" hidden><canvas id="coord_canvas" hidden></canvas><div id="coord_boxActions" class="coordBoxActions" role="group" aria-label="Thao tác với box trên ảnh" hidden><span id="coord_actionBoxLabel" class="coordActionTitle">Box</span><button id="coord_actionCopy" type="button">Chép tọa độ</button><button id="coord_actionNote" type="button">Chép ID + box</button><button id="coord_actionDelete" type="button" class="danger">Xóa</button></div></div></div>
+ <div id="coord_stage"><div id="coord_empty"><strong>Chưa có ảnh gốc</strong><span>Chọn một ảnh hoặc nhập image_id từ thư mục đã nạp để hiển thị box và sử dụng công cụ tọa độ.</span><small>Ảnh và nhãn được xử lý ngay trong trình duyệt.</small></div><div id="coord_canvasWrap" class="coordCanvasWrap" hidden><canvas id="coord_canvas" hidden></canvas><div id="coord_boxActions" class="coordBoxActions" role="group" aria-label="Thao tác với box trên ảnh" hidden><span id="coord_actionBoxLabel" class="coordActionTitle">Box</span><button id="coord_actionCopy" type="button">Chép tọa độ</button><button id="coord_actionNote" type="button">Chép ID + box</button><button id="coord_actionDelete" type="button" class="danger">Xóa</button></div></div></div>
 </div><!-- /coordStageShell -->
 <div id="coord_sizeWarning" class="coordSmallWarning" hidden role="status" aria-live="polite"></div>
 <div id="coord_workspace" hidden><div id="coord_overlapWrap" class="bar" hidden><label>Box chồng nhau tại điểm bấm <select id="coord_overlap"></select></label><span class="hint">Chọn đúng số dòng để tránh lấy nhầm khung xe bên cạnh.</span></div>
@@ -459,6 +480,7 @@
 
 <link rel="stylesheet" href="assets/styles/zipFooterFade.css">
 
+<link rel="stylesheet" href="assets/styles/v413SharedImages.css">
 <link rel="stylesheet" href="assets/styles/releaseNotes.css">
 <script src="assets/scripts/releaseNotes.js?v=autoscroll-fix"></script>
 

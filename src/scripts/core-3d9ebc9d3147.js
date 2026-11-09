@@ -304,7 +304,50 @@ function layout(anchor=null){
  }
  redraw();
 }
-$('file').addEventListener('change',()=>{coordCanvasEngaged=false;const file=$('file').files[0];if(!file)return;const seq=++loadSeq,url=URL.createObjectURL(file),next=new Image();next.onload=()=>{URL.revokeObjectURL(url);if(seq!==loadSeq)return;rememberImage();if(zoomFrame)cancelAnimationFrame(zoomFrame);zoomFrame=0;pendingZoom=null;touchPoints.clear();pinch=null;safariGesture=null;$('canvasWrap').querySelector('.coordSourceImage')?.remove();img=next;img.className='coordSourceImage';img.alt='';img.draggable=false;$('canvasWrap').prepend(img);filename=file.name;restoreImage();clear();if(labelFile&&imageId(labelFile.name)!==imageId(filename))resetLabels();$('empty').hidden=true;$('canvasWrap').hidden=false;c.hidden=false;$('toolSelect').disabled=false;$('toolDraw').disabled=false;$('workspace').hidden=false;document.getElementById('coord_floatingTools').hidden=false;document.getElementById('coord_stageShell').classList.add('has-image');document.querySelector('.coordExtras').hidden=false;$('meta').textContent=`${filename}; ${img.naturalWidth} × ${img.naturalHeight} px`;syncSourcePicks();$('fallback').hidden=true;if(!labelFile)useLoaded('before',true);setOptions();layout();renderDrawnList();$('status').textContent=`Đã mở ảnh. Có ${drawnBoxes.length} box đã khoanh/nhập trên ảnh này.`;};next.onerror=()=>{URL.revokeObjectURL(url);if(seq===loadSeq)$('status').textContent='Không mở được ảnh. Chọn JPG/PNG hợp lệ.';};next.src=url;});
+
+// Mở ảnh trực tiếp từ File dùng chung với mục 04 mà không cần gán FileList vào input.
+function openCoordinateImage(file){coordCanvasEngaged=false;if(!file)return;const seq=++loadSeq,url=URL.createObjectURL(file),next=new Image();next.onload=()=>{URL.revokeObjectURL(url);if(seq!==loadSeq)return;rememberImage();if(zoomFrame)cancelAnimationFrame(zoomFrame);zoomFrame=0;pendingZoom=null;touchPoints.clear();pinch=null;safariGesture=null;$('canvasWrap').querySelector('.coordSourceImage')?.remove();img=next;img.className='coordSourceImage';img.alt='';img.draggable=false;$('canvasWrap').prepend(img);filename=file.name;restoreImage();clear();if(labelFile&&imageId(labelFile.name)!==imageId(filename))resetLabels();$('empty').hidden=true;$('canvasWrap').hidden=false;c.hidden=false;$('toolSelect').disabled=false;$('toolDraw').disabled=false;$('workspace').hidden=false;document.getElementById('coord_floatingTools').hidden=false;document.getElementById('coord_stageShell').classList.add('has-image');document.querySelector('.coordExtras').hidden=false;$('meta').textContent=`${filename}; ${img.naturalWidth} × ${img.naturalHeight} px`;syncSourcePicks();$('fallback').hidden=true;if(!labelFile)useLoaded('before',true);setOptions();layout();renderDrawnList();$('status').textContent=`Đã mở ảnh. Có ${drawnBoxes.length} box đã khoanh/nhập trên ảnh này.`;};next.onerror=()=>{URL.revokeObjectURL(url);if(seq===loadSeq)$('status').textContent='Không mở được ảnh. Chọn JPG/PNG hợp lệ.';};next.src=url;}
+$('file').addEventListener('change',()=>{
+ const file=$('file').files[0];if(!file)return;
+ openCoordinateImage(file);
+ // Mở ảnh riêng ở mục 05 cũng đăng ký vào kho ảnh gốc dùng chung mục 04.
+ window.MatchReview?.addImages?.([file]);
+});
+// Datalist hiển thị các ID đã được nạp ở mục 04 hoặc mục 05 (không copy ảnh).
+function syncSharedImageIds(){
+ const ids=window.MatchReview?.listImageIds?.()||[];
+ const list=$('imageIds');list.replaceChildren();
+ const fragment=document.createDocumentFragment();
+ for(const id of ids){const option=document.createElement('option');option.value=id;fragment.append(option);}
+ list.append(fragment);
+ $('imageCount').textContent=ids.length
+  ?`Đã đồng bộ ${ids.length} ảnh từ mục 04/05. Nhập image_id và nhấn Enter để mở.`
+  :'Chưa có thư mục ảnh. Chọn thư mục ở đây hoặc tải ảnh mục 04 trước, rồi nhập image_id.';
+}
+function openByImageId(){
+ const input=$('imageId'),typed=input.value.trim(),ids=window.MatchReview?.listImageIds?.()||[];
+ if(!typed){$('status').textContent='Hãy nhập image_id để mở ảnh đã nạp.';return;}
+ const key=imageId(typed),exact=ids.find(id=>id.toLowerCase()===key.toLowerCase());
+ const matching=exact?[exact]:ids.filter(id=>id.toLowerCase().includes(key.toLowerCase()));
+ if(!matching.length){$('status').textContent='Không tìm thấy ảnh cho ID: '+typed+'. Chọn thư mục ảnh ở mục 04 hoặc 05 trước.';return;}
+ if(matching.length>1){$('status').textContent='Có '+matching.length+' ảnh trùng phần ID. Hãy nhập ID đầy đủ hoặc chọn gợi ý.';return;}
+ const file=window.MatchReview?.getImageFile?.(matching[0]);
+ if(!file){$('status').textContent='Không tìm thấy tệp ảnh tương ứng. Vui lòng nạp lại thư mục.';return;}
+ input.value=matching[0];openCoordinateImage(file);
+}
+$('openById').addEventListener('click',openByImageId);
+$('imageId').addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();openByImageId();}});
+$('imageFolder').addEventListener('change',async event=>{
+ const files=[...event.target.files].filter(file=>/\.(?:png|jpe?g|webp|bmp|gif|avif)$/i.test(file.name));
+ if(!files.length){$('status').textContent='Thư mục không có ảnh JPG/PNG/WebP hợp lệ.';return;}
+ if(!window.MatchReview?.addImages){$('status').textContent='Chưa khởi tạo bộ ảnh chung. Vui lòng tải lại trang.';return;}
+ const ok=await window.MatchReview.addImages(files);
+ if(ok){syncSharedImageIds();$('status').textContent=`Đã nạp ${files.length} ảnh vào kho dùng chung. Nhập image_id và nhấn Enter để mở.`;}
+ event.target.value='';
+});
+window.addEventListener('yolo:images-updated',syncSharedImageIds);
+queueMicrotask(syncSharedImageIds);
+
 $('labelFile').addEventListener('change',async()=>{const file=$('labelFile').files[0];if(!file)return;const seq=++labelSeq;try{const text=await file.text();if(seq!==labelSeq)return;attachLabels({name:file.name,path:file.name,text});}catch(e){if(seq!==labelSeq)return;resetLabels();$('status').textContent=e.message;}});
 $('useBefore').onclick=()=>useLoaded('before');$('useAfter').onclick=()=>useLoaded('after');
 $('boxSelect').onchange=()=>{if($('boxSelect').value===''){clear();return;}overlap=[];$('overlapWrap').hidden=true;selectBox(Number($('boxSelect').value));};$('overlap').onchange=()=>selectBox(Number($('overlap').value));
