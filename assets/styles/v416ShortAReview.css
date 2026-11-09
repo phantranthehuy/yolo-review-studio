@@ -1,0 +1,42 @@
+/* v4.1.6: under-12px warnings only for revised A labels. */
+#vm_shortPanel[hidden],#vm_shortModal[hidden],#vm_shortContent[hidden]{display:none!important}
+.shortAReview{margin:16px 0 22px;border:1px solid #c9914a;border-radius:12px;background:#fff8ef;color:#35291f;padding:18px;box-sizing:border-box}
+.shortAHead{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.shortAHead h3{font-size:18px;line-height:1.35;margin:5px 0 8px;color:inherit}
+.shortAHead p{font-size:13px;line-height:1.55;margin:0;max-width:860px;color:inherit}
+.shortAOverline{font-size:11px;font-weight:800;letter-spacing:.08em;color:#9c621f}
+.shortALimit{border:1px solid #d8a76a;border-radius:100px;padding:5px 11px;font-size:12px;font-weight:700;white-space:nowrap}
+.shortAOptions{display:flex;align-items:center;flex-wrap:wrap;gap:16px;margin:14px 0 10px;font-size:13px}
+.shortAOptions label{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.shortAOptions input{accent-color:#a44c27;width:17px;height:17px}
+.shortATableWrap{max-height:300px;overflow:auto;border:1px solid #d9b88f;border-radius:9px}
+.shortATable{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.shortATable th{position:sticky;top:0;background:#e7d6bb;padding:10px 12px;z-index:1;color:#34271c}
+.shortATable td{border-top:1px solid #e9d7bf;padding:10px 12px;overflow-wrap:anywhere}
+.shortATable td:nth-child(2){max-width:220px}
+.shortATable tr:nth-child(even){background:rgba(152,106,61,.05)}
+.shortAActions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px}
+.shortAActions button{min-height:42px}
+button.shortADanger{background:#9e3328!important;color:#fff!important;border:1px solid #9e3328!important;font-weight:750}
+button.shortADanger:disabled{opacity:.5;cursor:not-allowed}
+.shortAFoot{margin:12px 0 0;font-size:12px;line-height:1.6;opacity:.85}
+.shortAOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:2147483640!important;background:rgba(9,18,24,.92);padding:16px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:auto;backdrop-filter:blur(8px)}
+.shortADialog{background:#fff;color:#1e2933;border:1px solid #a6574d;border-radius:16px;box-sizing:border-box;width:min(100%,720px);max-height:calc(100dvh - 32px);overflow:auto;padding:clamp(20px,4vw,32px);box-shadow:0 22px 70px #0009}
+.shortADialog h2{color:#16232a;font-size:clamp(21px,3vw,28px);margin:8px 0 12px;line-height:1.25}
+.shortADialog p{line-height:1.55;color:#36444b;font-size:14px}
+.shortAConfirmList{max-height:29vh;overflow:auto;border:1px solid #d8dee3;border-radius:8px;padding:12px;font:13px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#f6f8fa}
+.shortADialog .shortAModalWarning{padding:12px;border-left:4px solid #b04635;background:#fff1ed;color:#773025}
+.shortAModalActions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:20px}
+.shortAModalActions button{min-height:46px}
+body.shortAModalOpen{overflow:hidden!important}
+html[data-theme="dark"] .shortAReview{background:#372e28;border-color:#a78152;color:#f8e6ce}
+html[data-theme="dark"] .shortAOverline{color:#f1b878}
+html[data-theme="dark"] .shortATableWrap{border-color:#866849}
+html[data-theme="dark"] .shortATable th{background:#473b31;color:#f6eee5}
+html[data-theme="dark"] .shortATable td{border-color:#685546}
+html[data-theme="dark"] .shortALimit{border-color:#94744e}
+html[data-theme="dark"] .shortADialog{background:#202c33;color:#eef4f7;border-color:#92564b}
+html[data-theme="dark"] .shortADialog h2,html[data-theme="dark"] .shortADialog p{color:#edf4f6}
+html[data-theme="dark"] .shortAConfirmList{background:#15242c;border-color:#43545e;color:#eff3f6}
+html[data-theme="dark"] .shortADialog .shortAModalWarning{background:#45302e;color:#ffdbd4}
+@media(max-width:600px){.shortAReview{padding:12px}.shortATable{min-width:580px}.shortAActions button,.shortAModalActions button{flex:1 1 100%}.shortADialog{padding:17px}}

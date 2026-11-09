@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const $=id=>document.getElementById('vm_'+id),V={key:'',old:-1,next:-1,images:new Map,imagesAfter:new Map,img:null,imgAfter:null,hiddenB:new Set,hiddenA:new Set,seq:0,hold:false,holdTimer:null,suppressClick:false,zoom:1,zoomMode:false,cx:.5,cy:.5,panning:null,touches:new Map,pinch:null,gesture:null,stageHover:false};
+const $=id=>document.getElementById('vm_'+id),V={key:'',old:-1,next:-1,images:new Map,imagesAfter:new Map,img:null,imgAfter:null,hiddenB:new Set,hiddenA:new Set,seq:0,hold:false,holdTimer:null,suppressClick:false,zoom:1,zoomMode:false,cx:.5,cy:.5,panning:null,touches:new Map,pinch:null,gesture:null,stageHover:false,shortRows:[],shortSelected:new Set,shortSizes:new Map,shortScanSeq:0,shortScanning:false,deletedA:[]};
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
 function entry(){return state.valid?state.rows.find(r=>scopeId(r.data.image_id)===V.key):null;}
 function keyOfImage(name){return cleanId(name.replace(/\.(?:png|jpe?g|webp|bmp|gif|avif)$/i,'.txt'),true);}
@@ -17,13 +17,175 @@ function updateRow(e){
  const events=enrichEvents(res.events,state.classes).map(event=>({...event,exported_before_clamp:state.prepared?.changes.find(c=>c.image_id===key&&c.line_number===event.after_line)?.before||''}));
  Object.assign(e.data,res.counts);e.events=events;e.alerts=[...res.warnings];
  let auto=`Đối chiếu nhãn: thêm ${res.counts.boxes_added} box; xóa ${res.counts.boxes_removed} box; sửa ${res.counts.boxes_modified} box có sẵn, trong đó đổi lớp ${res.counts.class_changes}, đổi hình học ${res.counts.geometry_changes}.`;
- const classNote=describeClasses(events,state.classes);if(classNote)auto+=' '+classNote;if(res.clamps)auto+=` Có ${res.clamps} box có sẵn được cắt biên về [0,1], đã tính trong geometry_changes.`;
+ const classNote=describeClasses(events,state.classes);if(classNote)auto+=' '+classNote;if(res.clamps)auto+=` Có ${res.clamps} box thuộc nhãn ban đầu được cắt biên về [0,1], đã được tính trong geometry_changes.`;
  const n=state.matchReviews.get(key)?.links.length||0;if(n)auto+=` Đã xác nhận trực quan ${n} cặp box trước/sau.`;
  if(e.data.notes.startsWith(e.autoNotes)){e.data.notes=auto+e.data.notes.slice(e.autoNotes.length);e.autoNotes=auto;}else e.alerts.push('Số đếm đã cập nhật; notes bạn chỉnh tay được giữ nguyên, cần kiểm tra lại nội dung số liệu.');
  if(e.data.review_status!=='needs_adjudication')e.data.review_status='';
  state.details=state.rows.flatMap(r=>r.events.map(x=>({image_id:r.data.image_id,...x})));state.warnings=state.rows.flatMap(r=>r.alerts.map(w=>({image_id:r.data.image_id,warning:w})));render();
 }
 function selected(e){return {a:e.matching.a[V.old],b:e.matching.b[V.next]};}
+// Kiểm tra chỉ các nhãn A (sau sửa), theo chiều cao pixel THẬT của ảnh gốc.
+// Không ghi đè tệp trên đĩa. Mọi thao tác xóa phải xác nhận trong modal toàn màn hình.
+const SHORT_A_LIMIT=12;
+function shortId(box,key){return key+'::'+box.line;}
+function shortLabel(box){return name(box);}
+function showShortPanel(){
+ const panel=$('shortPanel');panel.hidden=!state.valid;
+ if(!state.valid)return;
+ const count=V.shortRows.length,eligible=state.rows.filter(e=>e.matching),unloaded=eligible.filter(e=>!V.images.has(scopeId(e.data.image_id))).length;
+ $('shortSummary').textContent=V.shortScanning
+  ?`Đang kiểm tra chiều cao box A trên ${eligible.length-unloaded} ảnh đã tải…`
+  :count?`Phát hiện ${count} box A cao dưới ${SHORT_A_LIMIT}px trên ${new Set(V.shortRows.map(x=>x.key)).size} ảnh. ${unloaded?`Còn ${unloaded} ảnh chưa có ảnh gốc để kiểm tra.`:''}`
+  :unloaded?`Chưa phát hiện box A vi phạm trong ảnh đã nạp; còn ${unloaded} ảnh thiếu ảnh gốc nên chưa thể kết luận toàn bộ.`
+  :`Không phát hiện bounding box A cao dưới ${SHORT_A_LIMIT}px trong ${eligible.length} ảnh đã kiểm tra.`;
+ $('shortContent').hidden=!count;
+ const body=$('shortList');body.replaceChildren();
+ for(const x of V.shortRows){
+  const row=node('tr'),cell=node('td'),check=node('input');check.type='checkbox';check.checked=V.shortSelected.has(x.id);
+  check.setAttribute('aria-label',`Chọn box A${x.line}, ${x.className}, ảnh ${x.key}`);
+  check.addEventListener('change',()=>{check.checked?V.shortSelected.add(x.id):V.shortSelected.delete(x.id);shortUpdateSelected();});
+  cell.append(check);row.append(cell,node('td',x.key),node('td','A'+x.line),node('td',x.className),node('td',x.height.toFixed(2)+' px'));
+  body.append(row);
+ }
+ shortUpdateSelected();
+}
+function shortUpdateSelected(){
+ const all=V.shortRows.length,selected=V.shortRows.filter(x=>V.shortSelected.has(x.id)).length;
+ $('shortAll').checked=!!all&&all===selected;
+ $('shortAll').indeterminate=selected>0&&selected<all;
+ $('shortChosen').textContent=`Đã chọn ${selected}/${all} box A vi phạm`;
+ $('shortDelete').disabled=selected===0||V.shortScanning;
+}
+function applyShortAlerts(){
+ const byImage=new Map;
+ for(const x of V.shortRows){if(!byImage.has(x.key))byImage.set(x.key,[]);byImage.get(x.key).push(x);}
+ for(const e of state.rows.filter(r=>r.matching)){
+  if(e.shortWarningNote){e.data.notes=e.data.notes.replace(e.shortWarningNote,'').trim();e.shortWarningNote='';}
+  if(e.shortWarningAlert){e.alerts=e.alerts.filter(w=>w!==e.shortWarningAlert);e.shortWarningAlert='';}
+  const list=byImage.get(scopeId(e.data.image_id))||[];
+  if(!list.length)continue;
+  const entries=list.map(x=>`A${x.line} ${x.className} (${x.height.toFixed(2)}px)`).join('; ');
+  e.shortWarningAlert=`Nhãn sau sửa A có ${list.length} box cao dưới 12px: ${entries}.`;
+  e.shortWarningNote=' [CẢNH BÁO A <12px: '+entries+']';
+  e.alerts.push(e.shortWarningAlert);
+  e.data.notes+=e.shortWarningNote;
+ }
+ render();
+}
+async function scanShortA(){
+ const seq=++V.shortScanSeq;
+ if(!state.valid){V.shortRows=[];V.shortSelected.clear();V.shortScanning=false;showShortPanel();return;}
+ const eligible=state.rows.filter(e=>e.matching&&V.images.has(scopeId(e.data.image_id)));
+ V.shortScanning=true;showShortPanel();
+ let index=0;const rows=[],errors=[];
+ const worker=async()=>{
+  while(index<eligible.length){
+   const e=eligible[index++],key=scopeId(e.data.image_id),file=V.images.get(key);
+   try{
+    let rec=V.shortSizes.get(key);
+    if(!rec||rec.file!==file){
+      const img=key===V.key&&V.img&&file===V.images.get(V.key)?V.img:await decode(file);
+      rec={file,width:img.naturalWidth,height:img.naturalHeight};V.shortSizes.set(key,rec);
+    }
+    if(seq!==V.shortScanSeq)return;
+    for(const b of e.matching.b){const height=b.g[3]*rec.height;
+     if(height<SHORT_A_LIMIT-1e-8)rows.push({id:shortId(b,key),key,line:b.line,classId:b.c,className:shortLabel(b),height,raw:b.raw});
+    }
+   }catch(err){errors.push(key+': '+err.message);}
+  }
+ };
+ await Promise.all(Array.from({length:Math.min(3,eligible.length)},worker));
+ if(seq!==V.shortScanSeq)return;
+ rows.sort((a,b)=>a.key.localeCompare(b.key,'vi')||a.line-b.line);
+ V.shortRows=rows;const validIds=new Set(rows.map(x=>x.id));for(const id of V.shortSelected)if(!validIds.has(id))V.shortSelected.delete(id);
+ V.shortScanning=false;showShortPanel();applyShortAlerts();
+ if(errors.length){$('shortSummary').textContent+=' Không đọc được '+errors.length+' ảnh; kiểm tra lại tệp.';}
+}
+function shortModalOpen(){
+ const chosen=V.shortRows.filter(x=>V.shortSelected.has(x.id));if(!chosen.length)return;
+ $('shortConfirmInfo').textContent=`Bạn sắp xóa ${chosen.length} box A vi phạm trên ${new Set(chosen.map(x=>x.key)).size} ảnh. Thao tác chỉ có hiệu lực sau khi bấm “Xác nhận xóa box A”.`;
+ $('shortConfirmList').textContent=chosen.map(x=>`${x.key} · A${x.line} · ${x.className} · ${x.height.toFixed(2)}px`).join('\n');
+ $('shortModal').hidden=false;document.body.classList.add('shortAModalOpen');$('shortCancel').focus();
+}
+function shortModalClose(){
+ $('shortModal').hidden=true;document.body.classList.remove('shortAModalOpen');$('shortDelete').focus();
+}
+function deleteSelectedA(){
+ const chosen=V.shortRows.filter(x=>V.shortSelected.has(x.id));
+ if(!chosen.length){shortModalClose();return;}
+ try{
+  if(!state.valid||!state.prepared)throw Error('Dữ liệu so sánh đã đổi, hãy chạy lại đối chiếu trước khi xóa.');
+  const files=nameMap(state.after),grouped=new Map;
+  for(const x of chosen){if(!grouped.has(x.key))grouped.set(x.key,[]);grouped.get(x.key).push(x);}
+  const plans=[];
+  // Chuẩn bị toàn bộ dữ liệu TRƯỚC khi cập nhật, tránh xóa dở nếu gặp lỗi.
+  for(const [key,list] of grouped){
+   const e=state.rows.find(r=>r.matching&&scopeId(r.data.image_id)===key),file=files.get(key);
+   if(!e||!file)throw Error('Không tìm thấy nhãn A đang chọn: '+key);
+   const deleted=new Set(list.map(x=>x.line)),rawLines=file.text.replace(/^\uFEFF/,'').split(/\r?\n/);
+   for(const x of list)if(e.matching.b.find(b=>b.line===x.line)?.raw!==x.raw)throw Error(key+': nhãn A thay đổi trong lúc xác nhận.');
+   const lineMap=new Map;let dropped=0;
+   const cleaned=rawLines.filter((_,i)=>{const line=i+1;if(deleted.has(line)){dropped++;return false;}lineMap.set(line,line-dropped);return true;});
+   const nextFile={...file,text:cleaned.join('\n')};
+   const result=prepareLabelFile(nextFile,key,document.getElementById('autoClamp').checked),nextBoxes=parseLabels(result.file,true);
+   const prior=state.matchReviews.get(key);
+   const decisions=prior?{
+    links:prior.links.filter(p=>lineMap.has(p.after_line)).map(p=>({...p,after_line:lineMap.get(p.after_line)})),
+    removed:[...prior.removed],
+    added:prior.added.filter(l=>lineMap.has(l)).map(l=>lineMap.get(l)),
+    rejected:prior.rejected.filter(p=>lineMap.has(p.after_line)).map(p=>({...p,after_line:lineMap.get(p.after_line)}))
+   }:null;
+   diff(e.matching.a,nextBoxes,e.matching.threshold,result.clamped,decisions);
+   plans.push({key,e,file,nextFile,result,nextBoxes,decisions,deleted,lineMap,list});
+  }
+  const updated=new Set;
+  const currentSelectedLine=entry()?.matching?.b[V.next]?.line;
+  for(const p of plans){
+   const i=state.after.indexOf(p.file);if(i<0)throw Error('Không tìm thấy tệp nhãn đang xử lý.');
+   state.after[i]=p.nextFile;
+   state.prepared.map.set(p.key,p.result.file);state.prepared.clampedLines.set(p.key,p.result.clamped);
+   state.prepared.changes=state.prepared.changes.filter(x=>x.image_id!==p.key).concat(p.result.changes);
+   p.e.matching.b=p.nextBoxes;p.e.matching.clampedLines=p.result.clamped;
+   if(p.decisions)state.matchReviews.set(p.key,p.decisions);
+   p.e.finalCount=p.nextBoxes.length;
+   p.e.data.review_status='';
+   if(V.key===p.key){
+    const oldLine=currentSelectedLine;V.next=p.lineMap.get(oldLine)===undefined?-1:p.nextBoxes.findIndex(b=>b.line===p.lineMap.get(oldLine));
+    if(V.next<0)V.next=p.nextBoxes.length?0:-1;
+    V.hiddenA.clear();
+   }
+   updateRow(p.e);
+   const summary=` [Đã xác nhận xóa ${p.list.length} box A dưới 12px: ${p.list.map(x=>'A'+x.line+' '+x.className+' '+x.height.toFixed(2)+'px').join('; ')}.]`;
+   p.e.data.notes+=summary;
+   V.deletedA.push(...p.list.map(x=>({image_id:x.key,after_line_original:x.line,class_id:x.classId,class_name:x.className,height_px:x.height.toFixed(2),original_label:x.raw})));
+   updated.add(p.key);
+  }
+  invalidateEvaluation();
+  // Existing prepared data and decisions have been updated; exports now use new A labels.
+  shortModalClose();V.shortSelected.clear();
+  refreshView();scanShortA();
+  window.YoloCoords?.refresh?.();
+  message(`Đã xóa ${chosen.length} box A dưới 12px trên ${updated.size} ảnh. Đã cập nhật thống kê và CSV; hãy tải nhãn A mới để lưu.`);
+ }catch(error){$('shortConfirmInfo').textContent='Không thể xóa: '+error.message;}
+}
+function shortAuditEntries(){return V.deletedA.length?[{name:'deleted_short_boxes_A.csv',data:csv(['image_id','after_line_original','class_id','class_name','height_px','original_label'],V.deletedA)}]:[];}
+$('shortAll').onchange=e=>{if(e.target.checked)for(const x of V.shortRows)V.shortSelected.add(x.id);else V.shortSelected.clear();showShortPanel();};
+$('shortDelete').onclick=shortModalOpen;
+$('shortCancel').onclick=shortModalClose;
+$('shortConfirm').onclick=deleteSelectedA;
+$('shortDownload').onclick=()=>renameDownload('after');
+$('shortModal').addEventListener('click',event=>{if(event.target===$('shortModal'))shortModalClose();});
+document.addEventListener('keydown',event=>{
+ if($('shortModal').hidden)return;
+ if(event.key==='Escape'){event.preventDefault();shortModalClose();}
+ if(event.key==='Tab'){
+  const nodes=[$('shortCancel'),$('shortConfirm')],first=nodes[0],last=nodes[1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+ }
+},true);
+window.addEventListener('yolo:images-updated',()=>{if(state.valid)scanShortA();});
+
 // After a reviewer confirms a decision, keep the same image and select the next
 // still-unresolved box. Work from the recalculated matching, never from stale
 // dropdown indices (manual decisions can change the automatic pair mapping).
@@ -188,8 +350,8 @@ function paintCrop(canvas,img,box,region,color,dashed){const context=canvas.getC
 function draw(){const e=entry();if(!e?.matching||!V.img)return;const mode=$('view').value;$('stage').classList.toggle('split',mode==='split');$('afterPane').hidden=mode!=='split';$('beforeTitle').textContent=mode==='before'?'Nhãn ban đầu B':mode==='after'?'Nhãn sau sửa A':mode==='split'?'Nhãn ban đầu B':'Chồng khung B (xanh) / A (cam)';paint($('canvasBefore'),mode==='after'?(V.imgAfter||V.img):V.img,mode==='before'||mode==='split'?['before']:mode==='after'?['after']:['before','after'],e);if(mode==='split')paint($('canvasAfter'),V.imgAfter||V.img,['after'],e);const {a,b}=selected(e),region=cropRegion(e);paintCrop($('cropBefore'),V.img,a,region,'#164acb',false);paintCrop($('cropAfter'),V.imgAfter||V.img,b,region,'#ad5700',true);for(const [side,box] of [['before',a],['after',b]]){$(side+'Info').textContent=box?`Dòng ${box.line} | ${name(box)}\nYOLO: ${box.raw}`:'Chưa chọn box.';}if(a&&b)$('afterInfo').textContent+=`\nIoU với B${a.line}: ${iou(a,b).toFixed(6)}. Chỉ số này không chứng minh cùng phương tiện.`;}
 async function decode(file){const url=URL.createObjectURL(file);return new Promise((resolve,reject)=>{const img=new Image;img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Không mở được ảnh '+file.name))};img.src=url;});}
 async function openImage(){endHold();resetZoom();const seq=++V.seq;V.key=$('imageSelect').value;V.hiddenB.clear();V.hiddenA.clear();const e=entry();V.old=-1;V.next=-1;V.img=null;V.imgAfter=null;if(!e?.matching){message('Chạy So sánh nhãn trước để tạo danh sách ảnh.');return;}const f=V.images.get(V.key),fa=V.imagesAfter.get(V.key);try{const base=f?await decode(f):null;if(seq!==V.seq)return;const next=fa?await decode(fa):null;if(seq!==V.seq)return;V.img=base;V.imgAfter=next;const {pb}=maps(e);V.old=e.matching.res.unmatchedBefore[0]??(e.matching.a.length?0:-1);const mapped=pb.get(V.old);V.next=mapped?mapped.other:-1;if(V.next<0)V.next=candidateRows(e)[0]?.j??-1;refreshView();if(!V.img)message('Chưa có ảnh gốc cho '+V.key+'. Tải ảnh cùng ID. Bạn vẫn xem được danh sách dòng nhãn.',true);else if(V.imgAfter&&(V.imgAfter.naturalWidth!==V.img.naturalWidth||V.imgAfter.naturalHeight!==V.img.naturalHeight))message('Ảnh trước/sau khác kích thước; cần dùng đúng ảnh gốc. Chưa cho xác nhận ghép.',true);else message('B là nhãn ban đầu; A là nhãn sau chuẩn bị/cắt biên nếu bật. Chọn cặp để xem hai vùng phóng lớn. Tự động ghép chưa phải xác nhận của người rà soát.');}catch(error){V.img=null;V.imgAfter=null;$('stage').hidden=true;$('reviewTools').hidden=true;message(error.message,true);}}
-function refresh(){const prior=V.key;$('imageSelect').replaceChildren();for(const r of state.rows.filter(x=>x.matching)){const key=scopeId(r.data.image_id),op=node('option',key);op.value=key;$('imageSelect').append(op);}const options=state.rows.filter(x=>x.matching);if(!options.length){stale();return;}V.key=options.some(r=>scopeId(r.data.image_id)===prior)?prior:scopeId(options[0].data.image_id);$('imageSelect').value=V.key;openImage();}
-function stale(){V.seq++;V.img=null;V.imgAfter=null;V.zoomMode=false;resetZoom();
+function refresh(){const prior=V.key;$('imageSelect').replaceChildren();for(const r of state.rows.filter(x=>x.matching)){const key=scopeId(r.data.image_id),op=node('option',key);op.value=key;$('imageSelect').append(op);}const options=state.rows.filter(x=>x.matching);if(!options.length){stale();return;}V.key=options.some(r=>scopeId(r.data.image_id)===prior)?prior:scopeId(options[0].data.image_id);$('imageSelect').value=V.key;openImage();scanShortA();}
+function stale(){V.shortScanSeq++;V.shortRows=[];V.shortSelected.clear();V.shortScanning=false;showShortPanel();V.seq++;V.img=null;V.imgAfter=null;V.zoomMode=false;resetZoom();
  $('stats').replaceChildren();$('stats').hidden=true;$('filters').hidden=true;
  $('stage').hidden=true;$('reviewTools').hidden=true;
  $('analysisFold').hidden=true;$('exportTools').hidden=true;
@@ -304,6 +466,6 @@ $('export').onclick=()=>{try{if(!state.valid)throw Error('So sánh nhãn trướ
 $('import').onchange=async event=>{try{if(!state.valid)throw Error('Chạy So sánh nhãn trước khi nạp quyết định.');const f=event.target.files[0];if(!f)return;if(f.size>20*1024*1024)throw Error('File quyết định quá lớn.');const data=JSON.parse(await f.text());if(!state.valid)throw Error('Dữ liệu đã đổi trong khi đọc file. So sánh lại trước khi nạp quyết định.');if(data.format!=='yolo_matching_review_v1'||!Array.isArray(data.images))throw Error('Không đúng định dạng quyết định ghép.');const plan=[],seen=new Set;for(const item of data.images){if(seen.has(item.image_id))throw Error('Trùng image_id trong file quyết định.');seen.add(item.image_id);const e=state.rows.find(r=>scopeId(r.data.image_id)===item.image_id);if(!e?.matching)throw Error('Thiếu ảnh trong lần so sánh này: '+item.image_id);const sig=signature(e);if(JSON.stringify(sig.before_labels)!==JSON.stringify(item.before_labels)||JSON.stringify(sig.after_labels)!==JSON.stringify(item.after_labels))throw Error('Nhãn đã đổi hoặc đổi thứ tự dòng: '+item.image_id+'. Không nạp quyết định cũ.');for(const key of ['links','removed','added','rejected'])if(!Array.isArray(item.decisions?.[key]))throw Error('Thiếu danh sách quyết định '+key);mergeManualMatches(e.matching.a,e.matching.b,e.matching.res.pairs,item.decisions);plan.push([e,item.decisions]);}for(const [e,decision] of plan){state.matchReviews.set(scopeId(e.data.image_id),decision);updateRow(e);}refreshView();message('Đã nạp và kiểm tra quyết định của '+plan.length+' ảnh.');}catch(error){message(error.message,true);}};
 window.addEventListener('resize',()=>{if(V.img)draw();});
 // Called by core after comparison. No input label is changed by this editor.
-window.MatchReview={refresh,stale,exportEntries,exportObject,mergeManualMatches,spatialCandidate,listImageIds:()=>[...V.images.keys()].sort((a,b)=>a.localeCompare(b)),getImageFile:id=>V.images.get(id)||null,addImages:files=>uploadImages(files,false),updateAvailability(){const usable=!!entry()?.matching&&!!V.img&&!state.busy;for(const id of ['pin','remove','add'])$(id).disabled=!usable;}};
+window.MatchReview={refresh,stale,exportEntries,exportObject,shortAuditEntries,mergeManualMatches,spatialCandidate,listImageIds:()=>[...V.images.keys()].sort((a,b)=>a.localeCompare(b)),getImageFile:id=>V.images.get(id)||null,addImages:files=>uploadImages(files,false),updateAvailability(){const usable=!!entry()?.matching&&!!V.img&&!state.busy;for(const id of ['pin','remove','add'])$(id).disabled=!usable;}};
 const originalRefresh=refreshView;refreshView=function(){originalRefresh();const usable=!!entry()?.matching&&!!V.img;for(const id of ['pin','remove','add'])$(id).disabled=!usable;};
 })();

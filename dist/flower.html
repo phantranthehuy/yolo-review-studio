@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>YOLO Review Studio | G11 · v4.1.5</title>
+<title>YOLO Review Studio | G11 · v4.1.6</title>
 <link rel="stylesheet" href="assets/styles/core-8c3715a44704.css">
 <link rel="stylesheet" href="assets/styles/theme-picker.css"></head>
 <body>
@@ -45,7 +45,7 @@
     </a>
   </div>
 </nav>
-<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.5</div>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.6</div>
   <h1 id="pageTitle">Rà soát nhãn YOLO.<br><span>Rõ từng bước, đúng từng box.</span></h1>
   <p class="intro">Chuẩn bị nhãn, chấm F1 / Precision / Recall và xác nhận các thay đổi trước – sau. Tất cả xử lý ngay trên trình duyệt.</p>
   <section class="releaseNotes" aria-label="Cập nhật gần đây">
@@ -53,7 +53,12 @@
     <div class="releaseNotesTrack">
      <div class="releaseNotesGroup">
       <article class="releaseNote">
-       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.5</span><span class="releaseNew">New</span></div>
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.6</span><span class="releaseNew">New</span></div>
+       <h2>Phát hiện box A cao dưới 12px, chọn xóa có xác nhận.</h2>
+       <p>Kiểm tra nhãn sau sửa theo chiều cao pixel ảnh gốc. Liệt kê image_id, dòng và loại xe; popup xác nhận toàn màn hình, tự tính lại thống kê và tải nhãn A đã cập nhật.</p>
+      </article>
+      <article class="releaseNote">
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.5</span></div>
        <h2>Zoom ảnh toàn cảnh khi rà soát box ở mục 04.</h2>
        <p>Một nút Zoom, trackpad và chuột, phím Z / + / − / 0. Kéo ảnh để di chuyển; xem box rõ mà không đổi tọa độ gốc.</p>
       </article>
@@ -157,6 +162,18 @@
 <p class="matchZoomHelp">Ảnh toàn cảnh: <strong>Zoom</strong> hoặc <kbd>Z</kbd> · cuộn chuột/trackpad để phóng to · <kbd>+</kbd>/<kbd>−</kbd> tăng/giảm · <kbd>0</kbd> vừa khung · kéo ảnh để di chuyển khi bật Zoom.</p>
 <div id="vm_message" class="notice" role="status" aria-live="polite">Chạy So sánh nhãn, tải ảnh gốc và chọn ảnh cần đối chiếu. Các cặp tự động cũng cần được kiểm tra khi khung xe chồng nhau.</div>
 <div id="vm_stats" class="matchScore" hidden></div>
+<section id="vm_shortPanel" class="shortAReview" hidden aria-labelledby="vm_shortTitle">
+ <div class="shortAHead"><div><span class="shortAOverline">KIỂM TRA NHÃN SAU SỬA A</span><h3 id="vm_shortTitle">Cảnh báo bounding box cao dưới 12px</h3><p id="vm_shortSummary" role="status" aria-live="polite">Đang kiểm tra chiều cao box A theo ảnh gốc…</p></div><span class="shortALimit">Ngưỡng: &lt; 12px</span></div>
+ <div id="vm_shortContent" hidden>
+ <div class="shortAOptions"><label><input type="checkbox" id="vm_shortAll"> Chọn tất cả box A vi phạm</label><span id="vm_shortChosen" aria-live="polite">Chưa chọn box nào</span></div>
+ <div class="shortATableWrap"><table class="shortATable"><thead><tr><th>Chọn</th><th>Image ID</th><th>Box A (dòng TXT)</th><th>Loại phương tiện</th><th>Chiều cao</th></tr></thead><tbody id="vm_shortList"></tbody></table></div>
+ <div class="shortAActions"><button id="vm_shortDelete" type="button" class="shortADanger" disabled>Xóa box A đã chọn…</button><button id="vm_shortDownload" type="button">Tải nhãn A đã cập nhật (.zip)</button></div>
+ <p class="shortAFoot">Chỉ kiểm tra nhãn <strong>A (sau sửa)</strong>; không đọc hoặc xóa nhãn B. Box chỉ bị loại sau khi bạn xác nhận. Ảnh trên ổ đĩa và TXT gốc không bị ghi đè; tải bộ nhãn A mới để lưu thay đổi.</p>
+ </div>
+</section>
+<div id="vm_shortModal" class="shortAOverlay" role="dialog" aria-modal="true" aria-labelledby="vm_shortConfirmTitle" aria-describedby="vm_shortConfirmInfo" hidden>
+ <div class="shortADialog"><span class="shortAOverline">XÁC NHẬN THAO TÁC</span><h2 id="vm_shortConfirmTitle">Xóa các bounding box A dưới 12px?</h2><p id="vm_shortConfirmInfo"></p><div id="vm_shortConfirmList" class="shortAConfirmList"></div><p class="shortAModalWarning">Sau khi xác nhận, chương trình loại các box khỏi nhãn A trong phiên làm việc và tính lại thống kê, ghép cặp, CSV. Nhãn B và các tệp gốc trên máy không bị thay đổi. Hãy tải nhãn A đã cập nhật để lưu.</p><div class="shortAModalActions"><button id="vm_shortCancel" type="button">Hủy, không xóa</button><button id="vm_shortConfirm" type="button" class="shortADanger">Xác nhận xóa box A</button></div></div>
+</div>
 <div id="vm_stage" class="matchStage" hidden><div id="vm_beforePane" class="matchPane"><h3 id="vm_beforeTitle">Khung cũ B / khung mới A</h3><canvas id="vm_canvasBefore" width="800" height="300"></canvas></div><div id="vm_afterPane" class="matchPane" hidden><h3>Nhãn sau sửa A</h3><canvas id="vm_canvasAfter" width="800" height="300"></canvas></div></div>
 <div id="vm_reviewTools" hidden><div class="matchControls"><label>Box cũ <select id="vm_beforeSelect"></select></label><label>Box mới <select id="vm_afterSelect"></select></label><button id="vm_showPair">Xem cặp đang chọn</button><label><input id="vm_onlyUnmatched" type="checkbox" checked>Chỉ đề xuất box chưa ghép</label><label><input id="vm_autoNext" type="checkbox" checked>Tự chuyển sang box chưa ghép tiếp theo</label></div>
 <div class="matchGrid"><div><h3 class="matchLegendB">Chi tiết box cũ đang chọn</h3><canvas id="vm_cropBefore" class="matchCrop" width="600" height="220"></canvas><p id="vm_beforeInfo" class="matchBoxInfo"></p></div><div><h3 class="matchLegendA">Chi tiết box mới đang chọn</h3><canvas id="vm_cropAfter" class="matchCrop" width="600" height="220"></canvas><p id="vm_afterInfo" class="matchBoxInfo"></p></div></div>
@@ -492,6 +509,7 @@
 <link rel="stylesheet" href="assets/styles/zipFooterFade.css">
 
 <link rel="stylesheet" href="assets/styles/v413SharedImages.css">
+<link rel="stylesheet" href="assets/styles/v416ShortAReview.css">
 <link rel="stylesheet" href="assets/styles/releaseNotes.css">
 <script src="assets/scripts/releaseNotes.js?v=autoscroll-fix"></script>
 
