@@ -20,11 +20,11 @@
 button.shortADanger{background:#9e3328!important;color:#fff!important;border:1px solid #9e3328!important;font-weight:750}
 button.shortADanger:disabled{opacity:.5;cursor:not-allowed}
 .shortAFoot{margin:12px 0 0;font-size:12px;line-height:1.6;opacity:.85}
-.shortAOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:2147483640!important;background:rgba(9,18,24,.92);padding:16px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:auto;backdrop-filter:blur(8px)}
-.shortADialog{background:#fff;color:#1e2933;border:1px solid #a6574d;border-radius:16px;box-sizing:border-box;width:min(100%,720px);max-height:calc(100dvh - 32px);overflow:auto;padding:clamp(20px,4vw,32px);box-shadow:0 22px 70px #0009}
+.shortAOverlay{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;z-index:2147483640!important;background:rgba(9,18,24,.92);padding:16px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;overflow:auto;backdrop-filter:blur(8px)}
+.shortADialog{background:#fff;color:#1e2933;border:1px solid #a6574d;border-radius:16px;box-sizing:border-box;width:min(100%,720px);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;padding:clamp(20px,4vw,32px);box-shadow:0 22px 70px #0009}
 .shortADialog h2{color:#16232a;font-size:clamp(21px,3vw,28px);margin:8px 0 12px;line-height:1.25}
 .shortADialog p{line-height:1.55;color:#36444b;font-size:14px}
-.shortAConfirmList{max-height:29vh;overflow:auto;border:1px solid #d8dee3;border-radius:8px;padding:12px;font:13px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#f6f8fa}
+.shortAConfirmList{max-height:min(29vh,240px);overflow:auto;border:1px solid #d8dee3;border-radius:8px;padding:12px;font:13px/1.8 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere;background:#f6f8fa}
 .shortADialog .shortAModalWarning{padding:12px;border-left:4px solid #b04635;background:#fff1ed;color:#773025}
 .shortAModalActions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:20px}
 .shortAModalActions button{min-height:46px}
@@ -40,3 +40,7 @@ html[data-theme="dark"] .shortADialog h2,html[data-theme="dark"] .shortADialog p
 html[data-theme="dark"] .shortAConfirmList{background:#15242c;border-color:#43545e;color:#eff3f6}
 html[data-theme="dark"] .shortADialog .shortAModalWarning{background:#45302e;color:#ffdbd4}
 @media(max-width:600px){.shortAReview{padding:12px}.shortATable{min-width:580px}.shortAActions button,.shortAModalActions button{flex:1 1 100%}.shortADialog{padding:17px}}
+
+/* v4.1.8.5 — A deletion popup is mounted at body level; ensure it wins over section themes. */
+body > #vm_shortModal{margin:0!important;transform:none!important;isolation:isolate;}
+@media(max-width:600px){body > #vm_shortModal{padding:12px!important}.shortADialog{width:100%;max-height:calc(100dvh - 24px)}.shortAConfirmList{max-height:23dvh}.shortAModalActions{gap:9px}}

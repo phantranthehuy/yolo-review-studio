@@ -1,0 +1,132 @@
+/* v4.1.7 — all visible uploads are centralized in #uploadHub. */
+#uploadsSection{scroll-margin-top:92px}
+#uploadHub{scroll-margin-top:88px;margin:14px 0 22px}
+#uploadHub .sectionHead{margin-bottom:13px}
+.unifiedUploadHub .hubPicker{display:flex;align-items:flex-end;gap:13px;flex-wrap:wrap}
+.unifiedUploadHub .hubPicker>label{display:flex;flex:1 1 320px;min-width:0;gap:7px;flex-direction:column;font-weight:750;line-height:1.45}
+.unifiedUploadHub .hubPicker select{width:100%;max-width:none;min-height:46px;font:inherit;padding:10px 13px;border-radius:10px;box-sizing:border-box}
+.hubButtons{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.hubButtons>button{min-height:43px}
+.hubDrop{margin:14px 0 11px;padding:22px 12px;text-align:center;border:2px dashed var(--line,#6c8692);border-radius:12px;min-height:65px;display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;font-weight:700;transition:background .18s,border-color .18s}
+.hubDrop span{font-size:12px;font-weight:450;opacity:.78}
+.hubDrop.hubOver{background:rgba(20,170,175,.14);border-color:#20abb5}
+.hubLoaded{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.hubLoadedItem{padding:12px;border:1px solid var(--line,#4d626d);border-radius:12px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.hubLoadedItem strong{font-size:13px}.hubLoadedItem span{font-size:12px;overflow-wrap:anywhere}
+.hubReady{border-color:#448a85}.hubReady span{color:#0a967f}.hubMissing span{color:#b69b43}
+.hubActions{padding:12px 0 0;border-top:1px solid var(--line,#4d626d)}
+.hubActions>summary{cursor:pointer;font-weight:650}
+.hubActions .hubButtons{margin-top:12px}
+.hubError,.qcBad{color:#e27a7a!important}.qcWarn{color:#d0a34b!important}.qcGood{color:#58a59c!important}
+/* Keep original input elements (and JS handlers) but eliminate repeated entry points. */
+.uploads,.hubLegacyHide,#goldImportZone{display:none!important}
+.hubNeed{border:1px solid #486273;background:rgba(90,140,157,.08);border-radius:12px;padding:12px 15px;margin:13px 0 18px;line-height:1.6;font-size:13px}
+.hubNeed button,[data-hub-go]{font:inherit;cursor:pointer}
+.hubNeed button{padding:7px 11px;border-radius:8px;margin-left:8px;white-space:normal}
+.afterQcPanel{border:1px solid var(--line,#5d7480);border-radius:13px;padding:15px;margin:16px 0 22px}
+.afterQcPanel .sectionHead h3{font-size:18px;line-height:1.35;margin:4px 0}
+.afterQcPanel .sectionHead p{font-size:13px;margin:5px 0 9px}
+.afterQcTableWrap{overflow:auto;max-height:375px;margin:14px 0 0;border:1px solid var(--line,#536471);border-radius:9px}
+.afterQcTableWrap table{min-width:680px;width:100%;border-collapse:collapse}
+.afterQcTableWrap th,.afterQcTableWrap td{padding:9px 12px;text-align:left;white-space:normal;overflow-wrap:anywhere;border-bottom:1px solid var(--line,#3b4b53);font-size:12px}
+.afterQcTableWrap th{position:sticky;top:0;background:#203841;color:#edf5f9;z-index:1}
+.qcERROR td:first-child{color:#e17b75;font-weight:800}.qcWARNING td:first-child{color:#d49c40;font-weight:800}.qcINFO td:first-child{color:#569d9e;font-weight:800}
+#afterQcStatus{font-weight:650;font-size:13px;margin:10px 0 15px;line-height:1.6}
+html[data-theme="dark"] .hubPicker select{background:#19272f;color:#f5f8fa;border:1px solid #50616e}
+html[data-theme="dark"] .hubLoadedItem{background:#1d2c34;color:#e9f4f7}
+html[data-theme="dark"] .hubNeed{background:#20343e;border-color:#45616e;color:#f0f7f8}
+html:not([data-theme="dark"]) .hubNeed{background:#f0f7f8;border-color:#9db5bc}
+html:not([data-theme="dark"]) .hubLoadedItem{background:#f4f8f8}
+@media(max-width:740px){.hubLoaded{grid-template-columns:repeat(2,minmax(0,1fr))}.hubPicker .hubButtons{width:100%}.hubPicker .hubButtons button{flex:1}.hubNeed button{margin:7px 0 0}}
+@media(max-width:430px){.hubLoaded{grid-template-columns:1fr 1fr}.unifiedUploadHub .hubPicker>label{flex-basis:100%}}
+
+/* v4.1.8: one visible upload target, no upfront data-type selector. */
+#uploadHub .hubSingleDrop{display:flex;flex-direction:column;gap:12px;min-height:200px;padding:25px 18px;border:2px dashed #6b9f9e;border-radius:16px;background:rgba(52,139,145,.055);text-align:center;align-items:center;justify-content:center}
+#uploadHub .hubSingleDrop.hubOver{background:rgba(32,171,181,.16);border-color:#20abb5}
+.hubSingleDrop .hubDropIcon{font-size:28px;border:1px solid currentColor;border-radius:11px;width:48px;height:48px;display:grid;place-items:center;color:#55a4a9}
+.hubSingleDrop>strong{font-size:17px;line-height:1.4}
+.hubSingleDrop>span{font-size:12px;font-weight:400;opacity:.82}
+.hubSingleDrop .hubButtons{display:flex;justify-content:center;margin-top:4px}
+#uploadHub .hubSingleDrop button{min-width:136px}
+.hubRoleOverlay[hidden]{display:none!important}
+.hubRoleOverlay{position:fixed;inset:0;z-index:200000;background:rgba(6,13,19,.87);display:flex;align-items:center;justify-content:center;padding:18px;overflow:auto;backdrop-filter:blur(4px)}
+body.hubRoleOpen{overflow:hidden}
+.hubRoleDialog{width:min(830px,100%);max-height:calc(100vh - 36px);overflow:auto;padding:26px;border-radius:19px;background:#192832;color:#ecf5f7;box-shadow:0 30px 75px rgba(0,0,0,.5);border:1px solid #52707b}
+.hubRoleTop h2{font-size:24px;margin:6px 0 8px;color:#fff}
+.hubRoleTop p{font-size:14px;color:#c8d7df;line-height:1.6}
+.hubRoleRows{margin:21px 0 16px;display:flex;flex-direction:column;gap:10px}
+.hubRoleRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,260px);gap:20px;align-items:center;background:#223844;border:1px solid #44616d;padding:15px;border-radius:12px}
+.hubRoleRow strong{display:block;color:#fff;overflow-wrap:anywhere}
+.hubRoleRow small{display:block;color:#adc4ce;line-height:1.6;margin-top:4px;overflow-wrap:anywhere}
+.hubRoleSelect{width:100%;padding:10px;background:#101d25!important;color:#fff!important;border:1px solid #62818f!important;border-radius:9px!important}
+.hubRoleError{color:#ffaba6;font-size:13px;min-height:1.2em;margin:6px 0}
+.hubRoleButtons{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+.hubRoleButtons button{min-height:43px;padding:9px 16px;border-radius:9px;cursor:pointer}
+.hubRoleButtons .primary{background:#2b9aa4;color:white;border:1px solid #2b9aa4}
+/* Hide precisely the remaining old upload control in function 05, including its wrapper. */
+label:has(> #coord_imageFolder),label:has(> #coord_file),label:has(> #coord_labelFile),
+label:has(#coord_imageFolder),#coord_imagePick,#coord_labelPick,#goldChoose,#goldOptions,
+label:has(> #vm_images),label:has(> #vm_imagesAfter),label:has(> #vm_imageFolder),
+label:has(> #manifestFile),label:has(> #schemaFile),label:has(> #classesFile),label:has(> #evalIdsFile),
+label:has(> #goldFiles),label:has(> #goldFolder){display:none!important}
+@media(max-width:650px){.hubRoleDialog{padding:17px}.hubRoleRow{grid-template-columns:minmax(0,1fr);gap:8px}.hubSingleDrop .hubButtons{flex-wrap:wrap}}
+label[for="coord_imageFolder"], label[for="coord_file"], label[for="coord_labelFile"]{display:none!important}
+
+/* v4.1.8.1: native label/file picker activation (Safari, Chrome, Edge).
+   A browser's trusted label activation opens its file chooser without a synthetic click. */
+#uploadHub .hubPickLabel{
+ box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;
+ min-width:136px;min-height:43px;padding:9px 14px;cursor:pointer;
+ border:1px solid var(--line,#81929e);border-radius:8px;
+ background:var(--panel,#fff);color:var(--ink,#19232f);
+ font:600 14px/1.4 Arial,sans-serif;text-align:center;user-select:none;
+}
+#uploadHub .hubPickLabel.primary{background:var(--blue,#126a76);border-color:var(--blue,#126a76);color:#fff}
+#uploadHub .hubPickLabel:hover{filter:brightness(.95)}
+#uploadHub .hubPickLabel:focus-visible{outline:3px solid #46afb9;outline-offset:3px}
+#uploadHub .hubPickLabel:active{transform:translateY(1px)}
+#uploadHub input[type="file"].sr{
+ position:absolute!important;width:1px!important;height:1px!important;
+ clip-path:inset(50%);opacity:0;overflow:hidden;pointer-events:none;
+}
+
+
+/* v4.1.8.2: resilient native file/folder picker styling.
+   Inline critical CSS prevents an older cached asset from stripping button visuals. */
+#uploadHub .hubSingleDrop {
+ display:flex!important;flex-direction:column!important;align-items:center!important;
+ justify-content:center!important;gap:12px!important; padding:30px 24px!important;
+ min-height:235px!important;text-align:center!important;
+}
+#uploadHub .hubSingleDrop > strong {font-size:18px!important;line-height:1.4!important;letter-spacing:-.2px}
+#uploadHub .hubSingleDrop > span {display:block;max-width:630px;font-size:13px!important;line-height:1.65!important;opacity:.83}
+#uploadHub .hubChooseActions {
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,164px))!important;
+ align-items:stretch!important;justify-content:center!important;
+ gap:12px!important;margin:9px 0 0!important;width:100%;max-width:340px;
+}
+#uploadHub .hubChooseBtn {
+ appearance:none!important;box-sizing:border-box!important;min-width:0!important;min-height:46px!important;
+ width:100%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ gap:9px!important; padding:11px 15px!important;border:1px solid #6d9ca5!important;
+ border-radius:10px!important;background:#e8f3f3!important;color:#163f4b!important;
+ text-decoration:none!important;white-space:nowrap!important;
+ font:700 14px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif!important;
+ cursor:pointer!important;user-select:none!important;transition:background .14s,border-color .14s,transform .14s!important;
+}
+#uploadHub .hubChooseBtn.primary {background:#0b7280!important;border-color:#0b7280!important;color:#fff!important}
+#uploadHub .hubChooseBtn svg{display:block!important;flex:none!important;width:18px!important;height:18px!important}
+#uploadHub .hubChooseBtn:hover{background:#d6eeed!important;border-color:#27848f!important}
+#uploadHub .hubChooseBtn.primary:hover{background:#085763!important;border-color:#085763!important}
+#uploadHub .hubChooseBtn:active{transform:translateY(1px)!important}
+#uploadHub .hubChooseBtn:focus-visible{outline:3px solid #44b1c2!important;outline-offset:3px!important}
+html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary){background:#243a44!important;color:#eff8fa!important;border-color:#527481!important}
+html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:#304b57!important;border-color:#80afb8!important}
+@media(max-width:520px){
+ #uploadHub .hubSingleDrop{padding:24px 14px!important}
+ #uploadHub .hubChooseActions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ #uploadHub .hubChooseBtn{font-size:13px!important;padding:11px 7px!important;gap:6px!important}
+}
+
+/* v4.1.8.3: item 05 has no independent image-folder picker. */
+#coordsSection #coord_imageFolder{display:none!important}

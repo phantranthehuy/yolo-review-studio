@@ -4,10 +4,55 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>YOLO Review Studio | G11 · v4.1.6</title>
+<title>YOLO Review Studio | Kiểm tra nhãn & kiểm giữa nhóm · v4.1.9</title>
 <link rel="stylesheet" href="assets/styles/core-8c3715a44704.css">
-<link rel="stylesheet" href="assets/styles/theme-picker.css"></head>
+<link rel="stylesheet" href="assets/styles/theme-picker.css">
+<style id="hubPickerCriticalV4182">
+
+/* v4.1.8.4: resilient native file/folder picker styling.
+   Inline critical CSS prevents an older cached asset from stripping button visuals. */
+#uploadHub .hubSingleDrop {
+ display:flex!important;flex-direction:column!important;align-items:center!important;
+ justify-content:center!important;gap:12px!important; padding:30px 24px!important;
+ min-height:235px!important;text-align:center!important;
+}
+#uploadHub .hubSingleDrop > strong {font-size:18px!important;line-height:1.4!important;letter-spacing:-.2px}
+#uploadHub .hubSingleDrop > span {display:block;max-width:630px;font-size:13px!important;line-height:1.65!important;opacity:.83}
+#uploadHub .hubChooseActions {
+ display:grid!important;grid-template-columns:repeat(2,minmax(0,164px))!important;
+ align-items:stretch!important;justify-content:center!important;
+ gap:12px!important;margin:9px 0 0!important;width:100%;max-width:340px;
+}
+#uploadHub .hubChooseBtn {
+ appearance:none!important;box-sizing:border-box!important;min-width:0!important;min-height:46px!important;
+ width:100%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+ gap:9px!important; padding:11px 15px!important;border:1px solid #6d9ca5!important;
+ border-radius:10px!important;background:#e8f3f3!important;color:#163f4b!important;
+ text-decoration:none!important;white-space:nowrap!important;
+ font:700 14px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif!important;
+ cursor:pointer!important;user-select:none!important;transition:background .14s,border-color .14s,transform .14s!important;
+}
+#uploadHub .hubChooseBtn.primary {background:#0b7280!important;border-color:#0b7280!important;color:#fff!important}
+#uploadHub .hubChooseBtn svg{display:block!important;flex:none!important;width:18px!important;height:18px!important}
+#uploadHub .hubChooseBtn:hover{background:#d6eeed!important;border-color:#27848f!important}
+#uploadHub .hubChooseBtn.primary:hover{background:#085763!important;border-color:#085763!important}
+#uploadHub .hubChooseBtn:active{transform:translateY(1px)!important}
+#uploadHub .hubChooseBtn:focus-visible{outline:3px solid #44b1c2!important;outline-offset:3px!important}
+html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary){background:#243a44!important;color:#eff8fa!important;border-color:#527481!important}
+html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:#304b57!important;border-color:#80afb8!important}
+@media(max-width:520px){
+ #uploadHub .hubSingleDrop{padding:24px 14px!important}
+ #uploadHub .hubChooseActions{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+ #uploadHub .hubChooseBtn{font-size:13px!important;padding:11px 7px!important;gap:6px!important}
+}
+</style>
+</head>
 <body>
+<!-- Fullscreen dialog lives directly under body to avoid clipping by section effects. -->
+<div id="vm_shortModal" class="shortAOverlay" role="dialog" aria-modal="true" aria-labelledby="vm_shortConfirmTitle" aria-describedby="vm_shortConfirmInfo" hidden>
+ <div class="shortADialog"><span class="shortAOverline">XÁC NHẬN THAO TÁC</span><h2 id="vm_shortConfirmTitle">Xóa các bounding box A dưới 12px?</h2><p id="vm_shortConfirmInfo"></p><div id="vm_shortConfirmList" class="shortAConfirmList"></div><p class="shortAModalWarning">Sau khi xác nhận, chương trình loại các box khỏi nhãn A trong phiên làm việc và tính lại thống kê, ghép cặp, CSV. Nhãn B và các tệp gốc trên máy không bị thay đổi. Hãy tải nhãn A đã cập nhật để lưu.</p><div class="shortAModalActions"><button id="vm_shortCancel" type="button">Hủy, không xóa</button><button id="vm_shortConfirm" type="button" class="shortADanger">Xác nhận xóa box A</button></div></div>
+</div>
+
 <header class="appHeader"><div class="brand"><span class="brandMark" aria-hidden="true">G11</span><div><strong>YOLO REVIEW <span>STUDIO</span></strong><small>Đối chiếu nhãn · hiệu chuẩn · xuất báo cáo</small></div></div><div class="headerActions"><span class="offlineTag">● Hoạt động ngoại tuyến · không tải dữ liệu lên mạng</span><button type="button" id="themeToggle" class="themeToggle" aria-label="Bật chế độ tối" aria-pressed="false" title="Chuyển giao diện Sáng / Tối"><svg class="themeGlyph" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 13.2A8.4 8.4 0 0 1 10.8 3.5 8.5 8.5 0 1 0 20.5 13.2Z"/></svg><span id="themeToggleLabel">Chế độ tối</span></button></div></header>
 
 <link rel="stylesheet" href="assets/styles/core-5ee5cc5901fd.css">
@@ -45,17 +90,18 @@
     </a>
   </div>
 </nav>
-<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT DỮ LIỆU G11 <span>·</span> v4.1.6</div>
-  <h1 id="pageTitle">Rà soát nhãn YOLO.<br><span>Rõ từng bước, đúng từng box.</span></h1>
-  <p class="intro">Chuẩn bị nhãn, chấm F1 / Precision / Recall và xác nhận các thay đổi trước – sau. Tất cả xử lý ngay trên trình duyệt.</p>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT & KIỂM CHÉO TRAFFIC DATASET <span>·</span> v4.1.9</div>
+  <h1 id="pageTitle">Rà soát nhãn giao thông.<br><span>Nạp một lần, kiểm tra theo từng bước.</span></h1>
+  <p class="intro">Đọc bộ dữ liệu Gxx và ZIP Roboflow, kiểm tra nhãn, đối chiếu box, xác nhận kiểm chéo trong nhóm hoặc giữa nhóm. Dữ liệu chỉ xử lý trong trình duyệt, không thay đổi ảnh gốc.</p>
   <section class="releaseNotes" aria-label="Cập nhật gần đây">
    <div class="releaseNotesViewport" id="releaseNotesViewport" tabindex="0" aria-label="Nhật ký cập nhật. Rê chuột để dừng, cuộn để xem thêm.">
     <div class="releaseNotesTrack">
      <div class="releaseNotesGroup">
+      <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.9</span><span class="releaseNew">New</span></div><h2>Hướng dẫn ngay trong trang · kiểm chéo giữa nhóm.</h2><p>Đọc luồng làm việc tại đầu trang; mục 04 chuyển giữa batch chính và 30 ảnh kiểm giữa nhóm. Intergroup tự phân loại ảnh, baseline, danh sách và nhận nhãn sửa từ nhóm nguồn, xuất nhật ký riêng.</p></article>
       <article class="releaseNote">
-       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.6</span><span class="releaseNew">New</span></div>
-       <h2>Phát hiện box A cao dưới 12px, chọn xóa có xác nhận.</h2>
-       <p>Kiểm tra nhãn sau sửa theo chiều cao pixel ảnh gốc. Liệt kê image_id, dòng và loại xe; popup xác nhận toàn màn hình, tự tính lại thống kê và tải nhãn A đã cập nhật.</p>
+       <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.8</span><span class="releaseNew">New</span></div>
+       <h2>Một ô nạp thông minh, xác nhận đúng hai bộ nhãn.</h2>
+       <p>Kéo thả tệp, ZIP hoặc nhiều thư mục một lần. Tự nhận diện ảnh và dữ liệu phụ; hỏi rõ thư mục nhãn B/A trước khi nạp. Mục 05 không còn nút chọn thư mục ảnh riêng. QC nhãn A vẫn kiểm tra lỗi hình học và box dưới 12px.</p>
       </article>
       <article class="releaseNote">
        <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.5</span></div>
@@ -69,8 +115,8 @@
       </article>
       <article class="releaseNote">
        <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.3</span></div>
-       <h2>Dùng chung ảnh mục 04 và 05, mở ngay theo ID.</h2>
-       <p>Chọn thư mục ảnh một lần, mở ảnh tọa độ bằng image_id, chuyển các nút tải CSV/ZIP xuống cuối mục 04.</p>
+       <h2>Ảnh dùng chung giữa các công cụ.</h2>
+       <p>Chỉ nạp tại mục 01. Mục 04–05 mở ảnh bằng image_id, không có nút nạp riêng.</p>
       </article>
       <article class="releaseNote">
        <div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.2</span></div>
@@ -92,32 +138,98 @@
    </div>
   </section>
 </section>
+<section id="startGuide" class="workflowIntro panel" aria-labelledby="startGuideTitle">
+ <div class="sectionHead"><div><span class="stepTag">BẮT ĐẦU / ĐỌC TRƯỚC KHI LÀM</span><h2 id="startGuideTitle">Làm đúng thứ tự, không cần tìm nút ở nhiều nơi</h2><p>Chỉ có <strong>một nơi nạp dữ liệu</strong> ở mục 01. Các mục còn lại sử dụng lại những tệp đã nhận.</p></div></div>
+ <div class="workflowSteps">
+  <a href="#uploadsSection"><b>01</b><strong>Nạp bộ dữ liệu</strong><span>Thả nguyên thư mục <code>Gxx</code> và ZIP export <code>TRAFFIC_Gxx_REVIEW...yolov8.zip</code>. Xác nhận vai trò B/A.</span></a>
+  <a href="#prepSection"><b>02</b><strong>Kiểm tra nhãn A</strong><span>Xem QC lỗi định dạng, vượt biên, class, box trùng và cảnh báo dưới 12px.</span></a>
+  <a href="#matchSection"><b>04</b><strong>Đối chiếu và kiểm chéo</strong><span>Chọn <em>Batch của nhóm</em> hoặc <em>Kiểm giữa nhóm</em>. Mở ảnh, kiểm box rồi ghi kết luận.</span></a>
+  <a href="#reviewExport"><b>✓</b><strong>Lưu kết quả</strong><span>Xuất CSV nháp, gói báo cáo hoặc nhật ký <code>crosscheck_log</code> theo từng chế độ.</span></a>
+ </div>
+ <details class="workflowGlossary"><summary>Đọc hiểu 8 thuật ngữ dùng trong trang web</summary><div class="workflowGlossaryGrid">
+  <p><strong>PRELABEL / Nhãn B:</strong> nhãn ban đầu do bộ dữ liệu cung cấp, chưa mặc nhiên đúng.</p>
+  <p><strong>Nhãn A:</strong> nhãn sau khi sinh viên rà soát, ví dụ export từ Roboflow.</p>
+  <p><strong>Bounding box:</strong> khung bao xe, lưu mỗi dòng TXT theo <code>class_id xc yc w h</code> chuẩn hóa trong [0,1].</p>
+  <p><strong>image_id:</strong> mã bất biến để nối ảnh, TXT và các bảng CSV dù tên export có đuôi <code>.rf...</code>.</p>
+  <p><strong>assignment_manifest.csv:</strong> danh sách ảnh được giao chính thức, không được tự xóa ID.</p>
+  <p><strong>IoU:</strong> mức giao/hiệp giữa hai box, dùng gợi ý ghép và chấm; ghép tự động vẫn phải xem lại.</p>
+  <p><strong>Ground Truth:</strong> nhãn tham chiếu độc lập để đánh giá; <code>baseline_labels</code> KHÔNG tự động là Ground Truth.</p>
+  <p><strong>intergroup_review:</strong> bản sao ảnh để nhóm này kiểm nhóm kế tiếp, tách khỏi batch 100% ảnh chính.</p>
+ </div></details>
+ <details class="workflowManual"><summary><span>📖</span> Sổ tay sử dụng chi tiết · giải thích từng chức năng và kết quả xuất</summary>
+  <div class="workflowManualGrid">
+   <article><h3>01 — Nạp dữ liệu đầu vào</h3><p><strong>Chỉ nạp một nơi:</strong> chọn <code>Gxx/</code> hoặc ZIP chứa toàn bộ thư mục nhóm để tự lấy ảnh gốc, <code>labels/</code> (PRELABEL), <code>assignment_manifest.csv</code>, <code>data.yaml</code>. Nạp trực tiếp ZIP Roboflow <code>TRAFFIC_Gxx_REVIEW...yolov8.zip</code> và xác nhận <strong>A — nhãn sau sửa</strong>. Tệp TXT gốc là <strong>B — nhãn ban đầu</strong>. Nếu thả hai folder TXT không rõ vai trò, xác nhận một lần, không tự đoán.</p><p>Trình đọc dùng chung <code>image_id</code>, chuẩn hóa hậu tố <code>.rf...</code>, tránh thay tên/file trên máy. Khi có <code>intergroup_review/</code>, ảnh và <code>baseline_labels</code> được tách khỏi batch chính. JSON được bỏ qua khi nạp. Trường hợp thiếu ảnh, thiếu nhãn hoặc trùng ID phải kiểm tra trước khi chạy báo cáo.</p></article>
+   <article><h3>02 — Chuẩn bị và kiểm tra QC</h3><p><strong>Chỉ kiểm nhãn A sau sửa:</strong> đúng 5 cột <code>class_id x_center y_center width height</code>, class 0–3, tọa độ hữu hạn, width/height dương, không vượt biên ảnh; phát hiện box trùng, gần trùng, cao dưới 12 px (tính từ độ cao ảnh gốc). <strong>ERROR</strong> phải sửa trước xuất, <strong>WARNING</strong> phải xem bằng mắt. Nhãn A vượt biên rất nhỏ được clamp về [0,1] theo tùy chọn; không thêm ghi chú cắt biên A vào nhật ký.</p><p>Box A dưới 12 px có thể chọn xóa tại mục 04 bằng popup xác nhận; phần mềm không xóa âm thầm. <code>qc_nhan_A_sau_sua.csv</code> giúp truy đúng image_id/dòng TXT.</p></article>
+   <article><h3>03 — Chấm F1 / Precision / Recall</h3><p>Chỉ chấm khi có nhãn A và bộ nhãn tham chiếu độc lập cho cùng ID. Ghép box <strong>đúng lớp</strong>, một–một, đạt ngưỡng IoU. Box ghép đúng là <strong>TP</strong>; box thừa/sai là <strong>FP</strong>; xe bỏ sót là <strong>FN</strong>. Precision = TP/(TP+FP), Recall = TP/(TP+FN), F1 tổng hợp cả hai.</p><p>Hiệu chuẩn trước làm đại trà: F1 @0,50 ≥ 0,95, Recall từng lớp ≥ 0,90 khi đủ đối tượng đánh giá. <code>baseline_labels</code> của kiểm giữa nhóm <strong>không phải đáp án gold độc lập</strong>; không chọn nó để chấm F1 chính thức.</p></article>
+   <article><h3>04 — Đối chiếu box / nhật ký</h3><p>Chế độ <strong>Batch của nhóm</strong> so B/A, có Zoom, lọc box, nhập hoặc chọn ID, xác nhận ghép B–A / B đã xóa / A mới thêm. Thống kê <code>boxes_added</code>, <code>boxes_removed</code>, <code>boxes_modified</code>, <code>class_changes</code>, <code>geometry_changes</code>; chỉ một box bị sửa được tính một lần dù vừa đổi lớp vừa thay tọa độ. Điền thật <code>reviewer_id</code>, <code>reviewed_at</code>, <code>revision</code> và <code>notes</code>.</p><p>Chế độ <strong>Kiểm giữa nhóm</strong> dùng ảnh thuộc <code>intergroup_assignments.csv</code>, baseline và nhãn <em>đã sửa từ nhóm nguồn</em>. Kết luận <code>agree/disagree</code>, <code>error_type</code>, <code>resolution</code>, <code>checker_id</code> được xuất thành <code>crosscheck_log_intergroup_draft.csv</code>. Không trộn số ảnh này vào manifest chính; chỉ nhóm sở hữu nhãn được sửa bản chính.</p></article>
+   <article><h3>05 — Tọa độ pixel / ngoại lệ</h3><p>Mở ảnh theo <code>image_id</code> từ kho ảnh mục 01. Box YOLO được đổi sang <code>xmin, ymin, xmax, ymax</code> tính trên kích thước ảnh gốc, không bị thay đổi vì zoom. Có thể chọn box, vẽ khung mới, nhập tọa độ, chép vùng để ghi <code>exceptions.csv</code>.</p><p>Box tạm do người dùng tạo có chiều cao dưới 12 px sẽ hiện cảnh báo 5 giây và tự xóa khỏi lớp vẽ sau khoảng 0,5 giây. Điều này <strong>không tự xóa nhãn A/B gốc</strong>; xóa box A phải xác nhận tại mục 04.</p></article>
+   <article><h3>Bàn giao, quyền dữ liệu và giới hạn</h3><p><code>review_log_draft.csv</code> là nhật ký nháp; bản nộp cần đủ <code>images/</code>, <code>labels/</code>, <code>data.yaml</code>, <code>assignment_manifest.csv</code>, <code>review_log.csv</code>, <code>crosscheck_log.csv</code>, <code>qc_report.csv</code>, <code>exceptions.csv</code>, README và báo cáo theo hướng dẫn. Chạy QC trước khi nộp, không coi nhãn PRELABEL hoặc F1 trên tập không độc lập là nghiệm thu.</p><p>Toàn bộ dữ liệu xử lý trong bộ nhớ phiên trình duyệt, không ghi đè file gốc. Sau khi làm việc, tải CSV/ZIP để lưu, không chỉ giữ tab web. Ảnh ngoài ROI vẫn phải rà soát.</p></article>
+  </div>
+ </details>
+</section>
 <nav id="jumpDock" class="jumpDock" aria-label="Điều hướng nhanh giữa các mục">
   <button id="jumpToggle" class="jumpToggle" type="button" aria-expanded="false" aria-controls="jumpPanel" title="Mở hoặc đóng điều hướng nhanh"><svg class="jumpMenuIcon" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg><span class="jumpMenuText">Chuyển đến mục</span><span id="jumpArrow" aria-hidden="true"></span></button>
   <div id="jumpPanel" class="jumpPanel" aria-hidden="false">
     <span id="jumpActiveIndicator" aria-hidden="true"></span>
-    <a class="jumpLink" href="#uploadsSection" data-jump="uploadsSection"><span>01</span>Nạp dữ liệu</a>
+    <a class="jumpLink" href="#uploadsSection" data-jump="uploadsSection"><span>01</span>Nạp dữ liệu đầu vào</a>
     <a class="jumpLink" href="#prepSection" data-jump="prepSection"><span>02</span>Chuẩn bị / QC</a>
     <a class="jumpLink" href="#evalSection" data-jump="evalSection"><span>03</span>F1 / Recall</a>
     <a class="jumpLink" href="#matchSection" data-jump="matchSection"><span>04</span>Đối chiếu box</a>
     <a class="jumpLink" href="#coordsSection" data-jump="coordsSection"><span>05</span>Tọa độ pixel</a>
   </div>
 </nav>
-<div class="sectionLabel" id="uploadsSection"><span>01 / DỮ LIỆU ĐẦU VÀO</span><h2>Nạp hai bộ nhãn để đối chiếu</h2><p>Nhãn ban đầu và nhãn sau sửa phải xuất phát từ cùng bộ ảnh.</p></div>
+<div class="sectionLabel" id="uploadsSection"><span>01 / DỮ LIỆU ĐẦU VÀO</span><h2>Nạp dữ liệu đầu vào</h2><p>Nhãn B, nhãn A, ảnh gốc và tệp bổ sung cùng quản lý tại một nơi.</p></div>
+<section id="uploadHub" class="panel unifiedUploadHub" aria-labelledby="hubTitle">
+ <div class="sectionHead"><div><span class="stepTag">01 · NẠP DỮ LIỆU</span><h2 id="hubTitle">Tải tệp hoặc thư mục tại đây</h2><p>Thả ảnh, nhãn YOLO, thư mục hoặc ZIP vào đây. Hệ thống tự nhận diện tệp; chỉ hỏi vai trò các thư mục nhãn khi cần.</p></div></div>
+ <div id="hubDrop" class="hubDrop hubSingleDrop" role="region" aria-label="Một ô kéo thả dữ liệu">
+  <div class="hubDropIcon" aria-hidden="true">⇧</div>
+  <strong>Kéo thả dữ liệu vào đây</strong>
+  <span>Ảnh · TXT · ZIP · CSV · YAML · nhiều tệp hoặc thư mục cùng lúc</span>
+  <div class="hubChooseActions" role="group" aria-label="Chọn nguồn dữ liệu">
+   <label id="hubFileButton" for="hubAnyFiles" class="hubChooseBtn primary" role="button" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V3m0 0L7 8m5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Chọn tệp</span></label>
+   <label id="hubFolderButton" for="hubAnyFolder" class="hubChooseBtn" role="button" tabindex="0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></svg><span>Chọn thư mục</span></label>
+  </div>
+  <input id="hubAnyFiles" class="sr" type="file" multiple accept=".txt,.zip,.csv,.yaml,.yml,.json,.png,.jpg,.jpeg,.webp,.bmp,.gif,.avif">
+  <input id="hubAnyFolder" class="sr" type="file" webkitdirectory multiple>
+ </div>
+ <div class="uploadExplainer"><strong>Nạp đúng gói dữ liệu, không phải chọn từng loại tệp</strong>
+  <div class="uploadHowGrid">
+   <p><b>Gói chính của nhóm:</b> chọn nguyên thư mục <code>G11/</code> (bao gồm <code>images/</code>, <code>labels/</code>, <code>assignment_manifest.csv</code>). Chương trình nhận <code>labels/</code> là <b>nhãn B</b> và kiểm kê ảnh theo manifest.</p>
+   <p><b>ZIP export Roboflow:</b> chọn thẳng <code>TRAFFIC_G11_REVIEW.v14i.yolov8.zip</code>; không cần giải nén hay chọn train/valid/test. Xác nhận đây là <b>nhãn A sau sửa</b>. Kiểm lại data.yaml/class ID 0–3. <strong>Ảnh export Roboflow không thay ảnh gốc Gxx</strong>, nhất là bản crop/resize/augmentation.</p>
+   <p><b>Kiểm giữa nhóm:</b> khi <code>G11/</code> có <code>intergroup_review/images/</code>, <code>baseline_labels/</code>, <code>intergroup_assignments.csv</code>, phần này tự tách thành <b>phạm vi riêng</b>. Nạp thêm bản nhãn đã sửa của nhóm nguồn nếu có.</p>
+  </div>
+ </div>
+ <p id="hubExplain" class="small">Nếu nạp hai bộ nhãn cùng lúc, hãy xác nhận thư mục nào là B (ban đầu), thư mục nào là A (sau sửa). Không tự đoán để tránh đảo nhãn.</p>
+ <p id="hubStatus" class="small" role="status" aria-live="polite">Chưa nạp dữ liệu.</p>
+ <div id="hubLoaded" class="hubLoaded" aria-label="Tình trạng dữ liệu đã nạp"></div>
+ <p class="igHubStatus" id="igHubStatus">Bộ kiểm giữa nhóm: chưa nạp. Khi có intergroup_assignments.csv, ảnh và baseline sẽ được quản lý tách biệt.</p>
+ <details class="hubActions"><summary>Quản lý bộ nhãn đã nạp / tải nhãn đổi tên</summary><div class="hubButtons"><button id="hubClearBefore" type="button">Xóa nhãn B đã nạp</button><button id="hubClearAfter" type="button">Xóa nhãn A đã nạp</button><button id="hubExportBefore" type="button">Tải nhãn B đổi tên</button><button id="hubExportAfter" type="button">Tải nhãn A đổi tên</button></div></details>
+</section>
+
+<div id="hubRoleOverlay" class="hubRoleOverlay" hidden role="presentation">
+ <div class="hubRoleDialog" role="dialog" aria-modal="true" aria-labelledby="hubRoleTitle" aria-describedby="hubRoleHelp">
+  <div class="hubRoleTop"><span class="stepTag">KIỂM TRA VAI TRÒ NHÃN</span><h2 id="hubRoleTitle">Xác nhận thư mục nhãn</h2><p id="hubRoleHelp">Đã tìm thấy các nhóm TXT. Hãy chọn đúng nhãn B, nhãn A hoặc “Nhãn đã sửa của nhóm nguồn (intergroup)” khi đây là dữ liệu từ nhóm khác. Không nhập nhầm baseline vào A/B của batch chính.</p></div>
+  <div id="hubRoleRows" class="hubRoleRows"></div>
+  <p id="hubRoleError" class="hubRoleError" role="alert"></p>
+  <div class="hubRoleButtons"><button type="button" id="hubRoleCancel">Hủy nạp</button><button type="button" id="hubRoleApply" class="primary">Xác nhận và nạp dữ liệu</button></div>
+ </div>
+</div>
 <div class="uploads">
  <section class="panel"><h2>Nhãn ban đầu</h2><div class="drop" data-side="before"><h3>Kéo thả vào khung này bộ nhãn gốc (.txt/.zip) trước chỉnh sửa</h3><p>Chỉ chọn nhãn ban đầu, trước khi chỉnh sửa trên Roboflow. Nếu là ZIP xuất sau chỉnh sửa, hãy tải vào mục “Nhãn sau chỉnh sửa”.</p><div class="row"><label class="filebtn" data-action-icon="upload">Chọn file<input class="sr" type="file" id="beforeFiles" multiple accept=".txt,.zip"></label><label class="filebtn" data-action-icon="folder">Chọn thư mục<input class="sr" type="file" id="beforeFolder" webkitdirectory multiple></label></div><div id="beforeCount" class="count">Chưa chọn nhãn</div></div><div class="row" style="margin-top:12px"><button id="beforeZip" data-action-icon="download" disabled>Tải nhãn gốc đã đổi tên (.zip)</button><button data-clear="before">Xóa lựa chọn</button></div></section>
  <section class="panel"><h2>Nhãn sau chỉnh sửa</h2><div class="drop" data-side="after"><h3>Kéo thả vào khung này nhãn đã sửa (.txt/.zip xuất từ Roboflow)</h3><p>Chọn bộ nhãn sau khi hoàn tất chỉnh sửa trên Roboflow. Hỗ trợ ZIP train/valid/test; chỉ đọc nhãn, bỏ qua ảnh và README.</p><div class="row"><label class="filebtn" data-action-icon="upload">Chọn file<input class="sr" type="file" id="afterFiles" multiple accept=".txt,.zip"></label><label class="filebtn" data-action-icon="folder">Chọn thư mục<input class="sr" type="file" id="afterFolder" webkitdirectory multiple></label></div><div id="afterCount" class="count">Chưa chọn nhãn</div></div><div class="row" style="margin-top:12px"><button id="afterZip" data-action-icon="download" disabled>Tải nhãn sau sửa đã đổi tên (.zip)</button><button data-clear="after">Xóa lựa chọn</button></div></section>
 </div>
-<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách nạp hai bộ nhãn và xuất nhật ký rà soát</summary><div class="helpBody"><p><strong>1. Chọn đúng phiên bản.</strong> Đưa nhãn trước khi sửa vào ô “Nhãn ban đầu” và bản xuất sau khi rà soát vào ô “Nhãn sau chỉnh sửa”. Mỗi ô nhận nhiều tệp TXT, một ZIP hoặc cả thư mục.</p><p><strong>2. Kiểm tra các ảnh có thể ghép.</strong> Hai tệp của cùng ảnh cần có cùng ID sau khi chuẩn hóa tên. Ví dụ, hai phiên bản của <code>frame_001.txt</code> phải cùng trỏ về <code>frame_001</code>. TXT rỗng biểu thị ảnh có nhãn nhưng không có box. Thiếu tệp là trường hợp riêng cần kiểm tra.</p><p><strong>3. Chọn kết quả cần lấy.</strong> Nút tải ZIP dưới từng ô xuất riêng bộ nhãn đã đổi tên. Để lập nhật ký thay đổi, nạp đủ hai bộ, điền thông tin phiên rà soát rồi bấm “So sánh nhãn”. Kiểm tra các cặp khó ở mục 04 trước khi tải <code>review_log_draft.csv</code>.</p></div></details>
+<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách nạp hai bộ nhãn và xuất nhật ký rà soát</summary><div class="helpBody"><p><strong>1. Xác nhận đúng hai bộ nhãn.</strong> Thả các thư mục hoặc ZIP vào cùng một ô ở mục 01, rồi gán B (ban đầu) và A (sau sửa) trong bảng xác nhận. Mỗi bộ có thể gồm nhiều tệp TXT.</p><p><strong>2. Kiểm tra các ảnh có thể ghép.</strong> Hai tệp của cùng ảnh cần có cùng ID sau khi chuẩn hóa tên. Ví dụ, hai phiên bản của <code>frame_001.txt</code> phải cùng trỏ về <code>frame_001</code>. TXT rỗng biểu thị ảnh có nhãn nhưng không có box. Thiếu tệp là trường hợp riêng cần kiểm tra.</p><p><strong>3. Chọn kết quả cần lấy.</strong> Nút tải ZIP nằm trong phần Quản lý bộ nhãn ở mục 01. Để lập nhật ký thay đổi, nạp đủ hai bộ, điền thông tin phiên rà soát rồi bấm “So sánh nhãn”. Kiểm tra các cặp khó ở mục 04 trước khi tải <code>review_log_draft.csv</code>.</p></div></details>
 <section class="panel configPanel" id="configSection">
 <div class="sectionHead"><div><span class="stepTag">THÔNG TIN RÀ SOÁT</span><h2>Thiết lập so sánh trước / sau</h2><p class="small">Điền thông tin phiên rà soát trước khi xuất <code>review_log</code>.</p></div></div>
 <div class="fields requiredFields"><label class="field">Người rà soát <input id="reviewer" value="G11_SV01" placeholder="G11_SV01"></label><label class="field">Thời điểm kết thúc phiên thực tế <input id="reviewedAt" placeholder="YYYY-MM-DDTHH:mm:ss+07:00"></label><label class="field">Revision <input id="revision" type="number" min="1" step="1" placeholder="VD: 1"></label></div>
 <details class="settingsFold"><summary><span>⚙</span> Tùy chọn so sánh <small>Phạm vi ảnh · cột nhật ký · tên lớp</small></summary><div class="foldBody">
 <div class="hint">Ví dụ: <code>34cd…_png.rf.a12b34c.txt</code> → <code>34cd….txt</code>. Chỉ sửa tên bản tải xuống; nội dung nhãn và file gốc được giữ nguyên.</div>
 <label class="check"><input type="checkbox" id="normalize" checked><span>Chuẩn hóa tên Roboflow — bỏ <code>.rf.…</code> và phần đuôi <code>_png</code>, <code>_jpg</code> đi kèm.</span></label>
-<div class="fileline"><label class="filebtn" data-action-icon="upload">Chọn danh sách ảnh được giao (.csv)<input class="sr" id="manifestFile" type="file" accept=".csv"></label><span id="manifestName" class="small">Manifest cần cột image_id. Nếu có assigned_reviewer_id, chỉ lấy ảnh được giao cho người rà soát đã nhập. Khi chưa chọn, dùng ID của cả hai bộ nhãn.</span><button id="clearManifest">Dùng tất cả ảnh</button></div>
-<div class="fileline"><label class="filebtn" data-action-icon="upload">Chọn cấu trúc cột nhật ký (.csv)<input class="sr" id="schemaFile" type="file" accept=".csv"></label><span id="schemaName" class="small">Dùng tên và thứ tự cột từ mẫu review_log. Mẫu cần đủ 11 cột bắt buộc. Khi chưa chọn, dùng cấu trúc mặc định.</span><button id="clearSchema">Dùng cột mặc định</button></div>
-<div class="fileline"><label class="filebtn" data-action-icon="upload">Chọn tệp tên lớp (.yaml / .yml)<input class="sr" id="classesFile" type="file" accept=".yaml,.yml"></label><span id="classesName" class="small">Nạp classes.yaml hoặc data.yaml để hiển thị tên lớp. Có thể nhập tên trực tiếp bên dưới.</span><button id="clearClasses">Xóa tên lớp đã nạp</button></div>
+<input class="sr" id="manifestFile" type="file" accept=".csv" aria-hidden="true" tabindex="-1">
+<div class="fileline manifestScopeRow"><div class="manifestFileInfo"><strong>Phạm vi ảnh rà soát</strong><span id="manifestName" class="small">Chưa có assignment_manifest.csv. Đang dùng ảnh của hai bộ nhãn.</span></div><button id="clearManifest" type="button" class="manifestAllBtn">Dùng tất cả ảnh</button></div>
+<div id="manifestMembers" class="manifestMembers" hidden><span class="manifestMembersLabel">Chọn thành viên</span><div id="manifestMemberChips" class="manifestMemberChips" role="group" aria-label="Lọc ảnh được giao theo thành viên"></div><span id="manifestMemberStatus" class="manifestMemberStatus" role="status" aria-live="polite"></span></div>
+<input class="sr" id="schemaFile" type="file" accept=".csv" aria-hidden="true" tabindex="-1"><div class="fileline configDataRow"><span id="schemaName" class="small">Nhật ký: dùng 11 cột mặc định. Nếu cần, nạp review_log.csv ở mục 01.</span><button id="clearSchema" type="button">Dùng cột mặc định</button></div>
+<input class="sr" id="classesFile" type="file" accept=".yaml,.yml" aria-hidden="true" tabindex="-1"><div class="fileline configDataRow"><span id="classesName" class="small">Tên lớp: nạp data.yaml tại mục 01 hoặc nhập tên lớp bên dưới.</span><button id="clearClasses" type="button">Xóa tên lớp đã nạp</button></div>
 <div class="hint">Tên lớp dùng chung cho nhãn trước và sau. Kiểm tra đúng thứ tự trong bộ nhãn; có thể nhập hoặc sửa trực tiếp bên dưới.</div>
 <div class="fields" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr))"><label class="field">Class ID 0<input id="class0" placeholder="Tên lớp ID 0"></label><label class="field">Class ID 1<input id="class1" placeholder="Tên lớp ID 1"></label><label class="field">Class ID 2<input id="class2" placeholder="Tên lớp ID 2"></label><label class="field">Class ID 3<input id="class3" placeholder="Tên lớp ID 3"></label></div>
 <div class="fields compactFields"><label class="field">Ngưỡng ghép IoU trước / sau<input id="threshold" type="number" value="0.5" min="0.01" max="1" step="0.05"></label></div>
@@ -126,8 +238,17 @@
 </div></details><div class="actionBar"><button id="compare" class="primary">So sánh nhãn trước / sau</button><button id="demo">Thử dữ liệu minh họa</button><span id="progress" class="small" role="status" aria-live="polite"></span></div>
 </section>
 <div id="message" class="notice hidden" role="alert"></div>
-<section id="prepSection" class="panel" style="margin:20px 0"><div class="sectionHead"><div><span class="stepTag">02 / CHUẨN BỊ & KIỂM TRA</span><h2>Chuẩn bị nhãn để chấm điểm</h2></div></div><details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách kiểm tra nhãn và đọc nội dung gói ZIP</summary><div class="helpBody"><p><strong>Đầu vào.</strong> Mục này dùng nhãn sau chỉnh sửa ở mục 01. Nếu bài có đúng 40 ảnh, nhập <strong>40</strong> vào ô số ảnh dự kiến để phát hiện bộ nhãn thiếu hoặc thừa tệp. Để trống nếu chưa biết số lượng.</p><p><strong>Kiểm tra trước khi tải.</strong> “Kiểm tra nhãn / tải QC” dùng để xem báo cáo kiểm tra. Khi tải gói ZIP, tùy chọn cắt biên chỉ xử lý sai số rất nhỏ trong ngưỡng hiển thị. Nếu một khung xe lệch rõ ra ngoài ảnh, mở lại ảnh và sửa khung trong công cụ gán nhãn.</p><p><strong>Sau khi giải nén.</strong> <code>labels/</code> chứa các TXT để chấm. <code>calibration_ids.csv</code> liệt kê ID ảnh. <code>boundary_changes.csv</code> ghi các dòng đã cắt biên. Dùng <code>filename_mapping.csv</code> để tra tên mới từ đường dẫn ban đầu.</p></div></details>
+<div class="workflowSafety" role="note"><strong>Quy tắc bắt buộc:</strong> đúng 4 lớp <code>0=2-wheel vehicles</code>, <code>1=bus</code>, <code>2=car</code>, <code>3=truck</code>. TXT rỗng khác với thiếu TXT. PRELABEL chưa phải nhãn đã xác minh; thông báo QC không có nghĩa đã nghiệm thu.</div>
+<section id="prepSection" class="panel" style="margin:20px 0"><div class="hubNeed" id="hubNeedPrep" role="status"></div><div class="sectionHead"><div><span class="stepTag">02 / CHUẨN BỊ & KIỂM TRA</span><h2>Chuẩn bị nhãn để chấm điểm</h2></div></div><details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách kiểm tra nhãn và đọc nội dung gói ZIP</summary><div class="helpBody"><p><strong>Đầu vào.</strong> Mục này dùng nhãn sau chỉnh sửa ở mục 01. Nếu bài có đúng 40 ảnh, nhập <strong>40</strong> vào ô số ảnh dự kiến để phát hiện bộ nhãn thiếu hoặc thừa tệp. Để trống nếu chưa biết số lượng.</p><p><strong>Kiểm tra trước khi tải.</strong> “Kiểm tra nhãn / tải QC” dùng để xem báo cáo kiểm tra. Khi tải gói ZIP, tùy chọn cắt biên chỉ xử lý sai số rất nhỏ trong ngưỡng hiển thị. Nếu một khung xe lệch rõ ra ngoài ảnh, mở lại ảnh và sửa khung trong công cụ gán nhãn.</p><p><strong>Sau khi giải nén.</strong> <code>labels/</code> chứa các TXT để chấm. <code>calibration_ids.csv</code> liệt kê ID ảnh. <code>boundary_changes.csv</code> ghi các dòng đã cắt biên. Dùng <code>filename_mapping.csv</code> để tra tên mới từ đường dẫn ban đầu.</p></div></details>
 <p class="small">Dùng bộ “Nhãn sau chỉnh sửa” phía trên. Tự gom nhãn từ ZIP, đổi tên, tạo danh sách ID và ghi lại từng box cắt biên.</p>
+
+<section id="afterQcPanel" class="afterQcPanel" aria-labelledby="afterQcTitle">
+ <div class="sectionHead"><div><span class="stepTag">KIỂM TRA NHÃN SAU SỬA A</span><h3 id="afterQcTitle">Phát hiện box A không hợp lệ</h3><p>Kiểm tra định dạng YOLO, lớp xe, tọa độ, kích thước, trùng box và chiều cao pixel nếu có ảnh gốc. Không tự chỉnh sửa hay xóa nhãn.</p></div></div>
+ <p id="afterQcStatus" role="status" aria-live="polite">Chưa có bộ nhãn A. Nạp tại kho dữ liệu chung ở mục 01.</p>
+ <div class="hubButtons"><button id="afterQcDownload" type="button" disabled>Tải báo cáo QC nhãn A (.csv)</button><button type="button" data-hub-go="after">Đến ô nạp dữ liệu mục 01</button></div>
+ <div id="afterQcTableWrap" class="afterQcTableWrap" hidden><table><thead><tr><th>Mức độ</th><th>Ảnh</th><th>Box A</th><th>Loại xe</th><th>Vấn đề</th></tr></thead><tbody id="afterQcRows"></tbody></table><p id="afterQcMore" class="small"></p></div>
+</section>
+
 <label class="check"><input id="autoClamp" type="checkbox" checked>Cắt sai số vượt biên nhỏ ≤ 0.00001 ở nhãn sau sửa khi chuẩn bị hoặc so sánh.</label>
 <div class="row prepActionRow"><label class="field prepImageCount">Số ảnh dự kiến (không bắt buộc)<input id="expectedImages" type="number" min="1" step="1" placeholder="40 nếu làm hiệu chuẩn"></label><button id="prepareZip" data-action-icon="download" class="primary">Tải calibration_ready.zip</button><button id="qcLabels" data-action-icon="download">Kiểm tra nhãn / tải QC</button></div>
 <p class="small" style="margin-top:12px">Bấm <strong>Tải calibration_ready.zip</strong> sau khi nạp nhãn sau chỉnh sửa ở mục 01. Công cụ kiểm tra nhãn rồi tải gói ZIP về máy. Nếu số tệp khác số ảnh dự kiến hoặc có box vượt biên quá mức cho phép, hãy kiểm tra thông báo, sửa dữ liệu và tải lại.</p></section>
@@ -135,13 +256,13 @@
 <div id="stats" class="stats"></div>
 <div class="toolbar"><h2 style="margin:0">Kết quả theo ảnh</h2></div>
 <p class="small">Chọn “Chi tiết” để xem từng box. Bạn có thể sửa số đếm, trạng thái, thời gian và notes ngay trong bảng trước khi tải.</p>
-<div class="row" style="margin:12px 0"><label class="small" for="search">Tìm ID</label><input id="search" placeholder="Nhập một phần image_id"><label class="check" style="margin:0"><input id="onlyWarnings" type="checkbox">Chỉ hiện ảnh cần kiểm tra</label><span id="visibleCount" class="small"></span></div>
+<div class="row resultsFilterBar"><label class="small" for="search">Tìm ảnh</label><input id="search" type="search" placeholder="Nhập một phần image_id"><label class="check" for="onlyWarnings"><input id="onlyWarnings" type="checkbox">Chỉ ảnh cần kiểm tra</label><span id="visibleCount" class="small"></span></div>
 <div class="tablewrap"><table><thead><tr><th>Ảnh / chi tiết</th><th>Thêm (đề xuất)</th><th>Xóa (đề xuất)</th><th>Sửa</th><th>Đổi lớp</th><th>Hình học</th><th>Trạng thái</th><th>Thời gian / revision</th><th>Notes</th></tr></thead><tbody id="tbody"></tbody></table></div>
 </section>
 <div id="empty" class="empty" style="margin-top:24px">Chọn hai bộ nhãn để bắt đầu. Bạn cũng có thể chỉ đổi tên và tải nhãn ở từng vùng phía trên.</div>
 <link rel="stylesheet" href="assets/styles/core-e1340285b579.css">
-<section id="evalSection" class="panel" style="margin:24px 0"><div class="sectionHead"><div><span class="stepTag">03 / HIỆU CHUẨN</span><h2>Chấm F1, Precision và Recall</h2><p>So sánh <strong>nhãn sau sửa</strong> với <strong>nhãn tham chiếu (Ground Truth)</strong>.</p></div></div>
-<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách chấm điểm và đọc kết quả F1 / Recall</summary><div class="helpBody"><p><strong>1. Chọn bộ chuẩn.</strong> Nạp TXT, ZIP hoặc thư mục nhãn tham chiếu (Ground Truth) cho cùng các ảnh với bộ nhãn sau sửa. Kiểm tra hai bộ dùng cùng quy ước ID lớp.</p><p><strong>2. Chọn phạm vi chấm.</strong> Mặc định công cụ chấm các ID của bộ sau sửa. Nếu chỉ chấm một tập con, chọn CSV danh sách ID trong “Tùy chọn &amp; lưu ý chấm điểm”. Đặt ngưỡng IoU theo yêu cầu bài rồi bấm “Chấm nhãn tham chiếu”.</p><p><strong>3. Đọc điểm.</strong> Mỗi box chỉ ghép với tối đa một box chuẩn cùng lớp và đủ IoU. Ghép đúng tính là TP, box dự đoán dư là FP, box chuẩn bị bỏ sót là FN. Precision thấp gợi ý kiểm tra box dư hoặc sai lớp. Recall thấp gợi ý tìm xe bị bỏ sót. F1 tổng hợp hai chỉ số.</p><p><strong>Với bài G11:</strong> đối chiếu F1 ≥ 0,95 và Recall ≥ 0,90 rồi tải ZIP báo cáo để lưu kết quả lần chấm.</p></div></details>
+<section id="evalSection" class="panel" style="margin:24px 0"><div class="hubNeed" id="hubNeedEval" role="status"></div><div class="sectionHead"><div><span class="stepTag">03 / HIỆU CHUẨN</span><h2>Chấm F1, Precision và Recall</h2><p>So sánh <strong>nhãn sau sửa</strong> với <strong>nhãn tham chiếu (Ground Truth)</strong>.</p></div></div>
+<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách chấm điểm và đọc kết quả F1 / Recall</summary><div class="helpBody"><p><strong>1. Chọn bộ chuẩn.</strong> Nạp TXT, ZIP hoặc thư mục nhãn tham chiếu (Ground Truth) cho cùng các ảnh với bộ nhãn sau sửa. Kiểm tra hai bộ dùng cùng quy ước ID lớp.</p><p><strong>2. Chọn phạm vi chấm.</strong> Mặc định công cụ chấm các ID của bộ sau sửa. Nếu chỉ chấm một tập con, nạp CSV danh sách ID vào ô chung mục 01. Đặt ngưỡng IoU theo yêu cầu bài rồi bấm “Chấm nhãn tham chiếu”.</p><p><strong>3. Đọc điểm.</strong> Mỗi box chỉ ghép với tối đa một box chuẩn cùng lớp và đủ IoU. Ghép đúng tính là TP, box dự đoán dư là FP, box chuẩn bị bỏ sót là FN. Precision thấp gợi ý kiểm tra box dư hoặc sai lớp. Recall thấp gợi ý tìm xe bị bỏ sót. F1 tổng hợp hai chỉ số.</p><p><strong>Với bài G11:</strong> đối chiếu F1 ≥ 0,95 và Recall ≥ 0,90 rồi tải ZIP báo cáo để lưu kết quả lần chấm.</p></div></details>
 <div id="goldImportZone" class="importZone" aria-label="Khu vực nạp nhãn tham chiếu">
   <div class="importHead"><div class="importGraphic" aria-hidden="true"><svg width="23" height="23" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 16V3m-5 5 5-5 5 5M4 15v5h16v-5"/></svg></div><div><strong>Nạp nhãn tham chiếu</strong><p class="small">Chọn tệp <code>.txt / .zip</code> hoặc cả thư mục có tên bất kỳ.</p></div></div>
   <div class="importActions"><div class="goldPicker"><button id="goldChoose" type="button" class="primary" aria-controls="goldOptions" aria-expanded="false">+ Chọn nhãn tham chiếu <span aria-hidden="true">⌄</span></button>
@@ -154,10 +275,14 @@
 <div class="hint" style="margin-top:14px"><strong>Kiểm tra trước khi chấm</strong><p>Hai bộ nhãn cần dùng cùng ID ảnh và cùng quy ước lớp. Dùng nhãn tham chiếu đã kiểm tra làm đáp án.</p><p><strong>Thứ tự lớp của bộ chấm</strong> · 0 = 2-wheel vehicles · 1 = bus · 2 = car · 3 = truck.</p><p>TP là box ghép đúng, FP là box dư, FN là box bị bỏ sót. Ngưỡng IoU bên dưới quyết định mức trùng khớp tối thiểu.</p><small>Quy tắc tính theo evaluate_annotations.py và kiểm tra nhãn theo qc_dataset.py. Dung sai biên 1e-6.</small></div></div></details>
 <div class="row"><label class="field">IoU khi chấm<input id="evalIou" type="number" min="0.01" max="1" step="0.05" value="0.50"></label><button id="evaluate" class="primary">Chấm nhãn tham chiếu</button><button id="downloadEval" data-action-icon="download" disabled>Tải báo cáo + nhãn chuẩn bị (.zip)</button></div>
 <div id="evalMessage" class="notice hidden" role="status"></div><div id="evalResults"></div></section>
-<section id="matchSection" class="panel" style="margin:24px 0"><div class="sectionHead"><div><span class="stepTag">04 / RÀ SOÁT THỦ CÔNG</span><h2>Đối chiếu box trước / sau</h2><p>Kiểm tra khung xe và xác nhận các cặp ghép theo đúng đối tượng.</p></div></div>
-<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách đối chiếu cùng một xe giữa hai phiên bản</summary><div class="helpBody"><p><strong>1. Mở đúng ảnh.</strong> Chạy “So sánh nhãn” ở mục 01, bấm “Tải ảnh gốc để đối chiếu” rồi chọn ảnh cần xem. Công cụ ghép ảnh theo ID. Chỉ chọn “Ảnh sau riêng” khi cần dùng ảnh khác cho phiên bản sau sửa.</p><p><strong>2. Theo dõi một xe.</strong> B là box cũ màu xanh, A là box mới màu cam nét đứt. Khi nhiều xe sát nhau, chọn theo số dòng B và A, xem hai vùng cắt rồi kiểm tra đó có phải cùng một xe. Một box dịch chuyển xa vẫn có thể thuộc cùng đối tượng.</p><p><strong>3. Ghi quyết định.</strong> Chọn “Xác nhận B và A là cùng box” nếu hai khung bao cùng xe. Nếu một xe chỉ có ở bản trước hoặc bản sau, dùng “Xác nhận box B đã xóa” hoặc “Xác nhận box A mới thêm”. Nếu ghép nhầm, gỡ cặp B rồi chọn lại.</p><p>Các quyết định cập nhật kết quả so sánh và nhật ký. Muốn tính F1, dùng bộ tham chiếu ở mục 03.</p></div></details>
+<section id="matchSection" class="panel" style="margin:24px 0"><div class="hubNeed" id="hubNeedMatch" role="status"></div><div class="sectionHead"><div><span class="stepTag">04 / RÀ SOÁT THỦ CÔNG</span><h2>Đối chiếu box trước / sau</h2><p>Kiểm tra khung xe và xác nhận các cặp ghép theo đúng đối tượng.</p></div></div>
+<div id="matchScopeSwitch" class="matchScopeSwitch" role="group" aria-label="Chọn phạm vi đối chiếu">
+ <button type="button" id="matchScopeMain" class="scopeBtn" aria-pressed="true"><span class="scopeIcon">A/B</span><span><b>Batch của nhóm</b><small>Nhãn B ban đầu ↔ Nhãn A sau sửa</small></span></button>
+ <button type="button" id="matchScopeInter" class="scopeBtn" aria-pressed="false"><span class="scopeIcon">↔</span><span><b>Kiểm giữa nhóm</b><small>Ảnh được giao kiểm ↔ nhãn nhóm nguồn</small></span></button>
+</div>
+<div id="mainMatchWorkspace"><details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách đọc box và ghi quyết định trong batch chính</summary><div class="helpBody"><p><strong>1. Mở đúng ảnh.</strong> Chạy “So sánh nhãn” ở mục 01, nạp ảnh gốc tại kho dữ liệu mục 01 rồi chọn ảnh cần xem. Công cụ ghép ảnh theo ID. Chỉ chọn “Ảnh sau riêng” khi cần dùng ảnh khác cho phiên bản sau sửa.</p><p><strong>2. Theo dõi một xe.</strong> B là box cũ màu xanh, A là box mới màu cam nét đứt. Khi nhiều xe sát nhau, chọn theo số dòng B và A, xem hai vùng cắt rồi kiểm tra đó có phải cùng một xe. Một box dịch chuyển xa vẫn có thể thuộc cùng đối tượng.</p><p><strong>3. Ghi quyết định.</strong> Chọn “Xác nhận B và A là cùng box” nếu hai khung bao cùng xe. Nếu một xe chỉ có ở bản trước hoặc bản sau, dùng “Xác nhận box B đã xóa” hoặc “Xác nhận box A mới thêm”. Nếu ghép nhầm, gỡ cặp B rồi chọn lại.</p><p>Các quyết định cập nhật kết quả so sánh và nhật ký. Muốn tính F1, dùng bộ tham chiếu ở mục 03.</p></div></details>
 <div class="matchControls"><label class="filebtn" data-action-icon="image">Tải ảnh gốc để đối chiếu<input id="vm_images" class="sr" type="file" accept="image/*" multiple></label><label class="filebtn" data-action-icon="image">Ảnh sau riêng (tùy chọn)<input id="vm_imagesAfter" class="sr" type="file" accept="image/*" multiple></label><label class="filebtn" data-action-icon="folder">Chọn thư mục ảnh<input id="vm_imageFolder" class="sr" type="file" accept="image/*" webkitdirectory multiple></label><span id="vm_imageMeta" class="matchUploadHint">Có thể tải nhiều ảnh. Tự ghép theo image_id, kể cả tên có .rf. Ảnh gốc dùng chung cho trước/sau nếu không tải ảnh sau riêng.</span></div>
-<div id="vm_filters" hidden><div class="matchControls"><label>Ảnh <select id="vm_imageSelect"><option value="">Chạy So sánh nhãn phía trên trước</option></select></label><button id="vm_open">Mở / làm mới đối chiếu</button><label>Hiển thị <select id="vm_view"><option value="overlay">Chồng hai bộ khung</option><option value="split">Hai khung nhìn cạnh nhau</option><option value="before">Chỉ nhãn ban đầu</option><option value="after">Chỉ nhãn sau sửa</option></select></label><button id="vm_zoomTool" type="button" class="matchZoomTool" aria-pressed="false" aria-keyshortcuts="Z">⌕ Zoom · Vừa khung</button></div>
+<div id="vm_filters" hidden><div class="matchControls vmPrimaryTools"><label class="vmImageInput">Mở ảnh theo image_id<input type="search" id="vm_imageId" list="vm_imageIds" placeholder="Nhập / dán image_id" autocomplete="off" spellcheck="false" aria-describedby="vm_idHelp"><datalist id="vm_imageIds"></datalist></label><label class="vmImageSelect">Hoặc chọn ảnh<select id="vm_imageSelect"><option value="">Chạy So sánh nhãn trước</option></select></label><button id="vm_open" type="button" class="primary">Mở ảnh</button><label class="vmViewSelect">Hiển thị<select id="vm_view"><option value="overlay">Chồng hai bộ khung</option><option value="split">Hai khung nhìn cạnh nhau</option><option value="before">Chỉ nhãn ban đầu</option><option value="after">Chỉ nhãn sau sửa</option></select></label><button id="vm_zoomTool" type="button" class="matchZoomTool" aria-pressed="false" aria-keyshortcuts="Z">⌕ Zoom · Vừa khung</button><span id="vm_idHelp" class="vmIdHelp">Dán ID và Enter, hoặc chọn trong danh sách.</span></div>
 <div class="matchControls"><label><input id="vm_showBefore" type="checkbox" checked><span class="matchLegendB">B: khung cũ màu xanh</span></label><label><input id="vm_showAfter" type="checkbox" checked><span class="matchLegendA">A: khung mới màu cam, nét đứt</span></label><label><input id="vm_numbers" type="checkbox" checked>Số dòng TXT / mã cặp P</label><label><input id="vm_links" type="checkbox">Nối tâm các cặp đã ghép</label><label>Box trên ảnh <select id="vm_filter"><option value="all">Tất cả</option><option value="selected">Chỉ cặp đang chọn</option><option value="unmatched">Chỉ box chưa ghép</option><option value="matched">Chỉ box đã ghép</option></select></label><label>Bấm ảnh để chọn <select id="vm_clickSide"><option value="before">Box cũ B</option><option value="after">Box mới A</option></select></label></div></div>
 <p class="matchZoomHelp">Ảnh toàn cảnh: <strong>Zoom</strong> hoặc <kbd>Z</kbd> · cuộn chuột/trackpad để phóng to · <kbd>+</kbd>/<kbd>−</kbd> tăng/giảm · <kbd>0</kbd> vừa khung · kéo ảnh để di chuyển khi bật Zoom.</p>
 <div id="vm_message" class="notice" role="status" aria-live="polite">Chạy So sánh nhãn, tải ảnh gốc và chọn ảnh cần đối chiếu. Các cặp tự động cũng cần được kiểm tra khi khung xe chồng nhau.</div>
@@ -171,9 +296,7 @@
  <p class="shortAFoot">Chỉ kiểm tra nhãn <strong>A (sau sửa)</strong>; không đọc hoặc xóa nhãn B. Box chỉ bị loại sau khi bạn xác nhận. Ảnh trên ổ đĩa và TXT gốc không bị ghi đè; tải bộ nhãn A mới để lưu thay đổi.</p>
  </div>
 </section>
-<div id="vm_shortModal" class="shortAOverlay" role="dialog" aria-modal="true" aria-labelledby="vm_shortConfirmTitle" aria-describedby="vm_shortConfirmInfo" hidden>
- <div class="shortADialog"><span class="shortAOverline">XÁC NHẬN THAO TÁC</span><h2 id="vm_shortConfirmTitle">Xóa các bounding box A dưới 12px?</h2><p id="vm_shortConfirmInfo"></p><div id="vm_shortConfirmList" class="shortAConfirmList"></div><p class="shortAModalWarning">Sau khi xác nhận, chương trình loại các box khỏi nhãn A trong phiên làm việc và tính lại thống kê, ghép cặp, CSV. Nhãn B và các tệp gốc trên máy không bị thay đổi. Hãy tải nhãn A đã cập nhật để lưu.</p><div class="shortAModalActions"><button id="vm_shortCancel" type="button">Hủy, không xóa</button><button id="vm_shortConfirm" type="button" class="shortADanger">Xác nhận xóa box A</button></div></div>
-</div>
+
 <div id="vm_stage" class="matchStage" hidden><div id="vm_beforePane" class="matchPane"><h3 id="vm_beforeTitle">Khung cũ B / khung mới A</h3><canvas id="vm_canvasBefore" width="800" height="300"></canvas></div><div id="vm_afterPane" class="matchPane" hidden><h3>Nhãn sau sửa A</h3><canvas id="vm_canvasAfter" width="800" height="300"></canvas></div></div>
 <div id="vm_reviewTools" hidden><div class="matchControls"><label>Box cũ <select id="vm_beforeSelect"></select></label><label>Box mới <select id="vm_afterSelect"></select></label><button id="vm_showPair">Xem cặp đang chọn</button><label><input id="vm_onlyUnmatched" type="checkbox" checked>Chỉ đề xuất box chưa ghép</label><label><input id="vm_autoNext" type="checkbox" checked>Tự chuyển sang box chưa ghép tiếp theo</label></div>
 <div class="matchGrid"><div><h3 class="matchLegendB">Chi tiết box cũ đang chọn</h3><canvas id="vm_cropBefore" class="matchCrop" width="600" height="220"></canvas><p id="vm_beforeInfo" class="matchBoxInfo"></p></div><div><h3 class="matchLegendA">Chi tiết box mới đang chọn</h3><canvas id="vm_cropAfter" class="matchCrop" width="600" height="220"></canvas><p id="vm_afterInfo" class="matchBoxInfo"></p></div></div>
@@ -183,6 +306,37 @@
 <div class="matchCandidate tablewrap"><table><thead><tr><th>Cặp đề xuất</th><th>Lớp trước → sau</th><th>IoU</th><th>Khoảng cách tâm<br>(% đường chéo ảnh)</th><th>Tỷ lệ diện tích</th><th>Ghép hiện tại</th><th>Xem trên ảnh</th></tr></thead><tbody id="vm_candidates"></tbody></table></div>
 <p class="matchUploadHint">Cặp đang chọn: B xanh ngọc, A hồng, viền đậm. Nhấn giữ trên ảnh 0,6 giây để tạm ẩn các box khác; thả ra để hiện lại. Bộ lọc bên dưới chỉ lọc bảng, không đổi số đếm.</p><div class="matchGrid"><div><h3>Tất cả box ban đầu B</h3><div class="matchTableFilters"><label>Trạng thái<select id="vm_beforeStatus"><option value="all">Tất cả</option><option value="unmatched">Chưa ghép, chưa xác nhận</option><option value="auto">Ghép tự động</option><option value="manual">Ghép đã xác nhận</option><option value="matched">Tất cả đã ghép</option><option value="confirmed">Đã xác nhận xóa</option></select></label><label>Lớp<select id="vm_beforeClass"><option value="all">Tất cả lớp</option></select></label><label>Dòng TXT<input id="vm_beforeSearch" type="search" placeholder="Ví dụ: B74 hoặc 74" autocomplete="off"></label><button id="vm_beforeClear" type="button">Xóa lọc</button></div><p id="vm_beforeCount" class="matchUploadHint" aria-live="polite"></p><div class="matchList"><table><thead><tr><th>Hiện</th><th>Dòng TXT</th><th>Lớp</th><th>Đã ghép</th><th>Chọn</th></tr></thead><tbody id="vm_beforeList"></tbody></table></div></div><div><h3>Tất cả box sau sửa A</h3><div class="matchTableFilters"><label>Trạng thái<select id="vm_afterStatus"><option value="all">Tất cả</option><option value="unmatched">Chưa ghép, chưa xác nhận</option><option value="auto">Ghép tự động</option><option value="manual">Ghép đã xác nhận</option><option value="matched">Tất cả đã ghép</option><option value="confirmed">Đã xác nhận thêm</option></select></label><label>Lớp<select id="vm_afterClass"><option value="all">Tất cả lớp</option></select></label><label>Dòng TXT<input id="vm_afterSearch" type="search" placeholder="Ví dụ: A74 hoặc 74" autocomplete="off"></label><button id="vm_afterClear" type="button">Xóa lọc</button></div><p id="vm_afterCount" class="matchUploadHint" aria-live="polite"></p><div class="matchList"><table><thead><tr><th>Hiện</th><th>Dòng TXT</th><th>Lớp</th><th>Đã ghép</th><th>Chọn</th></tr></thead><tbody id="vm_afterList"></tbody></table></div></div></div>
 </div></details><div id="vm_exportTools" class="matchControls" hidden><button id="vm_export" data-action-icon="download">Tải quyết định ghép (.json)</button><label class="filebtn" data-action-icon="upload">Nạp lại quyết định ghép<input id="vm_import" class="sr" type="file" accept=".json"></label><span class="small">Tải JSON để lưu công việc trước khi đóng trang. Chỉ nạp lại khi ID, dòng và nội dung nhãn trước/sau còn khớp.</span></div>
+</div>
+<div id="intergroupWorkspace" class="intergroupWorkspace" hidden>
+ <div class="igLead"><span class="stepTag">KIỂM TRA GIỮA NHÓM / CHECK_TYPE = INTERGROUP</span><h3>Kiểm 30 ảnh được phân công từ nhóm kế tiếp</h3>
+  <p>Đây là <strong>bản sao để kiểm tra</strong>. Chỉ dùng ảnh trong <code>intergroup_assignments.csv</code>, <code>intergroup_review/images/</code> và <code>baseline_labels/</code>. Để kết luận, cần <strong>nhãn đã sửa của nhóm nguồn</strong> và ảnh gốc; baseline dùng đối chiếu bổ sung, không thay cho kết quả đã sửa. Không được sửa bản chính của nhóm khác.</p>
+ </div>
+ <div id="igOverview" class="igOverview"></div>
+ <p id="igAssignmentLabel" class="igHint"></p>
+ <p id="igProgress" class="igHint"></p>
+ <p id="igIssues" class="igHint" role="status"></p>
+ <details class="igHow" open><summary>Cách kiểm giữa nhóm: đọc trước khi xác nhận</summary>
+  <ol><li>Ở mục 01, nạp nguyên <code>Gxx/</code>. Chương trình tự nhận <code>intergroup_assignments.csv</code>, 30 ảnh (nếu có đủ), <code>baseline_labels</code> thành bộ riêng.</li>
+  <li>Nạp bản nhãn <strong>đã sửa và được bàn giao</strong> của nhóm nguồn tại cùng ô mục 01; ở hộp xác nhận chọn <strong>Nhãn đã sửa của nhóm nguồn (intergroup)</strong>.</li>
+  <li>Chọn ảnh theo <code>image_id</code>, xem trên <strong>toàn ảnh</strong> kể cả ngoài ROI, đối chiếu box; nếu có xe bị khuất, sai class, trùng hoặc thiếu box phải ghi rõ.</li>
+  <li>Ghi <code>agree</code> hoặc <code>disagree</code>, loại lỗi và phương án đề xuất. Người kiểm khác người rà soát ban đầu. Chỉ nhóm nguồn cập nhật bản chính sau quyết định.</li>
+  <li>Tải <code>crosscheck_log_intergroup_draft.csv</code> để bàn giao. Đây là bản nháp kiểm giữa nhóm, không thay 10% kiểm chéo nội bộ hay audit của giảng viên.</li></ol>
+ </details>
+ <div class="igPickRow"><label>Nhập hoặc dán image_id<input id="igImageId" type="search" placeholder="image_id của ảnh kiểm giữa nhóm" spellcheck="false"></label>
+ <button id="igOpen" type="button">Mở ảnh</button><label>Hoặc chọn từ danh sách<select id="igImageSelect"><option value="">Chưa có ảnh kiểm giữa nhóm</option></select></label>
+ <button id="igPrev" type="button" title="Ảnh trước">←</button><button id="igNext" type="button" title="Ảnh kế">→</button></div>
+ <div class="igCanvasBar"><span id="igImageInfo" class="igHint">Nạp dữ liệu ở mục 01 để xem ảnh.</span><label>Chế độ xem<select id="igView"><option value="overlay">Chồng hai bộ box</option><option value="split">Hai ảnh cạnh nhau</option></select></label><button id="igZoom" type="button">Zoom / vừa khung</button></div>
+ <div class="igCanvasGrid"><canvas id="igCanvasPrimary" role="img" aria-label="Ảnh toàn cảnh cùng box" width="800" height="460"></canvas><canvas id="igCanvasSecondary" role="img" aria-label="Ảnh nhãn nhóm nguồn" width="800" height="460" hidden></canvas></div>
+ <p class="igLegend"><span class="igBaselineDot"></span> Baseline (xanh) · <span class="igSourceDot"></span> Nhãn đã sửa nhóm nguồn (cam, nét đứt). Zoom bằng cuộn chuột/trackpad, kéo để di chuyển, phím Z / + / − / 0.</p>
+ <div id="igDifferences" class="igDifferences"></div>
+ <div class="igReviewForm"><h3>Ghi kết quả kiểm tra giữa nhóm (crosscheck_log)</h3>
+  <div class="igReviewGrid"><label>Mã người kiểm (checker_id)<input id="igCheckerId" placeholder="G11_SV01"></label><label>Kết quả (result)<select id="igResult"><option value="">Chưa kết luận</option><option value="agree">agree — đồng ý</option><option value="disagree">disagree — có sai khác</option></select></label><label>Loại lỗi (error_type)<select id="igErrorType"><option value="">Không có / chưa chọn</option><option value="missing">missing — thiếu xe</option><option value="extra">extra — box thừa</option><option value="duplicate">duplicate — box trùng</option><option value="class">class — sai lớp</option><option value="geometry">geometry — sai khung</option><option value="roi">roi — ROI</option><option value="metadata">metadata — dữ liệu nguồn</option></select></label><label>Thời điểm kiểm tra (checked_at)<input id="igCheckedAt" placeholder="YYYY-MM-DDTHH:mm:ss+07:00"></label></div>
+  <label>Phương án đề xuất (resolution)<textarea id="igResolution" rows="2" placeholder="Nêu sửa gì, ở ảnh nào, box nào; nhóm nguồn quyết định cập nhật"></textarea></label>
+  <label>Ghi chú (notes)<textarea id="igNotes" rows="2" placeholder="Vị trí pixel, vùng khó, nguyên nhân bất đồng (nếu có)"></textarea></label>
+  <label class="igAutoAdvance"><input id="igAutoNext" type="checkbox" checked> Tự chuyển sang ảnh chưa kiểm tiếp theo sau khi lưu</label><div class="igActions"><button id="igSave" class="primary" type="button">Lưu kết luận ảnh này</button><button id="igDownload" type="button">Tải crosscheck_log_intergroup_draft.csv</button></div>
+  <p id="igMessage" role="status" class="igHint">Chỉ xác nhận sau khi xem toàn ảnh và bộ nhãn đã sửa của nhóm nguồn.</p>
+ </div>
+</div>
 </section>
 <section id="reviewExport" class="panel matchExportPanel" aria-labelledby="reviewExportTitle" hidden>
  <div class="sectionHead"><div><span class="stepTag">04 / XUẤT KẾT QUẢ</span><h2 id="reviewExportTitle">Xuất kết quả rà soát</h2><p class="small">Hoàn thành đối chiếu ở mục 04 rồi lưu bản nháp CSV hoặc báo cáo ZIP.</p></div></div>
@@ -200,19 +354,19 @@
 
 <link rel="stylesheet" href="assets/styles/core-8822e09edcbc.css">
 
-<section id="coordsSection" class="coords panel" style="margin:24px 0"><div class="coordContent"><div class="sectionHead"><div><span class="stepTag">05 / XỬ LÝ NGOẠI LỆ</span><h2>Chọn box & tọa độ pixel</h2><p>Khoanh vùng cần phân xử hoặc lấy tọa độ chính xác trên ảnh gốc.</p></div></div>
-<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Chọn một ảnh hoặc thư mục ảnh ở mục 04/05; nhập image_id để mở đúng ảnh mà không cần tải lại. Sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. “Ảnh khác” đổi ảnh đang xem. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V hoặc D) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to. Chụm hoặc mở hai ngón trên ảnh hay trackpad để zoom. Với chuột, giữ Ctrl hoặc ⌘ khi lăn trên ảnh. Thanh zoom giữ tâm vùng đang xem. Bạn cũng có thể dùng Ctrl hoặc ⌘ cùng phím +/−.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
-<div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_file" id="coord_imagePick" data-action-icon="image">Chọn ảnh gốc</label><input id="coord_file" type="file" accept="image/*"><span id="coord_meta">Chưa chọn ảnh</span></div>
+<section id="coordsSection" class="coords panel" style="margin:24px 0"><div class="hubNeed" id="hubNeedCoords" role="status"></div><div class="coordContent"><div class="sectionHead"><div><span class="stepTag">05 / XỬ LÝ NGOẠI LỆ</span><h2>Chọn box & tọa độ pixel</h2><p>Khoanh vùng cần phân xử hoặc lấy tọa độ chính xác trên ảnh gốc.</p></div></div>
+<details class="helpDetails"><summary><span class="helpSymbol">?</span> Cách lấy tọa độ và ghi một vùng cần phân xử</summary><div class="helpBody"><p><strong>1. Mở ảnh và nhãn.</strong> Nạp ảnh tại kho dữ liệu mục 01; nhập image_id để mở đúng ảnh mà không cần tải lại. Sau đó chọn TXT cùng ID hoặc dùng nhãn trước/sau đã nạp. Ảnh được mở lại bằng ID tại mục 05. Với vùng chưa có nhãn, bạn có thể khoanh trực tiếp trên ảnh.</p><p><strong>2. Chọn vùng.</strong> Dùng bàn tay (V hoặc D) để chọn box có sẵn hoặc bút (B) để kéo một khung mới. Nếu đã biết bốn tọa độ, mở “Nhập tọa độ thủ công”. Thứ tự là <code>xmin, ymin, xmax, ymax</code>, từ góc trên trái đến góc dưới phải.</p><p><strong>3. Lấy kết quả.</strong> Rê chuột hoặc chạm vào box. “Chép tọa độ” lấy bốn giá trị, còn “Chép ID + box” lấy thêm thông tin để truy lại ảnh. “Xóa” áp dụng cho vùng bạn vẽ hoặc nhập tay. Tọa độ luôn theo kích thước ảnh gốc dù đang phóng to. Chụm hoặc mở hai ngón trên ảnh hay trackpad để zoom. Với chuột, giữ Ctrl hoặc ⌘ khi lăn trên ảnh. Thanh zoom giữ tâm vùng đang xem. Bạn cũng có thể dùng Ctrl hoặc ⌘ cùng phím +/−.</p><p><strong>Ví dụ:</strong> vùng <code>(411, 5, 443, 15)</code> cao 10 px nên có cảnh báo dưới 12 px. Kiểm tra vật thể trên ảnh trước khi ghi chú. Chiều rộng không dùng để xét ngưỡng này.</p></div></details>
+<div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_file" id="coord_imagePick" data-action-icon="image" hidden style="display:none!important">Chọn ảnh gốc</label><input id="coord_file" type="file" accept="image/*" hidden style="display:none!important" tabindex="-1"><span id="coord_meta">Chưa chọn ảnh</span></div>
 <div class="bar coordSourceBar coordSharedImageBar">
- <label class="pick coordSourcePick" for="coord_imageFolder" data-action-icon="folder">Chọn thư mục ảnh</label><input id="coord_imageFolder" type="file" accept="image/*" webkitdirectory multiple>
+ <input id="coord_imageFolder" type="file" accept="image/*" webkitdirectory multiple hidden style="display:none!important" aria-hidden="true" tabindex="-1">
  <label class="coordIdLookup" for="coord_imageId">Mở ảnh theo image_id
   <input id="coord_imageId" type="search" list="coord_imageIds" placeholder="Nhập hoặc dán image_id" autocomplete="off" spellcheck="false" aria-describedby="coord_imageCount">
  </label><datalist id="coord_imageIds"></datalist>
  <button id="coord_openById" type="button" class="secondary">Mở ảnh</button>
- <span id="coord_imageCount" class="coordSharedHint" role="status" aria-live="polite">Ảnh ở mục 04 và 05 được dùng chung. Nhập ID rồi nhấn Enter để mở, không cần tải ảnh lại.</span>
+ <span id="coord_imageCount" class="coordSharedHint" role="status" aria-live="polite">Ảnh được nạp tại mục 01 và dùng chung. Nhập image_id rồi nhấn Enter để mở.</span>
 </div>
 
-<div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_labelFile" id="coord_labelPick" data-action-icon="upload">Chọn nhãn .txt của ảnh</label><input id="coord_labelFile" type="file" accept=".txt"><button id="coord_useBefore" class="secondary">Dùng nhãn ban đầu đã tải</button><button id="coord_useAfter" class="secondary">Dùng nhãn sau sửa đã tải</button><span id="coord_labelMeta">Chưa có nhãn cho ảnh này</span></div>
+<div class="bar coordSourceBar"><label class="pick coordSourcePick" for="coord_labelFile" id="coord_labelPick" data-action-icon="upload" hidden style="display:none!important">Chọn nhãn .txt của ảnh</label><input id="coord_labelFile" type="file" accept=".txt" hidden style="display:none!important" tabindex="-1"><button id="coord_useBefore" class="secondary">Dùng nhãn ban đầu đã tải</button><button id="coord_useAfter" class="secondary">Dùng nhãn sau sửa đã tải</button><span id="coord_labelMeta">Chưa có nhãn cho ảnh này</span></div>
 <details class="settingsFold coordExtras" hidden><summary><span>⌗</span> Nhập tọa độ thủ công <small>Dán tọa độ để thêm box</small></summary><div class="foldBody"><div class="bar coordInputPanel" aria-labelledby="coord_inputTitle">
  <h3 id="coord_inputTitle">Thêm box bằng tọa độ</h3>
  <p class="small">Tọa độ pixel theo <strong>ảnh gốc</strong> (không theo kích thước ảnh đã zoom). Dán một hoặc nhiều bộ <code>(xmin, ymin, xmax, ymax)</code> liên tiếp, có thể thêm <code>#01</code>, <code>#02</code> ở đầu từng bộ.</p>
@@ -282,7 +436,7 @@
    </div>
   </div>
  </div>
- <div id="coord_stage"><div id="coord_empty"><strong>Chưa có ảnh gốc</strong><span>Chọn một ảnh hoặc nhập image_id từ thư mục đã nạp để hiển thị box và sử dụng công cụ tọa độ.</span><small>Ảnh và nhãn được xử lý ngay trong trình duyệt.</small></div><div id="coord_canvasWrap" class="coordCanvasWrap" hidden><canvas id="coord_canvas" hidden></canvas><div id="coord_boxActions" class="coordBoxActions" role="group" aria-label="Thao tác với box trên ảnh" hidden><span id="coord_actionBoxLabel" class="coordActionTitle">Box</span><button id="coord_actionCopy" type="button">Chép tọa độ</button><button id="coord_actionNote" type="button">Chép ID + box</button><button id="coord_actionDelete" type="button" class="danger">Xóa</button></div></div></div>
+ <div id="coord_stage"><div id="coord_empty"><strong>Chưa có ảnh gốc</strong><span>Nạp thư mục ảnh tại mục 01 rồi nhập image_id để hiển thị box và sử dụng công cụ tọa độ.</span><small>Ảnh và nhãn được xử lý ngay trong trình duyệt.</small></div><div id="coord_canvasWrap" class="coordCanvasWrap" hidden><canvas id="coord_canvas" hidden></canvas><div id="coord_boxActions" class="coordBoxActions" role="group" aria-label="Thao tác với box trên ảnh" hidden><span id="coord_actionBoxLabel" class="coordActionTitle">Box</span><button id="coord_actionCopy" type="button">Chép tọa độ</button><button id="coord_actionNote" type="button">Chép ID + box</button><button id="coord_actionDelete" type="button" class="danger">Xóa</button></div></div></div>
 </div><!-- /coordStageShell -->
 <div id="coord_sizeWarning" class="coordSmallWarning" hidden role="status" aria-live="polite"></div>
 <div id="coord_workspace" hidden><div id="coord_overlapWrap" class="bar" hidden><label>Box chồng nhau tại điểm bấm <select id="coord_overlap"></select></label><span class="hint">Chọn đúng số dòng để tránh lấy nhầm khung xe bên cạnh.</span></div>
@@ -421,7 +575,7 @@
 <p>  17. Interpretation of Sections 15 and 16.</p>
 <p>  If the disclaimer of warranty and limitation of liability provided above cannot be given local legal effect according to their terms, reviewing courts shall apply local law that most closely approximates an absolute waiver of all civil liability in connection with the Program, unless a warranty or assumption of liability accompanies a copy of the Program in return for a fee.</p>
 <p>                     END OF TERMS AND CONDITIONS</p>
-</div></details><footer>Hoạt động ngoại tuyến bằng một file HTML. File đầu vào không bị chỉnh sửa. Số đếm là kết quả ghép nhãn để hỗ trợ người rà soát.</footer>
+</div></details><footer>Hoạt động cục bộ trong trình duyệt. Ảnh và file nguồn không bị chỉnh sửa; số liệu ghép nhãn chỉ hỗ trợ rà soát, không thay thế nghiệm thu độc lập.</footer>
 </div></div>
 <script src="assets/scripts/core-a67fe933b7b3.js"></script>
 <script src="assets/scripts/core-a7504b369507.js"></script>
@@ -510,9 +664,14 @@
 
 <link rel="stylesheet" href="assets/styles/v413SharedImages.css">
 <link rel="stylesheet" href="assets/styles/v416ShortAReview.css">
+<link rel="stylesheet" href="assets/styles/v417UnifiedUploadQC.css">
 <link rel="stylesheet" href="assets/styles/releaseNotes.css">
+<link rel="stylesheet" href="assets/styles/v4186CompactWorkflow.css?v=419">
 <script src="assets/scripts/releaseNotes.js?v=autoscroll-fix"></script>
 
 
+<link rel="stylesheet" href="assets/styles/v419WorkflowAndIntergroup.css?v=419">
+<script src="assets/scripts/v419IntergroupReview.js?v=419"></script>
+<script src="assets/scripts/v417UnifiedUploadQC.js"></script>
 </body>
 </html>

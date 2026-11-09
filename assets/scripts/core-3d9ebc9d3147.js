@@ -321,15 +321,15 @@ function syncSharedImageIds(){
  for(const id of ids){const option=document.createElement('option');option.value=id;fragment.append(option);}
  list.append(fragment);
  $('imageCount').textContent=ids.length
-  ?`Đã đồng bộ ${ids.length} ảnh từ mục 04/05. Nhập image_id và nhấn Enter để mở.`
-  :'Chưa có thư mục ảnh. Chọn thư mục ở đây hoặc tải ảnh mục 04 trước, rồi nhập image_id.';
+  ?`Đã có ${ids.length} ảnh trong kho dữ liệu chung. Nhập image_id và nhấn Enter để mở.`
+  :'Chưa có ảnh. Nạp ảnh ở mục 01 trước, sau đó nhập image_id để mở.';
 }
 function openByImageId(){
  const input=$('imageId'),typed=input.value.trim(),ids=window.MatchReview?.listImageIds?.()||[];
  if(!typed){$('status').textContent='Hãy nhập image_id để mở ảnh đã nạp.';return;}
  const key=imageId(typed),exact=ids.find(id=>id.toLowerCase()===key.toLowerCase());
  const matching=exact?[exact]:ids.filter(id=>id.toLowerCase().includes(key.toLowerCase()));
- if(!matching.length){$('status').textContent='Không tìm thấy ảnh cho ID: '+typed+'. Chọn thư mục ảnh ở mục 04 hoặc 05 trước.';return;}
+ if(!matching.length){$('status').textContent='Không tìm thấy ảnh cho ID: '+typed+'. Hãy bổ sung ảnh tại mục 01.';return;}
  if(matching.length>1){$('status').textContent='Có '+matching.length+' ảnh trùng phần ID. Hãy nhập ID đầy đủ hoặc chọn gợi ý.';return;}
  const file=window.MatchReview?.getImageFile?.(matching[0]);
  if(!file){$('status').textContent='Không tìm thấy tệp ảnh tương ứng. Vui lòng nạp lại thư mục.';return;}

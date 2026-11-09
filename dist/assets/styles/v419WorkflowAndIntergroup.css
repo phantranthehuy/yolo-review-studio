@@ -1,0 +1,72 @@
+/* v4.1.9 — dẫn dắt cách sử dụng trong trang, cùng nơi nạp và bộ kiểm giữa nhóm độc lập. */
+.workflowIntro{margin:18px 0 24px;padding:22px 24px;background:var(--panel,#1b2a32);border:1px solid var(--line,#3a515d);border-radius:17px}
+.workflowIntro .sectionHead{margin-bottom:14px}.workflowIntro h2{font-size:clamp(19px,2vw,25px)}
+.workflowSteps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.workflowSteps a{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line,#45616a);border-radius:13px;background:var(--panel2,rgba(128,128,128,.08));padding:15px;color:inherit!important;text-decoration:none!important;min-width:0;transition:border-color .2s,background .2s}
+.workflowSteps a:hover,.workflowSteps a:focus-visible{border-color:#3996a1;background:rgba(52,148,159,.13)}
+.workflowSteps b{font-size:12px;color:#62c9c5;letter-spacing:.07em}.workflowSteps strong{font-size:15px}.workflowSteps span{font-size:12.5px;line-height:1.55;color:var(--muted,#adc0c8)}
+.workflowSteps code,.uploadHowGrid code{overflow-wrap:anywhere;word-break:break-word}
+.workflowGlossary{margin-top:14px;border-top:1px solid var(--line,#45616a);padding-top:13px}.workflowGlossary>summary{font-weight:750;cursor:pointer;color:inherit}
+.workflowGlossaryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 15px;margin-top:10px}
+.workflowGlossaryGrid p{font-size:13px;line-height:1.65;margin:0 0 8px}
+.uploadExplainer{border:1px solid var(--line,#405762);border-radius:13px;padding:14px 16px;margin:12px 0 14px;background:var(--panel2,rgba(128,128,128,.07))}
+.uploadExplainer>strong{display:block;font-size:14px;margin-bottom:8px}
+.uploadHowGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.uploadHowGrid p{font-size:12.6px;line-height:1.6;margin:0;border-left:3px solid #4db0b1;padding:4px 10px;color:inherit}
+.igHubStatus{border:1px solid #376f7e;border-radius:10px;background:rgba(39,134,149,.08);padding:11px 14px;margin:13px 0;font-size:13px;line-height:1.6}
+.workflowSafety{margin:12px 0 15px;border-left:3px solid #c58c37;border-radius:7px;padding:11px 13px;background:rgba(194,137,48,.12);font-size:13px;line-height:1.7}
+.matchScopeSwitch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:15px 0 19px}
+.matchScopeSwitch .scopeBtn{display:flex;gap:12px;text-align:left;align-items:center;border:1px solid var(--line,#475d68);border-radius:13px;padding:14px 16px;background:var(--panel2,#253640);color:inherit;min-width:0;cursor:pointer;font:inherit}
+.matchScopeSwitch .scopeBtn[aria-pressed="true"]{background:rgba(19,119,131,.17);border-color:#36a3ae;box-shadow:inset 0 0 0 1px rgba(54,163,174,.16)}
+.matchScopeSwitch .scopeIcon{font-size:17px;font-weight:800;width:44px;height:42px;border-radius:11px;background:rgba(55,156,170,.16);color:#56c5c9;display:grid;place-items:center;flex:none}
+.matchScopeSwitch .scopeBtn b{font-size:14px;display:block}.matchScopeSwitch .scopeBtn small{font-size:12px;display:block;margin-top:4px;color:var(--muted,#a9bbc4);line-height:1.4}
+#mainMatchWorkspace[hidden],#intergroupWorkspace[hidden]{display:none!important}.intergroupMode #reviewExport{display:none!important}
+.intergroupWorkspace{border:1px solid var(--line,#4e636d);border-radius:16px;background:var(--panel,#192831);padding:19px;min-width:0}
+.igLead>h3{font-size:20px;margin:6px 0 9px}.igLead p{font-size:13.5px;line-height:1.65;margin:0 0 15px}
+.igOverview{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:0 0 13px}.igStat{border:1px solid var(--line,#48606a);background:var(--panel2,#283841);border-radius:11px;padding:12px;min-width:0}
+.igStat b{display:block;font-size:17px;line-height:1.35;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.igStat span{display:block;font-size:11.5px;color:var(--muted,#bbccd2);margin-top:4px}
+.igHint{font-size:12.5px;color:var(--muted,#b9c7ce);line-height:1.6;margin:7px 0}.igBad{color:#e58d87!important;font-weight:700}
+.igHow{border:1px solid var(--line,#475e67);border-radius:11px;margin:12px 0 15px;background:var(--panel2,#243640);padding:12px 15px;font-size:13px;line-height:1.7}
+.igHow summary{font-weight:700;cursor:pointer}.igHow ol{padding-left:22px;margin:9px 0 0}.igHow li{margin:4px 0}
+.igPickRow{display:grid;grid-template-columns:minmax(160px,1.1fr) auto minmax(160px,1.1fr) auto auto;gap:9px;align-items:end;margin:15px 0}
+.igPickRow label,.igCanvasBar label,.igReviewForm label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:650;min-width:0}
+.igPickRow input,.igPickRow select,.igCanvasBar select,.igReviewForm select,.igReviewForm input,.igReviewForm textarea{width:100%;min-height:41px;min-width:0;box-sizing:border-box;border-radius:9px;padding:8px 11px;color:inherit;background:var(--panel2,#263740);border:1px solid var(--line,#52707b);font:inherit;font-size:13px}
+.igPickRow button,.igCanvasBar button,.igActions button{min-height:41px;border:1px solid var(--line,#52707b);border-radius:9px;padding:8px 13px;background:var(--panel2,#263740);color:inherit;font-weight:650;cursor:pointer;white-space:nowrap}
+.igPickRow button:hover,.igActions button:hover{border-color:#4eaeb6}.igPickRow button:disabled,.igActions button:disabled{opacity:.48;cursor:not-allowed}
+.igCanvasBar{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:12px 0;flex-wrap:wrap}.igCanvasBar>span{flex:1;min-width:180px}.igCanvasBar label{min-width:190px}
+.igCanvasGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0}.igCanvasGrid canvas{width:100%;height:auto;max-height:520px;aspect-ratio:16/9;object-fit:contain;background:#111d23;border:1px solid #44606e;border-radius:11px;cursor:grab;touch-action:pan-y}
+.igCanvasGrid canvas:active{cursor:grabbing}.igCanvasGrid canvas[hidden]{display:none}.igCanvasGrid:has(canvas[hidden]){grid-template-columns:minmax(0,1fr)}
+.igLegend{font-size:12px;line-height:1.7;color:var(--muted,#b7c8ce);margin:9px 0 14px}
+.igBaselineDot,.igSourceDot{display:inline-block;width:12px;height:12px;border-radius:3px;background:#03a58f}.igSourceDot{background:#ee8a3d}
+.igDifferences{margin:10px 0 17px}.igDiffSummary{padding:10px 13px;border:1px solid var(--line,#48626c);background:var(--panel2,#273840);border-radius:9px;font-weight:600;font-size:13px}
+.igDiffList{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;max-height:155px;overflow:auto}.igEvent{font-size:11.5px;border:1px solid var(--line,#496771);border-radius:8px;padding:4px 9px;line-height:1.5}
+.igReviewForm{border-top:1px solid var(--line,#48616c);padding-top:16px}.igReviewForm>h3{font-size:16px;margin:0 0 12px}.igReviewGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-bottom:10px}
+.igReviewForm>label{margin:10px 0}.igReviewForm textarea{min-height:64px;resize:vertical}.igActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.igActions button.primary{background:#0a7682;color:#fff;border-color:#0a7682}
+@media(max-width:1100px){.workflowSteps{grid-template-columns:repeat(2,minmax(0,1fr))}.uploadHowGrid{grid-template-columns:1fr}.igOverview{grid-template-columns:repeat(3,minmax(0,1fr))}.igPickRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.igPickRow button:nth-last-child(-n+2){min-width:44px}}
+@media(max-width:680px){.workflowIntro{padding:17px 13px}.workflowSteps{grid-template-columns:repeat(2,minmax(0,1fr))}.workflowSteps a{padding:12px}.workflowGlossaryGrid{grid-template-columns:minmax(0,1fr)}.matchScopeSwitch{grid-template-columns:1fr}.intergroupWorkspace{padding:12px}.igOverview{grid-template-columns:repeat(2,minmax(0,1fr))}.igPickRow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.igPickRow label:first-child{grid-column:1 / -1}.igPickRow label:nth-child(3){grid-column:1/-1}.igCanvasGrid{grid-template-columns:1fr}.igReviewGrid{grid-template-columns:1fr}.igCanvasBar label{min-width:140px}.igCanvasGrid canvas{max-height:370px}}
+@media(max-width:360px){.workflowSteps{grid-template-columns:1fr}.igOverview{grid-template-columns:1fr}}
+/* Explicit dark ink for isolated intergroup card on light scenic themes. */
+.matchScopeSwitch .scopeBtn{background:#21343f!important;color:#eff8fa!important;border-color:#4b6975!important}
+.matchScopeSwitch .scopeBtn[aria-pressed="true"]{background:#116d79!important;color:#fff!important;border-color:#54c3cc!important}
+.matchScopeSwitch .scopeBtn small{color:#bed4dc!important}
+.intergroupWorkspace{background:#172a34!important;color:#edf7fa!important;border-color:#436573!important}
+.intergroupWorkspace .igStat,.intergroupWorkspace .igHow,.intergroupWorkspace .igDiffSummary{background:#213842!important;color:#edf7fa!important;border-color:#4a6570!important}
+.intergroupWorkspace .igStat span,.intergroupWorkspace .igHint,.intergroupWorkspace .igLegend{color:#b4d0d9!important}
+.intergroupWorkspace .igPickRow input,.intergroupWorkspace .igPickRow select,.intergroupWorkspace .igCanvasBar select,.intergroupWorkspace .igReviewForm select,.intergroupWorkspace .igReviewForm input,.intergroupWorkspace .igReviewForm textarea{background:#243b45!important;color:#f3fafc!important;border-color:#526f7b!important}
+.intergroupWorkspace button:not(.primary){background:#293e48;color:#edf7fa;border-color:#4e6b76}
+.intergroupWorkspace .igReviewForm>h3{color:#f4fafc}
+.intergroupWorkspace .igBad{color:#ff9d96!important}
+
+.workflowManual{margin-top:14px;border-top:1px solid var(--line,#4c606a);padding-top:13px}
+.workflowManual>summary{cursor:pointer;font-weight:800;font-size:14px;color:inherit}
+.workflowManualGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-top:14px}
+.workflowManualGrid article{border:1px solid var(--line,#46616b);background:var(--panel2,rgba(50,90,105,.09));border-radius:12px;padding:13px 15px;min-width:0}
+.workflowManualGrid h3{font-size:14px;margin:0 0 8px}
+.workflowManualGrid p{font-size:12.4px;line-height:1.65;margin:0 0 8px}
+.workflowManualGrid p:last-child{margin-bottom:0}
+.workflowManualGrid code{overflow-wrap:anywhere}
+body.intergroupMode #hubNeedMatch{display:none!important}
+@media(max-width:680px){.workflowManualGrid{grid-template-columns:1fr}.workflowManualGrid article{padding:13px}}
+
+.igAutoAdvance{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;margin:12px 0 7px;font-size:12.5px!important;color:#d5e9ec!important;cursor:pointer}
+.igAutoAdvance input{width:17px!important;min-height:auto!important;height:17px;accent-color:#15a3ad;flex:none}
