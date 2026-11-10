@@ -135,6 +135,19 @@ function selectBeforeBox(index){
 }
 function boxRect(b,index){return operation?.kind?.startsWith('label-')&&operation.index===index&&operation.preview?operation.preview:pixelBox(b,img.naturalWidth,img.naturalHeight);}
 function afterEntry(){if(!img)return null;try{return nameMap(state.after).get(imageId(filename))||null;}catch{return null;}}
+// Đặt tên TXT A theo đúng quy tắc "Tải nhãn A đổi tên" ở mục 01.
+function afterOutputName(source){
+ if(!source)return '';
+ const id=cleanId(source.name,document.getElementById('normalize').checked);
+ if(!id)throw Error('Không xác định được image_id của nhãn A sau xử lý.');
+ return id+'.txt';
+}
+function showAfterLabelMeta(source,boxCount,edited=false){
+ const output=afterOutputName(source),meta=$('labelMeta');
+ meta.textContent=`A sau xử lý · ${output}: ${boxCount} box${edited?' · đã chỉnh trong phiên, hãy tải TXT A.':'. Chọn khung để sửa và tải TXT A.'}`;
+ meta.title=source.name===output?`Tên TXT xuất: ${output}`:`Tên TXT xuất: ${output}\nTên nhãn gốc khi nạp: ${source.name}`;
+ $('exportAfter').title=`Tải nhãn A sau xử lý: ${output}`;
+}
 function canEditAfter(){return !!(afterEntry()&&labelFile&&loadedAfterId===imageId(filename));}
 function syncAfterControls(){
  const editable=canEditAfter(),selectedA=selected>=0&&editable;
@@ -161,7 +174,7 @@ function recordAfterEdit(nextLines,info){
  if(shortened||selected>=labels.length){selected=-1;rect=null;regionSource='none';hoverLabel=-1;overlap=[];}
  state.matchReviews.clear();invalidate();updateCounts();
  window.dispatchEvent(new CustomEvent('yolo:labels-updated',{detail:{side:'after',source:'coordinates'}}));
- $('labelMeta').textContent=`A · ${source.name}: ${labels.length} box · đã chỉnh trong phiên, hãy tải TXT A.`;
+ showAfterLabelMeta(source,labels.length,true);
  setOptions();syncAfterControls();redraw();
  $('status').textContent=info+' File trên ổ đĩa chưa bị ghi đè; nhấn Tải TXT A để lưu.';
 }
@@ -205,7 +218,9 @@ function syncToolbar(){
  const allowRemove=info.kind==='draw'||(info.kind==='label'&&canEditAfter());
  $('actionDelete').hidden=!allowRemove;
  $('actionDelete').disabled=!allowRemove;
- $('actionDelete').textContent=info.kind==='label'?'Xóa box A':'Xóa vùng tạm';
+ $('actionDelete').textContent='Xóa';
+ $('actionDelete').title=info.kind==='label'?'Xóa box A':'Xóa vùng tạm';
+ $('actionDelete').setAttribute('aria-label',$('actionDelete').title);
  // Locate controls in the same CSS coordinate space as the canvas, including at zoom 400%.
  el.style.visibility='hidden';
  const sx=c.clientWidth/img.naturalWidth,sy=c.clientHeight/img.naturalHeight;
@@ -304,7 +319,7 @@ function syncSourcePicks(){
  labelPick.classList.toggle('isLoadedFile',!!labelFile);
 }
 function resetLabels(){labels=[];labelFile=null;loadedAfterId='';selected=-1;selectedBefore=-1;hoverDrawId=null;hoverLabel=-1;if(regionSource==='label'){rect=null;regionSource='none';}overlap=[];$('overlapWrap').hidden=true;$('labelMeta').textContent='Chưa có nhãn A cho ảnh này';syncSourcePicks();setOptions();syncAfterControls();redraw();renderDrawnList();}
-function attachLabels(file,side='manual'){const boxes=parseLabels(file,false);hoverDrawId=null;hoverLabel=-1;if(img&&imageId(file.name)!==imageId(filename))throw Error('Tên nhãn không khớp ảnh: '+file.name+' / '+filename+'. Chọn đúng nhãn; hậu tố .rf được nhận diện tự động.');boxes.forEach(b=>pixelBox(b,1,1));labelFile=file;loadedAfterId=side==='after'?imageId(filename):'';labels=boxes;selected=-1;selectedBefore=-1;selectedDrawId=null;regionSource='none';rect=null;overlap=[];$('overlapWrap').hidden=true;$('labelMeta').textContent=`${side==='after'?'A · ':''}${file.name}: ${labels.length} box.${side==='after'?' Chọn khung để sửa và tải TXT A.':' Chỉ xem (không thuộc bộ A đã nạp).'}`;syncSourcePicks();$('showBoxes').checked=true;setOptions();syncAfterControls();redraw();renderDrawnList();$('status').textContent=img?(labels.length?'Có thể bấm box TXT hoặc khoanh thêm nhiều vùng khác.':'Nhãn rỗng: chọn Khoanh tay vùng mới.'):'Đã đọc nhãn. Chọn ảnh gốc cùng ID để hiển thị.';}
+function attachLabels(file,side='manual'){const boxes=parseLabels(file,false);hoverDrawId=null;hoverLabel=-1;if(img&&imageId(file.name)!==imageId(filename))throw Error('Tên nhãn không khớp ảnh: '+file.name+' / '+filename+'. Chọn đúng nhãn; hậu tố .rf được nhận diện tự động.');boxes.forEach(b=>pixelBox(b,1,1));labelFile=file;loadedAfterId=side==='after'?imageId(filename):'';labels=boxes;selected=-1;selectedBefore=-1;selectedDrawId=null;regionSource='none';rect=null;overlap=[];$('overlapWrap').hidden=true;if(side==='after')showAfterLabelMeta(file,labels.length,false);else $('labelMeta').textContent=`${file.name}: ${labels.length} box. Chỉ xem (không thuộc bộ A đã nạp).`;syncSourcePicks();$('showBoxes').checked=true;setOptions();syncAfterControls();redraw();renderDrawnList();$('status').textContent=img?(labels.length?'Có thể bấm box TXT hoặc khoanh thêm nhiều vùng khác.':'Nhãn rỗng: chọn Khoanh tay vùng mới.'):'Đã đọc nhãn. Chọn ảnh gốc cùng ID để hiển thị.';}
 function useLoaded(side,silent=false){try{if(!img){if(!silent)$('status').textContent='Chọn ảnh gốc trước.';return false;}const map=nameMap(state[side]),f=map.get(imageId(filename));if(!f){if(!silent)$('status').textContent='Không có nhãn A cùng ID trong bộ sau sửa. Nạp bộ A tại mục 01 trước.';return false;}labelSeq++;attachLabels(f,side);return true;}catch(e){if(!silent)$('status').textContent=e.message;return false;}}
 // Render text and boxes as SVG primitives at final CSS pixel positions.
 // Unlike the 8 MP bitmap canvas, vectors never lose resolution when zoom exceeds 400%.
@@ -574,7 +589,16 @@ function deleteAfterIndex(index){
  try{rewriteAfter(index,{remove:true});clear();}catch(e){$('status').textContent=e.message;}
 }
 $('deleteAfter').addEventListener('click',()=>deleteAfterIndex(selected));
-$('exportAfter').addEventListener('click',()=>{const source=afterEntry();if(!source)return;const data=new Blob([source.text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(data),a=document.createElement('a');a.href=url;a.download=source.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);$('status').textContent=`Đã yêu cầu tải ${source.name}. Đây là nhãn A đang có trong phiên, không phải nhãn B.`;});
+$('exportAfter').addEventListener('click',()=>{
+ const source=afterEntry();if(!source)return;
+ // Dùng image_id đã chuẩn hóa, không đổi tên tệp nguồn trong RAM.
+ const output=afterOutputName(source);
+ const data=new Blob([source.text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(data),a=document.createElement('a');
+ a.href=url;a.download=output;document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),30000);
+ $('status').textContent=`Đã yêu cầu tải ${output} — trùng tên trong gói "Tải nhãn A đổi tên". Có thể đưa vào thư mục labels đã chuẩn hóa để thay đúng tệp.`;
+});
+document.getElementById('normalize').addEventListener('change',()=>{const source=afterEntry();if(source&&source===labelFile)showAfterLabelMeta(source,labels.length,!!lastCommittedA&&lastCommittedA.imageId===imageId(filename));});
 window.addEventListener('yolo:labels-updated',event=>{if(!img||event.detail?.source==='coordinates')return;if(event.detail?.side==='before')syncBeforeOverlay();if(event.detail?.side==='after'){resetLabels();useLoaded('after',true);}redraw();});
 
 $('boxSelect').onchange=()=>{if($('boxSelect').value===''){clear();return;}overlap=[];$('overlapWrap').hidden=true;selectBox(Number($('boxSelect').value));};$('overlap').onchange=()=>selectBox(Number($('overlap').value));

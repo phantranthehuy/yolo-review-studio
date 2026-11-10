@@ -1,0 +1,70 @@
+/* v5.0 UI refinement: compact guided flow, one upload location, no orphaned cards. */
+.workflowIntro{padding:20px 22px}
+.workflowIntro .sectionHead{margin-bottom:12px}
+.workflowSteps{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.workflowSteps a{padding:12px 13px;min-height:112px;gap:5px}
+.workflowSteps strong{font-size:13px;line-height:1.4}
+.workflowSteps span{font-size:11.5px;line-height:1.5}
+.workflowSteps b{font-size:11px}
+/* Import for member merge lives in the existing main uploader, not duplicated in #06. */
+#uploadHub .hubSingleDrop{min-height:0!important;padding:25px 20px 18px!important;gap:10px!important}
+#uploadHub .mergeUploadGate{width:min(670px,100%);display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;border-top:1px solid var(--line,#9cb0b7);margin:10px 0 0;padding:15px 0 0;text-align:left;min-width:0;flex-wrap:wrap}
+#uploadHub .mergeGateHeading{flex:1 1 195px;display:flex;flex-direction:column;gap:2px;min-width:0}
+#uploadHub .mergeGateHeading strong{font-size:12.5px;line-height:1.5;letter-spacing:0;color:var(--ink,#203744)}
+#uploadHub .mergeGateHeading strong span{font-size:11px;opacity:.7}
+#uploadHub .mergeGateHeading small{font-size:11px;color:var(--muted,#536a76);line-height:1.5;font-weight:500}
+#uploadHub .mergeUploadButtons{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+#uploadHub .mergeFileBtn{box-sizing:border-box;font-size:12px;min-height:37px;padding:8px 12px;border-radius:9px;background:#0b7470;border:1px solid #0b7470;color:#fff!important}
+#uploadHub .mergeFileBtn:hover{background:#075e5b}
+#uploadHub .mergeUploadGate:disabled .mergeFileBtn{background:#d9e0e3!important;border-color:#d9e0e3!important;color:#788a92!important;cursor:not-allowed}
+#uploadHub .mergeUploadGate:disabled .mergeFileBtn input{pointer-events:none}
+html[data-theme="dark"] #uploadHub .mergeGateHeading strong{color:#e7f4f4}
+html[data-theme="dark"] #uploadHub .mergeGateHeading small{color:#b5c8cc}
+html[data-theme="dark"] #uploadHub .mergeUploadGate:disabled .mergeFileBtn{background:#263842!important;border-color:#364c56!important;color:#91a4ac!important}
+/* Show one meaningful locked state only; no gray empty fields/buttons beneath. */
+#mergeSection{margin:18px 0 24px!important;gap:13px;max-width:100%}
+#mergeSection.is-locked .mergeControls{display:none!important}
+#mergeSection .mergeLock{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 18px;flex-wrap:wrap}
+#mergeSection .mergeLockCopy{display:flex;flex:1 1 330px;flex-direction:column;gap:5px}
+#mergeSection .mergeLockCopy strong{font-size:14px}
+#mergeSection .mergeLockCopy span{font-size:12px;line-height:1.5}
+#mergeSection .mergeLock button{margin:0;min-height:37px;white-space:normal}
+#mergeSection .sectionHead p a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+/* License must follow all work sections, fully collapsed until opened. */
+.zipFooterRegion{margin-top:22px}
+.zipFooterInner{padding-top:13px;padding-bottom:25px}
+.zipFooterRegion::before{backdrop-filter:none;-webkit-backdrop-filter:none}
+.zipLicense{margin:0}
+.zipLicense>summary{font-size:13px;font-weight:700;line-height:1.6;color:var(--muted,#607580);padding:8px 0}
+html[data-theme="dark"] .zipLicense>summary{color:#bbcbd2}
+@media(max-width:1100px){.workflowSteps{grid-template-columns:repeat(5,minmax(0,1fr))}.workflowSteps a{padding:10px;min-height:105px}.workflowSteps strong{font-size:12px}}
+@media(max-width:800px){.workflowSteps{grid-template-columns:1fr}.workflowSteps a{min-height:0;display:grid;grid-template-columns:29px minmax(0,1fr);grid-template-rows:auto auto;gap:2px 9px;padding:11px 13px}.workflowSteps b{grid-row:1/3;align-self:center;font-size:12px}.workflowSteps strong,.workflowSteps span{grid-column:2}.workflowSteps span{font-size:12px}}
+@media(max-width:650px){#uploadHub .mergeUploadGate{flex-direction:column;align-items:stretch;padding-top:13px}#uploadHub .mergeGateHeading{flex:auto}#uploadHub .mergeUploadButtons{justify-content:stretch}#uploadHub .mergeUploadButtons .mergeFileBtn{flex:1 1 125px}}
+/* Keep every guide card aligned: no isolated final tile. */
+@media(min-width:801px){.workflowSteps{grid-template-columns:repeat(5,minmax(0,1fr))}}
+/* A locked merge workspace should show only its reason and route to manifest. */
+#mergeSection.is-locked .mergeControls{display:none!important}
+#uploadHub .mergeUploadGate{box-shadow:none}
+
+/* Workflow intro uses an explicit coherent palette; old fallbacks rendered
+   near-black copy on a charcoal panel in the default theme. */
+.workflowIntro{background:#ffffff!important;border-color:#d7e2e7!important;color:#233945!important}
+.workflowIntro h2,.workflowIntro .sectionHead h2,.workflowIntro .workflowSteps strong{color:#1d3442!important}
+.workflowIntro .sectionHead p,.workflowIntro .workflowSteps span{color:#526a78!important}
+.workflowIntro .workflowSteps a{background:#f7fafb!important;border-color:#dbe5e9!important;color:#1d3442!important}
+.workflowIntro .workflowSteps a:hover,.workflowIntro .workflowSteps a:focus-visible{border-color:#3b9b9e!important;background:#edf8f7!important}
+.workflowIntro .workflowSteps b{color:#117b7a!important}
+.workflowIntro .workflowGlossary,.workflowIntro .workflowGlossary summary{color:#385260!important}
+html[data-theme="dark"] .workflowIntro{background:#21313a!important;border-color:#465c68!important;color:#eaf5f6!important}
+html[data-theme="dark"] .workflowIntro h2,html[data-theme="dark"] .workflowIntro .sectionHead h2,html[data-theme="dark"] .workflowIntro .workflowSteps strong{color:#edf6f6!important}
+html[data-theme="dark"] .workflowIntro .sectionHead p,html[data-theme="dark"] .workflowIntro .workflowSteps span{color:#bacbd3!important}
+html[data-theme="dark"] .workflowIntro .workflowSteps a{background:#283b45!important;border-color:#4e6570!important;color:#eaf5f6!important}
+html[data-theme="dark"] .workflowIntro .workflowSteps a:hover,html[data-theme="dark"] .workflowIntro .workflowSteps a:focus-visible{background:#304f54!important;border-color:#65bdb5!important}
+html[data-theme="dark"] .workflowIntro .workflowSteps b{color:#7cdbd0!important}
+html[data-theme="dark"] .workflowIntro .workflowGlossary,html[data-theme="dark"] .workflowIntro .workflowGlossary summary{color:#dae6eb!important}
+/* Feedback is a footer action, not a floating orphaned pill. */
+.zipFooterRegion .footerActions{display:flex;align-items:center;justify-content:flex-start;margin:12px 0 10px}
+.zipFooterRegion .footerActions .feedbackLink{position:static!important;inset:auto!important;transform:none!important;z-index:auto!important;display:inline-flex!important;align-items:center;gap:8px;width:max-content!important;height:auto!important;padding:9px 15px!important;border-radius:10px!important;font-size:12px!important;box-shadow:none!important;text-decoration:none!important}
+.zipFooterRegion .footerActions .feedbackLink[hidden]{display:none!important}
+.zipFooterRegion .zipLicense{margin:5px 0 0;border-top:1px solid #d4e0e5;padding:8px 0 0}
+html[data-theme="dark"] .zipFooterRegion .zipLicense{border-color:#405965}

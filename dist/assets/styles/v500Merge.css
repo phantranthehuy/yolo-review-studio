@@ -1,0 +1,83 @@
+/* YOLO Review Studio v5.0: isolated merge workspace — compact, accessible on dark/light screens. */
+.mergeWorkspace{margin:26px 0!important;display:grid;gap:16px;scroll-margin-top:24px}
+.mergeWorkspace .sectionHead{margin-bottom:0}
+.mergeLock{display:grid;gap:9px;background:color-mix(in srgb,var(--panel,#25343e) 84%,transparent);border:1px solid var(--line,#50616c);border-radius:12px;padding:19px;color:var(--muted,#c4d0d8)}
+.mergeLock strong{color:var(--text,#f2f6f8);font-size:15px}
+.mergeLock span{line-height:1.6;font-size:13px}
+.mergeLock button{justify-self:start}
+.mergeControls{border:0;margin:0;padding:0;min-width:0;display:grid;gap:16px}
+.mergeWorkspace.is-locked .mergeControls{opacity:.38;pointer-events:none;filter:grayscale(.5)}
+.mergeUploadBar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;padding:17px;border:1px solid var(--line,#52636c);border-radius:12px}
+.mergeUploadTitle{flex:1 1 270px}
+.mergeUploadTitle strong{font-size:15px;color:var(--text,#fff)}
+.mergeUploadTitle p,.mergeProgressHeading p{font-size:12px;line-height:1.65;color:var(--muted,#b3c1c9);margin:6px 0 0}
+.mergeUploadButtons{display:flex;gap:9px;flex-wrap:wrap}
+.mergeFileBtn{position:relative;display:inline-flex;align-items:center;justify-content:center;padding:10px 13px;min-height:39px;border-radius:9px;font-size:12px;font-weight:700;background:#19675f;color:#fff!important;border:1px solid #278e82;cursor:pointer;white-space:nowrap}
+.mergeFileBtn:hover{background:#267c71}
+.mergeFileBtn:focus-within{outline:2px solid #80ded4;outline-offset:2px}
+.mergeFileBtn input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.mergeStatus{padding:10px 12px;background:color-mix(in srgb,#16786e 12%,transparent);border:1px solid color-mix(in srgb,#32b8a4 33%,transparent);border-radius:9px;font-size:12px;line-height:1.6;color:var(--text,#eff7f8)}
+.mergeStatus[data-kind="error"]{background:color-mix(in srgb,#bb4242 17%,transparent);border-color:#b95757;color:var(--text,#fff)}
+.mergeTotals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mergeMetric{border:1px solid var(--line,#53606a);border-radius:11px;padding:14px 15px;display:grid;gap:4px;background:color-mix(in srgb,var(--panel,#202d35) 92%,transparent)}
+.mergeMetric strong{font-size:clamp(19px,2.6vw,27px);font-variant-numeric:tabular-nums;color:var(--text,#fff);line-height:1.15}
+.mergeMetric span{font-size:12px;color:var(--muted,#b3c1c9)}
+.mergeProgressHeading{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mergeProgressHeading h3{margin:0;font-size:16px;color:var(--text,#fff)}
+.mergeMemberRows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.mergeMemberCard{min-width:0;padding:14px;border:1px solid var(--line,#4e626c);border-radius:11px;background:color-mix(in srgb,var(--panel,#21303a) 88%,transparent);display:grid;gap:10px}
+.mergeMemberCard.is-complete{border-color:color-mix(in srgb,#26ae95 60%,var(--line,#53636b))}
+.mergeMemberTop,.mergeMemberBottom{display:flex;justify-content:space-between;align-items:center;gap:9px}
+.mergeMemberTop strong{font-size:13px;color:var(--text,#fff)}
+.mergeMemberTop span{font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted,#cad1d7);white-space:nowrap}
+.mergeMemberBottom span{font-size:11px;color:var(--muted,#c3d0d8);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mergeMemberBottom button{font-size:11px;padding:6px 8px;flex:0 0 auto;min-width:auto}
+.mergeTrack{height:9px;border-radius:99px;background:color-mix(in srgb,var(--line,#71828c) 48%,transparent);overflow:hidden}
+.mergeTrackFill{height:100%;background:#259d90;border-radius:99px;transition:width .18s ease}
+.mergeFootInfo{font-size:12px;line-height:1.6;color:var(--muted,#c0cdd5)}
+.mergeFooter{padding-top:15px;border-top:1px solid var(--line,#586971);display:grid;gap:12px}
+.mergeActions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.mergeActions button{min-height:40px}
+.mergeActions button:disabled{opacity:.4;cursor:not-allowed}
+.mergeConfirmModal:not([hidden]){position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(5,12,20,.76);padding:18px}
+.mergeConfirmCard{width:min(500px,100%);max-height:90vh;overflow:auto;border-radius:16px;background:var(--panel,#1e2e37);border:1px solid var(--line,#64737c);box-shadow:0 18px 60px #0006;padding:22px;color:var(--text,#f2f5f8)}
+.mergeConfirmCard h2{font-size:20px;margin:12px 0}
+.mergeConfirmCard p{font-size:13px;line-height:1.7}
+.mergeConfirmActions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+#mergeSection button:focus-visible,.mergeConfirmModal button:focus-visible{outline:2px solid #66cbbd;outline-offset:2px}
+.qcFindingsTop{flex-wrap:wrap}
+#qcMemberFilter{min-width:150px;max-width:230px}
+@media(max-width:680px){.mergeTotals{grid-template-columns:repeat(3,minmax(0,1fr))}.mergeMetric{padding:11px 10px}.mergeMetric span{font-size:11px}.mergeMemberRows{grid-template-columns:1fr}.mergeUploadButtons{width:100%}.mergeFileBtn{flex:1}.mergeActions{display:grid;grid-template-columns:1fr 1fr}.mergeActions #mergeClearAll{grid-column:1/-1}.mergeActions button{white-space:normal}.mergeMemberTop,.mergeMemberBottom{gap:6px}}
+@media(prefers-reduced-motion:reduce){.mergeTrackFill{transition:none}}
+/* Explicit palettes avoid inherited theme vars making texts unreadable on the opposite surface. */
+.mergeWorkspace .mergeUploadBar{background:#f8fbfc;border-color:#d5e0e5}
+.mergeWorkspace .mergeUploadTitle strong,.mergeWorkspace .mergeProgressHeading h3{color:#203744}
+.mergeWorkspace .mergeUploadTitle p,.mergeWorkspace .mergeProgressHeading p{color:#506675}
+.mergeWorkspace .mergeMetric{background:#f6f9fa;border-color:#d5e0e5}
+.mergeWorkspace .mergeMetric strong{color:#203744}
+.mergeWorkspace .mergeMetric span{color:#586e7b}
+.mergeWorkspace .mergeMemberCard{background:#f7f9fa;border-color:#d5e0e5}
+.mergeWorkspace .mergeMemberCard.is-complete{border-color:#9dd0c5}
+.mergeWorkspace .mergeMemberTop strong{color:#1f3442}
+.mergeWorkspace .mergeMemberTop span,.mergeWorkspace .mergeMemberBottom span{color:#506675}
+.mergeWorkspace .mergeTrack{background:#dce5e8}
+.mergeWorkspace .mergeStatus{background:#edf8f5;border-color:#bdddd6;color:#28594f}
+.mergeWorkspace .mergeStatus[data-kind="error"]{background:#fff0ed;border-color:#e7aaa2;color:#973f34}
+.mergeWorkspace .mergeFootInfo{color:#526a78}
+.mergeWorkspace .mergeLock{background:#f3f6f8;border-color:#d2dce1;color:#546978}
+.mergeWorkspace .mergeLock strong{color:#273d49}
+.mergeConfirmCard{background:#fff;border-color:#d9e2e7;color:#233846}
+html[data-theme="dark"] .mergeWorkspace .mergeUploadBar,html[data-theme="dark"] .mergeWorkspace .mergeMetric,html[data-theme="dark"] .mergeWorkspace .mergeMemberCard{background:#263740;border-color:#465e6a}
+html[data-theme="dark"] .mergeWorkspace .mergeMemberCard.is-complete{border-color:#2d9687}
+html[data-theme="dark"] .mergeWorkspace .mergeUploadTitle strong,html[data-theme="dark"] .mergeWorkspace .mergeProgressHeading h3,html[data-theme="dark"] .mergeWorkspace .mergeMetric strong,html[data-theme="dark"] .mergeWorkspace .mergeMemberTop strong{color:#eff8f8}
+html[data-theme="dark"] .mergeWorkspace .mergeUploadTitle p,html[data-theme="dark"] .mergeWorkspace .mergeProgressHeading p,html[data-theme="dark"] .mergeWorkspace .mergeMetric span,html[data-theme="dark"] .mergeWorkspace .mergeMemberTop span,html[data-theme="dark"] .mergeWorkspace .mergeMemberBottom span,html[data-theme="dark"] .mergeWorkspace .mergeFootInfo{color:#c1d0d9}
+html[data-theme="dark"] .mergeWorkspace .mergeTrack{background:#475b62}
+html[data-theme="dark"] .mergeWorkspace .mergeStatus{background:#183b3a;border-color:#356d66;color:#d5f3ed}
+html[data-theme="dark"] .mergeWorkspace .mergeStatus[data-kind="error"]{background:#48272d;border-color:#a34e58;color:#ffdee0}
+html[data-theme="dark"] .mergeWorkspace .mergeLock{background:#25343e;border-color:#526671;color:#c4d2d9}
+html[data-theme="dark"] .mergeWorkspace .mergeLock strong{color:#f2f7f8}
+html[data-theme="dark"] .mergeConfirmCard{background:#23343e;border-color:#66808b;color:#f1f7fa}
+
+/* Empty comparison guidance belongs to section 04, not a detached full-width panel. */
+#mainMatchWorkspace .matchEmptyNotice{margin:2px 0 12px;padding:8px 2px;font-size:12px;line-height:1.55;color:var(--muted,#5c6c76);background:transparent;border:0;text-align:left}
+html[data-theme="dark"] #mainMatchWorkspace .matchEmptyNotice{color:#bfcdd5}

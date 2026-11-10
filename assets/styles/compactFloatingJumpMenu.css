@@ -1,5 +1,5 @@
 
-@media(max-width:720px){
+@media(max-width:1320px){
  #jumpDock #jumpToggle{
   overflow:hidden;
   transition:width .42s cubic-bezier(.22,1,.36,1),padding .42s cubic-bezier(.22,1,.36,1),gap .42s cubic-bezier(.22,1,.36,1),border-radius .3s ease;

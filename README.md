@@ -1,8 +1,46 @@
-# YOLO Review Studio — v4.2.5
+## v5.0 — Nạp thư mục G11 và gộp theo thành viên (cập nhật giao diện)
 
-QC nhãn A độc lập, xử lý box dưới 12 px trong mục 02; đối chiếu box B–A trong mục 04.
+- Tại mục 01 chỉ dùng **Chọn tệp** hoặc **Chọn thư mục**. Có thể chọn toàn bộ `G11/` hoặc ZIP `G11.zip` chứa `assignment_manifest.csv` và nhiều thư mục `G11_SV01/labels/`, `G11_SV02/labels/`...
+- Phần mềm **đọc assignment_manifest.csv nằm bên trong lần nạp trước khi phân loại TXT**, không bắt người dùng nạp manifest riêng trước. Khi có TXT, hộp thoại xuất hiện để người dùng gán **Nhãn B**, **Nhãn A** hoặc **Nhãn thành viên** (Ground Truth và kiểm giữa nhóm ở lựa chọn nâng cao).
+- Chọn **Nhãn thành viên**: tên/đường dẫn và `image_id` được đối chiếu `assigned_reviewer_id`; nếu tên người sai, trùng ID hoặc nhãn hỏng, chương trình báo lỗi và không ghi đè. Dữ liệu nằm riêng tại mục 06, **không tự thay nhãn A** và không ép chuyển trang sau nạp.
+- Nếu thiếu manifest, vẫn được nạp B/A bình thường; chỉ thao tác nạp nhãn thành viên phải có manifest hợp lệ. Thiếu manifest, nhãn thành viên không được gộp.
+- Nếu đã có A, chỉ nút **Rà soát QC** ở mục 06 mới yêu cầu xác nhận thay A bằng nhãn gộp; nút tải bộ gộp chỉ hoạt động khi đủ theo phân công.
+- Thanh điều hướng 01–06 tự chuyển thành menu thu gọn ở màn hình dưới hoặc bằng 1320px, không để các tab/nút chủ đề đè nhau.
 
-Ứng dụng chạy offline bằng trình duyệt, không cần npm hay backend.
+# YOLO Review Studio — v5.0
+
+Ứng dụng chạy offline trong trình duyệt, không cần backend. QC nhãn A tại mục 02, gộp nhãn từng thành viên tại mục 06.
+
+## v5.0 — Tinh chỉnh bố cục nạp dữ liệu và đối chiếu
+- Mục 01 chỉ còn **hai nút Chọn tệp / Chọn thư mục**. Không còn nút ZIP thành viên và Thư mục thành viên riêng; dữ liệu thành viên được tự phân loại theo assignment manifest và chuyển vào kho mục 06.
+- Không có manifest hợp lệ thì ZIP/thư mục có tên thành viên bị từ chối, không bị ghi nhầm vào nhãn A/B.
+- Thông báo "Chọn hai bộ nhãn để bắt đầu" và bảng kết quả theo ảnh được gom vào phạm vi **04 – Đối chiếu B–A**; không còn thanh thông báo rời giữa các chức năng.
+- Giữ nguyên nhãn phiên bản **v5.0** và cơ chế thay thế A cũ bằng hộp xác nhận khi chuyển từ mục 06 sang QC.
+
+## v5.0 — Kho gộp nhãn độc lập theo thành viên
+- Giao diện được căn lại theo một khung nội dung; hướng dẫn đầu trang nằm gọn trong một hàng ở desktop, mục 06 không còn nằm ngoài main. Thư viện ZIP và giấy phép được chuyển xuống cuối trang; Feedback nằm trong footer.
+- Nhãn `NEW` ở lịch sử cập nhật chỉ dành cho **v5.0**; các phiên bản cũ giữ lại thông tin nhưng không có nhãn này.
+- Mục 06 bắt buộc assignment_manifest.csv có image_id và assigned_reviewer_id; **nạp ZIP/thư mục nhãn từng người ở khu nhập dữ liệu mục 01**. Kho mục 06 giữ riêng nhãn nguồn, tự xác định chủ sở hữu qua tên thư mục hoặc image_id được giao.
+- Thanh tiến độ đủ/thiếu theo từng thành viên, chặn tên trùng, sai phân công và thiếu TXT. Khi đủ mới cho tải ZIP gộp.
+- Nút Rà soát QC chuyển bộ gộp sang nhãn A sau khi xác nhận thay thế A cũ, giữ dữ liệu mục 06 và nhãn B nguyên vẹn.
+- Mục 02 có bộ lọc cảnh báo theo thành viên; thao tác nhanh theo nhóm tôn trọng phạm vi bộ lọc.
+
+
+## v4.2.8 — Xuất nhãn A theo thành viên và gộp không xung đột
+
+- `calibration_ready.zip` tạo từ trạng thái A hiện có **lúc bấm tải**, bao gồm chỉnh sửa QC/mục 05 đã áp dụng vào A trong phiên. **Kiểm tra lại QC chỉ quét, không tự sửa**; ZIP đã tải trước không tự thay đổi.
+- Mục 02 → Chuẩn bị gói nhãn: chọn một thành viên và tải `labels_<reviewer_id>_ready.zip`, chứa `labels/`, `calibration_ids.csv`, `filename_mapping.csv`, `boundary_changes.csv`. Không cần đủ nhãn của những người khác để tải một người, nhưng người đó phải đủ và đúng.
+- Nút **Tải toàn nhóm + bộ gộp** tạo `labels_all_members_merge_ready.zip`: các thư mục `members/<reviewer_id>/labels/` và một bộ `merged/labels/` để dùng thẳng, cùng `merge_map.csv` ghi chủ sở hữu từng `image_id`.
+- Bắt buộc `assignment_manifest.csv` có cột `assigned_reviewer_id`. Trùng `image_id` trong manifest, nhãn trùng sau chuẩn hóa, thiếu TXT được giao, sai chủ sở hữu, QC ERROR thuộc phạm vi xuất, hoặc nhãn thừa khi xuất toàn nhóm đều chặn xuất. Không tự ghi đè hay tạo TXT rỗng thay cho nhãn thiếu.
+- Dữ liệu A trên máy không bị sửa tự động; tải lại khi có thay đổi.
+
+## v4.2.7 — đồng bộ tên TXT A với bộ labels và sửa “Kiểm tra lại QC”
+
+- Mục 02: nút **Kiểm tra lại** phản hồi khi bấm, hiện giờ hoàn tất, số TXT/box, số lỗi/cảnh báo và tình trạng kiểm pixel; xử lý lỗi kiểm tra mà không để trạng thái “Đang kiểm” mãi.
+- Mục 05: tên nhãn A hiển thị là **tên sau chuẩn hóa** (`image_id.txt`) để khớp tên file trong ZIP **Tải nhãn A đổi tên** (mục 01).
+- Nút **Tải TXT A** tải nhãn đã sửa với tên chuẩn hóa; không dùng lại tên `.rf.<hash>.txt` của file nguồn Roboflow. Tên nguồn xem được bằng rê chuột lên chú thích.
+- Giữ nguyên nội dung YOLO TXT; chỉ thay tên file xuất và chú thích. Không ghi đè trực tiếp lên ổ đĩa.
+- Khi tắt chuẩn hóa tên ở mục 01, tên tải ở mục 05 cũng theo tùy chọn này để hai chức năng xuất thống nhất.
 
 ## v4.2.5 — Kéo box gọn hơn, QC nhanh và tương phản tối
 
@@ -156,3 +194,11 @@ Trong **01 → Quản lý dữ liệu đã nạp / tải nhãn đổi tên**, m�
 - Dòng TXT sai cấu trúc hoặc bộ TXT không parse được có **Sửa TXT** với kiểm tra 5 cột, class 0–3, box nằm trong ảnh. Không suy diễn tọa độ.
 - Các kết quả chấm/đối chiếu cũ mất hiệu lực sau khi sửa/xóa A; chạy lại để làm báo cáo mới.
 - Với lỗi vượt biên **nhỏ ≤ 0,00001** có nút **Cắt biên** sau xác nhận. Box vượt biên lớn chỉ được sửa thủ công; không auto-clamp mất thông tin.
+
+
+### Ghi chú v5.0 — nhận diện assignment manifest
+
+- `assignment_manifest.csv` (kể cả bản trình duyệt đổi tên `assignment_manifest(1).csv`) phải có `image_id`, `assigned_reviewer_id`, dữ liệu phân công không rỗng và không trùng ID.
+- CSV thành viên như `G11_SV09.csv` là tệp riêng, **không** được tự thay thế `assignment_manifest.csv` chỉ vì có cột `image_id` hoặc `filename`.
+- Khi nạp cả thư mục hoặc ZIP `G11`, chương trình đọc manifest bên trong trước rồi cho chọn nhãn B / A / nhãn thành viên; tên tệp manifest thật hiện dưới nút Xóa manifest.
+- Nạp nhầm CSV không xóa manifest hợp lệ đã có. Kiểm tra phần thống kê tiến độ mục 06 đối chiếu theo tổng số ảnh được phân công.

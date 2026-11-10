@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id);
 const hub=$('uploadHub');if(!hub)return;
 const getImages=()=>window.MatchReview?.listImageIds?.()||[];
 const getAfterImages=()=>window.MatchReview?.listAfterImageIds?.()||[];
-const hubRoleLabels={before:'B — nhãn ban đầu',after:'A — nhãn sau sửa',gold:'Nhãn tham chiếu / Ground Truth',intergroupSource:'Nhãn đã sửa của nhóm nguồn (intergroup)',skip:'Bỏ qua nhóm này'};
+const hubRoleLabels={before:'B — nhãn ban đầu',after:'A — nhãn sau sửa',gold:'Nhãn tham chiếu / Ground Truth',intergroupSource:'Nhãn đã sửa của nhóm nguồn (intergroup)',member:'Nhãn thành viên (gộp tại mục 06)',skip:'Bỏ qua nhóm này'};
 const status=(text,error=false)=>{const el=$('hubStatus');el.textContent=text;el.classList.toggle('hubError',error);};
 function isLoaded(key){return ({before:state.before.length,after:state.after.length,images:getImages().length,gold:state.gold.length,afterImages:getAfterImages().length,manifest:state.manifest?.rows?.length||0,schema:state.schema?.length||0,classes:state.classes?.length||0,evalIds:state.evalIds?.rows?.length||0,decisions:state.matchReviews.size})[key]||0;}
 // Preserve legacy input handlers, but the operator sees exactly one input surface.
@@ -185,11 +185,11 @@ async function filesFromDrop(dataTransfer){const out=[],items=[...(dataTransfer?
 const base=path=>path.split(/[\\/]/).pop();
 const imageExt=/\.(?:png|jpe?g|webp|bmp|gif|avif)$/i;
 const ignoredTxt=/^(?:readme.*|license.*|classes|notes?|labels?_list|readme_export)\.txt$/i;
-const roleNames=['before','after','gold','intergroupSource','skip'];
+const roleNames=['before','after','member','gold','intergroupSource','skip'];
 const knownBefore=/(?:^|[\W_])(?:before|original|originals|initial|baseline|raw|pre[-_ ]?edit|nhan[-_ ]?goc|nhan[-_ ]?ban[-_ ]?dau|labels?[-_]?b)(?:$|[\W_])/i;
 const knownAfter=/(?:^|[\W_])(?:after|edited|corrected|revised|post[-_ ]?edit|nhan[-_ ]?sau|nhan[-_ ]?da[-_ ]?sua|labels?[-_]?a)(?:$|[\W_])/i;
 const knownGold=/(?:^|[\W_])(?:gold|ground[-_ ]?truth|gt[-_]?labels?|reference[-_ ]?labels?|nhan[-_ ]?chuan)(?:$|[\W_])/i;
-function suggestRole(group){const s=group.toLowerCase();return knownGold.test(s)?'gold':/(?:^|\/\s*)(?:G\d{2})$/i.test(group.trim())?'before':/(?:TRAFFIC_G\d{2}_REVIEW|\.yolov8\.zip|(?:^|\/)train\/labels)/i.test(s)?'after':s==='b'||knownBefore.test(s)?'before':s==='a'||knownAfter.test(s)?'after':'';}
+function suggestRole(group){const s=group.toLowerCase();return /(?:^|[^a-z0-9])g\d+[_-]?sv\d+(?=$|[^a-z0-9])/i.test(s)?'member':knownGold.test(s)?'gold':/(?:^|\/\s*)(?:G\d{2})$/i.test(group.trim())?'before':/(?:TRAFFIC_G\d{2}_REVIEW|\.yolov8\.zip|(?:^|\/)train\/labels)/i.test(s)?'after':s==='b'||knownBefore.test(s)?'before':s==='a'||knownAfter.test(s)?'after':'';}
 function pathOf(file){return String(file._hubPath||file.webkitRelativePath||file.name).replace(/\\/g,'/');}
 function partsOf(path){return path.split('/').filter(Boolean);}
 function groupKey(path,nestedSplit=false){const parts=partsOf(path);if(parts.length===1)return 'Tệp TXT rời';if(parts.length>1){
@@ -209,7 +209,7 @@ async function expandSources(raw){const out=[],failed=[],skippedJson=[],skippedE
   for(const entry of Object.values(archive.files)){if(entry.dir||/(?:^|\/)(?:__MACOSX|\.DS_Store)(?:\/|$)/i.test(entry.name)||/(?:^|\/)\._/.test(entry.name))continue;
    if(++count>20000)throw Error('ZIP có trên 20.000 tệp');const name=base(entry.name);if(/\.json$/i.test(name)){skippedJson.push(file.name+'/'+entry.name);continue;}if(roboflowExport&&imageExt.test(name)){skippedExportImages.push(file.name+'/'+entry.name);continue;}
    if(!/\.(?:txt|png|jpe?g|webp|bmp|gif|avif|csv|yaml|yml)$/i.test(name))continue;
-   const bytes=await entry.async('uint8array');if(bytes.byteLength>200*1024*1024)throw Error('Tệp bên trong ZIP quá lớn');out.push(fileFromBytes(bytes,name,file.name+'/'+entry.name));
+   const bytes=await entry.async('uint8array');if(bytes.byteLength>200*1024*1024)throw Error('Tệp bên trong ZIP quá lớn');out.push(fileFromBytes(bytes,name,pathOf(file)+'/'+entry.name));
   }
  }catch(error){failed.push(`${file.name}: ${error.message}`);}}
  return {files:out,failed,skippedJson,skippedExportImages};}
@@ -223,7 +223,13 @@ function setInputFiles(id,files){const input=$(id);if(!input)throw Error('Không
 function pause(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
 async function waitForNative(){let waited=0;while(state.busy&&waited<20000){await pause(40);waited+=40;}await pause(90);}
 function roleModal(groups){const modal=$('hubRoleOverlay'),rows=$('hubRoleRows'),error=$('hubRoleError');rows.replaceChildren();error.textContent='';
- const keys=[...groups.keys()];const inferred=keys.map(k=>suggestRole(k));
+ const keys=[...groups.keys()];const inferred=keys.map(k=>{
+  const records=groups.get(k);
+  // A whole G11 ZIP may be grouped under its root, while member IDs live deeper in paths.
+  // Offer member as a suggestion, but ALWAYS ask before importing.
+  const containsReviewerPaths=records.some(f=>/(?:^|[^a-z0-9])g\d+[_-]?sv\d+(?=$|[^a-z0-9])/i.test(pathOf(f)));
+  return containsReviewerPaths?'member':suggestRole(k);
+ });
  // If B/A are both present, show both in one dialog, with suggested assignments visible.
  if(keys.length===2&&inferred.every(x=>!x)){
    if(!state.before.length&&!state.after.length){inferred[0]='before';inferred[1]='after';}
@@ -233,7 +239,10 @@ function roleModal(groups){const modal=$('hubRoleOverlay'),rows=$('hubRoleRows')
  const selects=[];
  for(let i=0;i<keys.length;i++){const key=keys[i],list=groups.get(key),row=document.createElement('label');row.className='hubRoleRow';
   const info=document.createElement('span');info.innerHTML='';const n=document.createElement('strong');n.textContent=key;const count=document.createElement('small');count.textContent=`${list.length} tệp TXT · ví dụ ${list.slice(0,2).map(x=>x.name).join(', ')}`;info.append(n,count);
-  const select=document.createElement('select');select.className='hubRoleSelect';select.setAttribute('aria-label','Vai trò của '+key);for(const role of roleNames){const option=document.createElement('option');option.value=role;option.textContent=hubRoleLabels[role];select.append(option);}
+  const select=document.createElement('select');select.className='hubRoleSelect';select.setAttribute('aria-label','Vai trò của '+key);for(const role of roleNames.slice(0,3)){const option=document.createElement('option');option.value=role;option.textContent=hubRoleLabels[role];select.append(option);}
+  const extra=document.createElement('optgroup');extra.label='Khác / nâng cao';
+  for(const role of roleNames.slice(3)){const option=document.createElement('option');option.value=role;option.textContent=hubRoleLabels[role];extra.append(option);}
+  select.append(extra);
   select.value=inferred[i]||'skip';select.dataset.group=key;row.append(info,select);rows.append(row);selects.push(select);
  }
  modal.hidden=false;document.body.classList.add('hubRoleOpen');selects[0]?.focus();
@@ -245,7 +254,8 @@ function roleModal(groups){const modal=$('hubRoleOverlay'),rows=$('hubRoleRows')
   $('hubRoleApply').onclick=()=>{const assignments=selects.map(el=>({key:el.dataset.group,role:el.value,files:groups.get(el.dataset.group)}));
    const roles=assignments.filter(g=>g.role!=='skip').map(g=>g.role);
    if(!roles.length){error.textContent='Hãy gán vai trò nhãn B, A, nhãn tham chiếu hoặc nhãn nhóm nguồn kiểm giữa nhóm.';return;}
-   const duplicate=roles.find((r,i)=>roles.indexOf(r)!==i);if(duplicate){error.textContent=`Có hai thư mục đang cùng gán ${hubRoleLabels[duplicate]}. Hãy chọn đúng từng bộ hoặc bỏ qua thư mục không dùng.`;return;}
+   const duplicate=roles.find((r,i)=>r!=='member'&&roles.indexOf(r)!==i);if(duplicate){error.textContent=`Có hai thư mục đang cùng gán ${hubRoleLabels[duplicate]}. Hãy chọn đúng từng bộ hoặc bỏ qua thư mục không dùng.`;return;}
+   if(roles.includes('member')){try{window.YoloMemberReady.manifestInfo();}catch(e){error.textContent='Nhãn thành viên cần assignment_manifest.csv hợp lệ. Nếu CSV nằm trong thư mục G11, hãy kiểm tra cột image_id, assigned_reviewer_id. '+e.message;return;}}
    close(assignments.filter(g=>g.role!=='skip'));
   };
  });
@@ -271,7 +281,7 @@ let loading=false;
 const uploadQueue=[];
 const inFlightBatches=new Set();
 function batchFingerprint(files){return files.map(f=>`${pathOf(f)}:${f.size}:${f.lastModified}`).sort().join('\n');}
-function ingest(raw){
+function ingest(raw,options={}){
  const incoming=Array.from(raw||[]);
  const skippedJson=incoming.filter(file=>/\.json$/i.test(file.name)).length;
  const files=incoming.filter(file=>!/\.json$/i.test(file.name));
@@ -286,7 +296,7 @@ function ingest(raw){
  }
  inFlightBatches.add(key);
  return new Promise(resolve=>{
-  uploadQueue.push({files,key,resolve,skippedJson});
+  uploadQueue.push({files,key,resolve,skippedJson,folderMode:!!options.folderMode});
   if(loading){status(`Đã nhận thêm ${files.length} tệp vào hàng đợi. Hoàn tất xác nhận nhãn đang mở; chương trình sẽ tự xử lý lượt tiếp theo.`,false);}
   else void processUploadQueue();
  });
@@ -297,29 +307,47 @@ async function processUploadQueue(){
  try{
   while(uploadQueue.length){
    const task=uploadQueue.shift();
-   try{await processUploadBatch(task.files,task.skippedJson);}
+   try{await processUploadBatch(task.files,task.skippedJson,task.folderMode);}
    catch(error){status('Lỗi nạp dữ liệu: '+error.message,true);}
    finally{inFlightBatches.delete(task.key);task.resolve();}
   }
  }finally{loading=false;}
 }
-async function processUploadBatch(raw,initialSkippedJson=0){
- const failures=[],messages=[];status(`Đang phân loại ${raw.length} tệp/thư mục…`);
+async function processUploadBatch(raw,initialSkippedJson=0,folderMode=false){
+ // Unified member-label routing is only attempted for recognizable member folders/ZIPs.
+  const failures=[],messages=[];status(`Đang phân loại ${raw.length} tệp/thư mục…`);
  try{
   const expanded=await expandSources(raw);failures.push(...expanded.failed);const files=expanded.files;
   const skippedJson=initialSkippedJson+expanded.skippedJson.length;const skippedExportImages=expanded.skippedExportImages?.length||0;
+  // Read a nested assignment_manifest.csv BEFORE the role picker and member-label validation.
+  // This allows one upload of G11/ (manifest + labels of all reviewers) without a separate step.
+  const allManifests=files.filter(f=>/assignment[_-]?manifest\.csv$/i.test(f.name));
+  if(allManifests.length>1)throw Error(`Có ${allManifests.length} assignment_manifest.csv trong một lượt nạp. Hãy giữ một bản chuẩn để tránh phân công xung đột.`);
+  if(allManifests.length){
+   status('Đang đọc assignment_manifest.csv trong thư mục/ZIP trước khi phân loại nhãn…');
+   setInputFiles('manifestFile',[allManifests[0]]);await waitForNative();
+   if(!state.manifest)throw Error('assignment_manifest.csv có trong thư mục nhưng không đọc được. Kiểm tra cột image_id và assigned_reviewer_id, hoặc định dạng CSV.');
+   messages.push(`Phân công: ${state.manifest.rows.length} ảnh`);
+  }
   const inter=window.YoloIntergroup?.classify(files)||{main:files,data:null};const mainFiles=inter.main;const groups=buildGroups(mainFiles),images=mainFiles.filter(f=>imageExt.test(f.name)&&!/\/\._/.test(pathOf(f))),other=mainFiles.filter(f=>/\.(?:csv|yaml|yml)$/i.test(f.name));
   let assignments=[];
   if(groups.size){
-   status(`Đã tìm thấy ${groups.size} nhóm nhãn TXT. Hãy chọn nhãn B/A trong cửa sổ xác nhận hoặc bấm “Hủy nạp”.`,false);
+   status(`Đã tìm thấy ${groups.size} nhóm nhãn TXT. Chọn vai trò: B, A hoặc Nhãn thành viên trong cửa sổ xác nhận.`,false);
    assignments=await roleModal(groups);
    if(assignments===null){status('Đã hủy lượt chọn nhãn. Dữ liệu trước đó vẫn giữ nguyên.');return;}
   }
   // A source Roboflow export used for intergroup must NOT put its images/YAML into main.
   const intergroupSourceZipRoots=new Set(assignments.filter(a=>a.role==='intergroupSource').flatMap(a=>a.files.map(f=>partsOf(pathOf(f))[0])).filter(r=>/\.zip$/i.test(r)));
   const isSourceZipFile=f=>intergroupSourceZipRoots.has(partsOf(pathOf(f))[0]);
-  // Only after confirmation: apply the staged batch. Keep B, A and GT independent.
-  for(const a of assignments){if(a.role==='intergroupSource'){messages.push(await window.YoloIntergroup.ingestSource(a.files));continue;}setInputFiles(a.role==='before'?'beforeFiles':a.role==='after'?'afterFiles':'goldFiles',a.files);await waitForNative();messages.push(`${a.key} → ${hubRoleLabels[a.role]} (${a.files.length} TXT)`);}
+  // Store member labels in an isolated repository; never overwrite A without QC confirmation.
+  const memberGroups=assignments.filter(a=>a.role==='member');
+  if(memberGroups.length){
+   const memberResult=await window.YoloMerge.ingestExpandedGroups(memberGroups);
+   if(!memberResult.ok)throw Error(memberResult.message);
+   messages.push(memberResult.message);
+  }
+  // Only after confirmation: apply the staged B/A batch. Keep B, A and GT independent.
+  for(const a of assignments){if(a.role==='member')continue;if(a.role==='intergroupSource'){messages.push(await window.YoloIntergroup.ingestSource(a.files));continue;}setInputFiles(a.role==='before'?'beforeFiles':a.role==='after'?'afterFiles':'goldFiles',a.files);await waitForNative();messages.push(`${a.key} → ${hubRoleLabels[a.role]} (${a.files.length} TXT)`);}
   if(inter.data&&(inter.data.assign.length||inter.data.image.length||inter.data.baseline.length||inter.data.source.length)){messages.push(await window.YoloIntergroup.ingest(inter.data));}
   const mainImages=images.filter(f=>!isSourceZipFile(f));
   if(mainImages.length){const afterImages=mainImages.filter(f=>/(?:^|\/)(?:after[_-]?images|images[_-]?after|anh[_-]?sau)\//i.test(pathOf(f)));
@@ -327,7 +355,7 @@ async function processUploadBatch(raw,initialSkippedJson=0){
    if(originals.length){const ok=await window.MatchReview.addImages(originals);if(ok)messages.push(`${originals.length} ảnh gốc`);else failures.push('Không nạp được một số ảnh gốc; xem thông báo mục 04.');}
    if(afterImages.length){const ok=await window.MatchReview.addAfterImages(afterImages);if(ok)messages.push(`${afterImages.length} ảnh sau riêng`);else failures.push('Không nạp được ảnh sau riêng.');}
   }
-  for(const f of other.filter(f=>!isSourceZipFile(f))){await autoRouteMetadata(f,messages);await waitForNative();}
+  for(const f of other.filter(f=>!isSourceZipFile(f)&&!allManifests.includes(f))){await autoRouteMetadata(f,messages);await waitForNative();}
   refresh();window.YoloAfterQC?.scan?.();
   if(skippedExportImages)messages.push(`Bỏ qua ${skippedExportImages} ảnh export Roboflow để bảo toàn ảnh gốc từ Gxx`);const summary=messages.length?`Đã nhận: ${messages.join(' · ')}.`:'Chưa nhận diện được tệp có thể sử dụng.';
   status(summary+(skippedJson?` Đã bỏ qua ${skippedJson} tệp JSON.`:'')+(failures.length?' Lỗi: '+failures.join('; '):''),!!failures.length);
@@ -336,7 +364,7 @@ async function processUploadBatch(raw,initialSkippedJson=0){
 // Clear the native file input immediately; the same file/folder can be selected again
 // after cancellation, even if the batch is still awaiting role confirmation.
 for(const inputId of ['hubAnyFiles','hubAnyFolder']){
- $(inputId).onchange=e=>{const selected=Array.from(e.currentTarget.files||[]);e.currentTarget.value='';void ingest(selected);};
+ $(inputId).onchange=e=>{const selected=Array.from(e.currentTarget.files||[]);e.currentTarget.value='';void ingest(selected,{folderMode:inputId==='hubAnyFolder'});};
 }
 const drop=$('hubDrop');drop.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();drop.classList.add('hubOver');});
 drop.addEventListener('dragleave',e=>{if(!drop.contains(e.relatedTarget))drop.classList.remove('hubOver');});
@@ -469,27 +497,81 @@ function imageDimensions(file){
   return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{URL.revokeObjectURL(url);resolve({width:img.naturalWidth,height:img.naturalHeight});};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('Không đọc được kích thước ảnh.'));};img.src=url;});
  })();dimensionCache.set(file,promise);return promise;
 }
-async function scanQC(){
+// Recheck must provide visible feedback, including when findings do not change.
+// Every scan has an ID: an older async image read can never overwrite a newer run.
+const qcRecheckButton=$('qcLabels');
+let activeManualScan=0;
+function qcRunNotice(message,kind='done'){
+ const el=$('qcRunFeedback');if(!el)return;
+ el.hidden=false;el.textContent=message;el.dataset.kind=kind;
+}
+async function scanQC(options={}){
+ const manual=options?.manual===true;
  const seq=++scanSeq,revision=qcRevision;
- if(!state.after.length){issues=[];scanning=false;lastCompleteRevision=revision;qcMetrics={boxes:0,validBoxes:0,pixelScanned:0,matchedImages:0,coverage:getCoverage()};unknownImageCount=0;display();return;}
- scanning=true;evaluateSync();
- const qcStatus=$('afterQcStatus');qcStatus.textContent='Đang kiểm tra kích thước pixel trên ảnh gốc…';qcStatus.className='qcStatus is-pending';
- const maps=state.after.map(file=>({key:cleanId(file.name,$('normalize').checked),file})).filter(x=>window.MatchReview?.getImageFile?.(x.key));
- let cursor=0;
- await Promise.all(Array.from({length:Math.min(3,maps.length)},async()=>{
-  while(cursor<maps.length){const {key,file}=maps[cursor++];try{
-   const dimensions=await imageDimensions(window.MatchReview.getImageFile(key));if(seq!==scanSeq)return;
-   qcMetrics.pixelScanned++;
-   const height=dimensions.height,width=dimensions.width;
-   for(const [idx,raw] of file.text.replace(/^\uFEFF/,'').split(/\r?\n/).entries()){
-    const p=raw.trim().split(/\s+/);if(p.length!==5||!/^[0-3]$/.test(p[0])||p.slice(1).some(v=>!floatPattern.test(v)))continue;
-    const g=p.slice(1).map(Number);if(g.some(v=>!Number.isFinite(v))||g[2]<=0||g[3]<=0)continue;
-    if(g[3]*height<12-1e-8)issue('WARNING',key,idx+1,typeNames[Number(p[0])],'HEIGHT_LT_12PX',`Cao ${+(g[3]*height).toFixed(2)} px (< 12 px trên ảnh ${width} × ${height}). Xem ảnh và xác nhận xử lý tại mục 02.`);
-    if(g[2]*width<1-1e-8)issue('WARNING',key,idx+1,typeNames[Number(p[0])],'WIDTH_LT_1PX',`Rộng ${(g[2]*width).toFixed(2)} px (< 1 px). Cần xem lại.`);
-   }
-  }catch(e){if(seq===scanSeq)issue('WARNING',key,0,'','IMAGE_DECODE',`Không đọc được ảnh để kiểm tra pixel: ${e.message}`);}
- }}));
- if(seq!==scanSeq)return;scanning=false;lastCompleteRevision=revision;display();
+ if(manual){
+  activeManualScan=seq;
+  qcRecheckButton.disabled=true;
+  qcRecheckButton.textContent='Đang kiểm tra…';
+  qcRecheckButton.setAttribute('aria-busy','true');
+  qcRunNotice(`Đang kiểm tra ${state.after.length} tệp nhãn A…`,'running');
+ }
+ try{
+  if(!state.after.length){
+   issues=[];scanning=false;lastCompleteRevision=revision;
+   qcMetrics={boxes:0,validBoxes:0,pixelScanned:0,matchedImages:0,coverage:getCoverage()};
+   unknownImageCount=0;display();
+   if(manual)qcRunNotice('Chưa có nhãn A. Nạp nhãn ở mục 01 trước khi kiểm tra.','warning');
+   return true;
+  }
+  scanning=true;
+  // Yield once for a manual run so the browser paints the busy state before QC begins.
+  if(manual)await new Promise(resolve=>requestAnimationFrame(resolve));
+  if(seq!==scanSeq)return false;
+  evaluateSync();
+  const qcStatus=$('afterQcStatus');
+  qcStatus.textContent='Đang kiểm tra kích thước pixel trên ảnh gốc…';qcStatus.className='qcStatus is-pending';
+  const maps=state.after.map(file=>({key:cleanId(file.name,$('normalize').checked),file})).filter(x=>window.MatchReview?.getImageFile?.(x.key));
+  let cursor=0;
+  await Promise.all(Array.from({length:Math.min(3,maps.length)},async()=>{
+   while(cursor<maps.length){const {key,file}=maps[cursor++];try{
+    const dimensions=await imageDimensions(window.MatchReview.getImageFile(key));if(seq!==scanSeq)return;
+    qcMetrics.pixelScanned++;
+    const height=dimensions.height,width=dimensions.width;
+    for(const [idx,raw] of file.text.replace(/^\uFEFF/,'').split(/\r?\n/).entries()){
+     const p=raw.trim().split(/\s+/);if(p.length!==5||!/^[0-3]$/.test(p[0])||p.slice(1).some(v=>!floatPattern.test(v)))continue;
+     const g=p.slice(1).map(Number);if(g.some(v=>!Number.isFinite(v))||g[2]<=0||g[3]<=0)continue;
+     if(g[3]*height<12-1e-8)issue('WARNING',key,idx+1,typeNames[Number(p[0])],'HEIGHT_LT_12PX',`Cao ${+(g[3]*height).toFixed(2)} px (< 12 px trên ảnh ${width} × ${height}). Xem ảnh và xác nhận xử lý tại mục 02.`);
+     if(g[2]*width<1-1e-8)issue('WARNING',key,idx+1,typeNames[Number(p[0])],'WIDTH_LT_1PX',`Rộng ${(g[2]*width).toFixed(2)} px (< 1 px). Cần xem lại.`);
+    }
+   }catch(e){if(seq===scanSeq)issue('WARNING',key,0,'','IMAGE_DECODE',`Không đọc được ảnh để kiểm tra pixel: ${e.message}`);}
+  }}));
+  if(seq!==scanSeq)return false;
+  scanning=false;lastCompleteRevision=revision;display();
+  if(manual){
+   const errors=issues.filter(e=>e.severity==='ERROR').length;
+   const warnings=issues.filter(e=>e.severity==='WARNING').length;
+   const now=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+   const pixels=maps.length?` · ${qcMetrics.pixelScanned}/${maps.length} ảnh kiểm pixel`:' · chưa có ảnh khớp để kiểm pixel';
+   qcRunNotice(`Đã kiểm tra lại ${now} · ${state.after.length} TXT / ${qcMetrics.boxes} box · ${errors} lỗi, ${warnings} cảnh báo${pixels}.`,errors?'warning':'done');
+  }
+  return true;
+ }catch(e){
+  if(seq===scanSeq){
+   scanning=false;lastCompleteRevision=-1;
+   $('afterQcStatus').textContent='QC không hoàn tất: '+(e?.message||String(e));
+   $('afterQcStatus').className='qcStatus is-bad';
+   qcRunNotice('Kiểm tra thất bại: '+(e?.message||String(e)),'error');
+   refreshQuickActions();
+  }
+  return false;
+ }finally{
+  if(manual&&activeManualScan===seq){
+   activeManualScan=0;qcRecheckButton.disabled=false;
+   qcRecheckButton.textContent='Kiểm tra lại';
+   qcRecheckButton.removeAttribute('aria-busy');
+   if(seq!==scanSeq)qcRunNotice('Dữ liệu vừa thay đổi; QC tự động chạy lại theo dữ liệu mới.','warning');
+  }
+ }
 }
 const qcRuleStatuses={ERROR:'Lỗi',WARNING:'Cảnh báo',INFO:'Thông tin'};
 const severityTitle={ERROR:'Lỗi',WARNING:'Cảnh báo',INFO:'Thông tin'};
@@ -628,6 +710,26 @@ async function qcEdit(info,expected){
 }
 // Batch remediation is deliberately opt-in. Group by image_id and commit once
 // so labels are not repeatedly rescanned/repainted after every deleted row.
+// Member filter is driven by the OFFICIAL assignment manifest, never by guessed ZIP paths.
+const qcMemberSelect=$('qcMemberFilter');
+let qcOwnerCache=new Map();
+function refreshQCMemberOptions(){
+ if(!qcMemberSelect)return;
+ const selected=qcMemberSelect.value,owners=new Map(),countByMember=new Map();
+ if(state.manifest?.fields?.includes('assigned_reviewer_id')){
+  for(const row of state.manifest.rows){
+   const id=canonicalManifestId(row.image_id),member=String(row.assigned_reviewer_id||'').trim();
+   if(id&&member){owners.set(id,member);countByMember.set(member,(countByMember.get(member)||0)+1);}
+  }
+ }
+ qcOwnerCache=owners;qcMemberSelect.replaceChildren();
+ const all=document.createElement('option');all.value='all';all.textContent='Tất cả thành viên';qcMemberSelect.append(all);
+ for(const member of [...countByMember.keys()].sort((a,b)=>a.localeCompare(b,'vi',{numeric:true}))){
+  const option=document.createElement('option');option.value=member;option.textContent=member+' · '+countByMember.get(member)+' ảnh';qcMemberSelect.append(option);
+ }
+ qcMemberSelect.value=countByMember.has(selected)?selected:'all';qcMemberSelect.disabled=!countByMember.size;
+}
+function memberIssueMatch(issue){const selected=qcMemberSelect?.value||'all';return selected==='all'||qcOwnerCache.get(issue.image_id)===selected;}
 const batchModes=[
  ['HEIGHT_LT_12PX','qcQuickHeight'],
  ['WIDTH_LT_1PX','qcQuickWidth'],
@@ -637,7 +739,7 @@ const batchModes=[
 function refreshQuickActions(){
  for(const [code,id] of batchModes){
   const btn=$(id);if(!btn)continue;
-  const unique=new Set(issues.filter(e=>e.check_code===code&&e.after_line>0).map(e=>e.image_id+'::'+e.after_line));
+  const unique=new Set(issues.filter(e=>e.check_code===code&&e.after_line>0&&memberIssueMatch(e)).map(e=>e.image_id+'::'+e.after_line));
   btn.disabled=!unique.size||scanning||lastCompleteRevision!==qcRevision;
   const count=btn.querySelector('[data-count]');if(count)count.textContent=String(unique.size);
  }
@@ -645,7 +747,7 @@ function refreshQuickActions(){
 function quickBatch(code){
  try{
   if(scanning||lastCompleteRevision!==qcRevision)throw Error('Dữ liệu A vừa thay đổi hoặc QC đang kiểm tra. Hãy chạy QC lại trước khi xử lý nhanh.');
-  const matching=issues.filter(e=>e.check_code===code&&e.after_line>0);
+  const matching=issues.filter(e=>e.check_code===code&&e.after_line>0&&memberIssueMatch(e));
   const byId=new Map();
   for(const e of matching){let group=byId.get(e.image_id);if(!group){group=new Map();byId.set(e.image_id,group);}group.set(e.after_line,e);}
   const count=[...byId.values()].reduce((n,g)=>n+g.size,0);
@@ -693,7 +795,7 @@ for(const [code,id] of batchModes){$(id)?.addEventListener('click',()=>quickBatc
 
 function renderFindings(){
  const filter=$('qcSeverityFilter').value;
- const findings=issues.filter(x=>filter==='all'||x.severity===filter);
+ const findings=issues.filter(x=>(filter==='all'||x.severity===filter)&&memberIssueMatch(x));
  const rows=$('afterQcRows');rows.replaceChildren();const limit=100;
  const afterMap=nameMap(state.after),canOpenCache=new Map(),linesCache=new Map();
  function readOriginal(entry){
@@ -751,13 +853,14 @@ function display(){
  }
  renderOverview();renderCoverage();renderRules();renderFindings();refreshQuickActions();
 }
-function downloadQC(){
+async function downloadQC(){
  if(!state.after.length){status('Chưa có nhãn A để kiểm tra.',true);return;}
- scanQC().then(()=>{
+ const complete=await scanQC();if(!complete){qcRunNotice('Không thể tải báo cáo vì lượt QC chưa hoàn tất.','error');return;}
+ try{
   const fields=['severity','image_id','after_line','class_name','check_code','message'];
   const data=window.YoloDiff.csv(fields,issues),url=URL.createObjectURL(new Blob([data],{type:'text/csv;charset=utf-8'}));
   const a=document.createElement('a');a.href=url;a.download='qc_nhan_A_sau_sua.csv';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
- });
+ }catch(e){qcRunNotice('Không thể tạo báo cáo QC: '+e.message,'error');}
 }
 // Đóng hộp sửa dòng bằng Escape hoặc nhấp vùng ngoài.
 document.addEventListener('keydown',event=>{
@@ -765,13 +868,28 @@ document.addEventListener('keydown',event=>{
 },true);
 $('qcRawEditModal').addEventListener('click',event=>{if(event.target===$('qcRawEditModal'))$('qcRawEditCancel').click();});
 $('afterQcDownload').addEventListener('click',downloadQC);
-$('qcLabels').addEventListener('click',scanQC);
+$('qcLabels').addEventListener('click',()=>{clearTimeout(scanTimer);void scanQC({manual:true});});
 $('qcSeverityFilter').addEventListener('change',renderFindings);
+qcMemberSelect?.addEventListener('change',()=>{renderFindings();refreshQuickActions();});
 $('normalize')?.addEventListener('change',()=>{qcRevision++;refreshQuickActions();scheduleQC();});
 window.addEventListener('yolo:labels-updated',event=>{if(event.detail?.side==='after'){qcRevision++;refreshQuickActions();scheduleQC();}});
-window.addEventListener('yolo:manifest-updated',()=>{refresh();scheduleQC();});
+window.addEventListener('yolo:manifest-updated',()=>{refreshQCMemberOptions();refresh();scheduleQC();});
 let scanTimer;
-function scheduleQC(){clearTimeout(scanTimer);scanTimer=setTimeout(scanQC,280);}
+function scheduleQC(){
+ clearTimeout(scanTimer);
+ const feedback=$('qcRunFeedback');
+ const announce=!!feedback&&!feedback.hidden&&activeManualScan===0;
+ if(announce)qcRunNotice('Dữ liệu vừa thay đổi · QC đang tự cập nhật…','running');
+ scanTimer=setTimeout(async()=>{
+  const ok=await scanQC();
+  if(ok&&announce&&activeManualScan===0){
+   const errors=issues.filter(e=>e.severity==='ERROR').length;
+   const warnings=issues.filter(e=>e.severity==='WARNING').length;
+   qcRunNotice(`QC đã tự cập nhật · ${state.after.length} TXT / ${qcMetrics.boxes} box · ${errors} lỗi, ${warnings} cảnh báo.`,errors?'warning':'done');
+  }
+ },280);
+}
+refreshQCMemberOptions();
 window.YoloAfterQC={scan:scanQC,inspectSync:evaluateSync,assertValid,assertCoverage,download:downloadQC,getSnapshot:()=>({issues:issues.map(x=>({...x})),metrics:{...qcMetrics},scanning})};
 window.YoloUploadHub={refresh,go:()=>hub.scrollIntoView({behavior:'smooth',block:'start'})};
 refresh();scheduleQC();

@@ -1,0 +1,32 @@
+YOLO REVIEW STUDIO v5.0 — KIỂM TRA CHÉO NỘI BỘ VÀ LIÊN NHÓM
+
+1. KIỂM CHÉO NỘI BỘ (Mục 04 → Kiểm chéo nội bộ)
+• Ở mục 01, nạp assignment_manifest.csv, crosscheck_assignments.csv, ảnh gốc và nhãn A đã sửa.
+• crosscheck_assignments.csv gồm: image_id, original_reviewer_id, checker_id, check_type.
+• check_type nhận random hoặc targeted. Người kiểm phải khác người rà soát ban đầu.
+• Chọn checker_id, mở ảnh thuộc phân công, xem toàn ảnh (kể cả vùng không có box).
+• Nhãn A chỉ để xem, không bị sửa trong chế độ kiểm chéo này.
+• Kết luận agree hoặc disagree; nếu disagree thì bắt buộc ghi error_type và resolution.
+• Xuất crosscheck_log.csv đúng 10 cột theo mẫu giảng viên.
+• Khi chưa đủ số kết luận, CSV xuất là bản nháp, không phải hồ sơ nghiệm thu.
+• Nếu nhãn A thay đổi trong phiên, kết luận nội bộ cũ được hủy để kiểm lại.
+
+2. KIỂM GIỮA NHÓM (Mục 04 → Kiểm giữa nhóm)
+• Nạp intergroup_assignments.csv, ảnh thuộc intergroup_review/images/ và baseline_labels/ nếu có.
+• Nạp NHÃN ĐÃ SỬA của NHÓM NGUỒN, chọn đúng vai trò khi xác nhận tại mục 01.
+• Xem ảnh gốc và nhãn đã sửa. Baseline chỉ hỗ trợ đối chiếu, không phải nhãn chuẩn độc lập.
+• Ghi result, error_type, resolution, checker_id và checked_revision.
+• Xuất intergroup_results.csv đúng 7 cột theo file mẫu:
+  image_id, source_group_id, checker_id, checked_revision, result, error_type, resolution.
+• Chế độ liên nhóm chỉ xuất intergroup_results.csv (7 cột) đúng file mẫu; không xuất crosscheck_log.csv.
+• crosscheck_log.csv (10 cột) là kết quả riêng của Kiểm chéo nội bộ.
+• Nhóm đi kiểm không tự sửa bộ nhãn chính của nhóm nguồn.
+
+3. NGUYÊN TẮC BẮT BUỘC
+• Không kết luận agree trước khi mở ảnh và xem các vùng chưa có box.
+• Kiểm nội bộ ít nhất ceil(10% số ảnh), người kiểm khác người rà soát gốc.
+• Với 1.195 ảnh của G11, crosscheck_assignments.csv được cung cấp có 120 ảnh random.
+• Bất đồng phải ghi trong log để người sở hữu ảnh xử lý; không tự ghi đè nhãn A.
+• Dữ liệu trong trình duyệt không được ghi xuống file gốc. Tải CSV/ZIP trước khi đóng tab.
+
+Tham chiếu: Hướng dẫn rà soát nhãn Traffic Dataset, Mục III.4, Phụ lục D.2 và F.1.

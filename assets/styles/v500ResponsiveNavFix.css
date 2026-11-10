@@ -1,0 +1,13 @@
+/* v5.0 responsive navigation: no clipping at narrow desktop/tablet widths. */
+@media(max-width:1320px){
+ #jumpDock{max-width:100%;width:100%;top:8px;z-index:160;position:sticky;isolation:isolate;margin-bottom:20px;--theme-space:0px}
+ #jumpDock #jumpToggle{display:flex!important;width:100%;min-height:52px;box-sizing:border-box;justify-content:flex-start;align-items:center;gap:12px}
+ #jumpDock #jumpPanel{display:block!important;position:absolute;top:calc(100% + 8px);left:0;right:0;width:100%;max-width:100%;box-sizing:border-box;overflow-y:auto;overflow-x:hidden;max-height:min(65dvh,420px);z-index:4}
+ #jumpDock:not([data-open="true"]) #jumpPanel{visibility:hidden;opacity:0;pointer-events:none}
+ #jumpDock[data-open="true"] #jumpPanel{visibility:visible;opacity:1;pointer-events:auto}
+ #jumpDock #jumpPanel .jumpLink{width:100%;justify-content:flex-start;box-sizing:border-box;white-space:normal;min-width:0;line-height:1.4}
+ #jumpDock #themeToggle{z-index:5}
+ #jumpDock.themeDocked #jumpToggle{width:clamp(40px,var(--theme-size,53px),64px)!important}
+ #jumpDock.themeDocked #jumpPanel{width:min(360px,calc(100vw - 32px))!important;right:auto}
+}
+@media(min-width:1321px){#jumpDock #jumpToggle{display:none!important}}

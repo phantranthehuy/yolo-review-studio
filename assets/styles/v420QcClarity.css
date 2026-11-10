@@ -139,3 +139,12 @@ html[data-theme="dark"] #prepSection .qcFilterLabel select{background:#22343d!im
 .coordQcContext{margin:7px 0 11px;padding:8px 11px;border-left:3px solid #078779;background:rgba(7,135,121,.09);border-radius:6px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:12px}
 .coordQcContext button{white-space:nowrap;padding:6px 10px;font-size:12px}
 @media(max-width:640px){#prepSection .qcInlineActions{min-width:110px}.qcRawEditCard{padding:15px}.coordQcContext{align-items:flex-start}}
+
+/* v4.2.7 — explicit QC recheck feedback, readable on dark and light themes. */
+#prepSection .qcPrimaryActions .qcRunFeedback{flex:0 0 100%;width:100%;text-align:right;font-size:11.5px;line-height:1.5;color:var(--qc-secondary);white-space:normal;overflow-wrap:anywhere}
+#prepSection .qcPrimaryActions .qcRunFeedback[hidden]{display:none!important}
+#prepSection .qcPrimaryActions .qcRunFeedback[data-kind="error"]{color:#e77d7d}
+#prepSection .qcPrimaryActions .qcRunFeedback[data-kind="warning"]{color:var(--qc-warn)}
+#prepSection .qcPrimaryActions .qcRunFeedback[data-kind="done"]{color:var(--qc-text)}
+#prepSection .qcPrimaryActions button[aria-busy="true"]{opacity:.8;cursor:progress}
+@media(max-width:700px){#prepSection .qcPrimaryActions .qcRunFeedback{text-align:left}}

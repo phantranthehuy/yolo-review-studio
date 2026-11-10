@@ -1,0 +1,25 @@
+/* v5.0: card layout must never use long YOLO image IDs as intrinsic column width. */
+.mergeWorkspace,.mergeControls,.mergeMemberRows{min-width:0;max-width:100%;box-sizing:border-box}
+.mergeMemberRows{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.mergeMemberCard{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;max-width:100%;overflow:hidden;box-sizing:border-box;gap:9px}
+.mergeMemberCard>*,.mergeMemberTop,.mergeMemberBottom,.mergeTrack{min-width:0;max-width:100%;width:100%;box-sizing:border-box}
+.mergeMemberTop{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.mergeMemberTop>span{margin-left:auto;white-space:normal;text-align:right;font-variant-numeric:tabular-nums}
+.mergeTrack{display:block;overflow:hidden;flex-shrink:0}
+.mergeTrackFill{max-width:100%}
+.mergeMemberBottom{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+.mergeMemberSummary{display:block;min-width:0;overflow-wrap:anywhere;white-space:normal!important;line-height:1.45}
+.mergeMemberBottom .mergeRemoveMember{max-width:100%;white-space:nowrap;align-self:center}
+.mergeMissingDetails{min-width:0;max-width:100%;border-top:1px solid color-mix(in srgb,var(--line,#7b929e) 48%,transparent);padding-top:8px;font-size:12px}
+.mergeMissingDetails summary{cursor:pointer;display:list-item;list-style-position:inside;font-weight:600;color:#22695e;min-height:28px;line-height:28px}
+.mergeMissingDetails summary:hover{text-decoration:underline}
+.mergeMissingDetails summary:focus-visible{outline:2px solid #16a38e;outline-offset:2px;border-radius:3px}
+.mergeMissingList{max-height:150px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;margin-top:4px;padding:8px 10px;border:1px solid #cbd8de;border-radius:8px;background:#f2f6f7;font:11px/1.65 ui-monospace, SFMono-Regular,Consolas,monospace;color:#344d5a}
+.mergeMissingList>div{overflow-wrap:anywhere;word-break:break-word;padding:3px 0}
+.mergeMissingList>div+div{border-top:1px solid color-mix(in srgb,#607782 18%,transparent)}
+.mergeProgressHeading>p{max-width:62ch;overflow-wrap:anywhere}
+html[data-theme="dark"] .mergeMissingDetails summary{color:#8be1d3}
+html[data-theme="dark"] .mergeMissingList{background:#1b2b34;border-color:#4a606c;color:#dceaf0}
+html[data-theme="dark"] .mergeMissingDetails{border-color:#425965}
+@media(max-width:1050px){.mergeMemberRows{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:480px){.mergeMemberCard{padding:12px}.mergeMemberTop>span{text-align:left;margin-left:0}.mergeMemberBottom{grid-template-columns:minmax(0,1fr) auto}.mergeMemberBottom .mergeRemoveMember{font-size:11px}}

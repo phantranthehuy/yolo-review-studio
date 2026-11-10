@@ -58,7 +58,7 @@ summary::marker{content:""!important;font-size:0!important}
 #coordsSection .coordCompactBar{gap:10px}
 #coordsSection .coordViewOptions{gap:12px}
 #coordsSection .coordViewOptions label{min-width:0}
-@media(max-width:720px){.helpDetails>summary,.settingsFold>summary,.analysisFold>summary{padding:12px 39px 12px 12px!important;font-size:12.5px;line-height:1.4}.helpDetails>summary:after,.settingsFold>summary:after,.analysisFold>summary:after{right:15px}.matchControls{gap:10px}#coordsSection .coordZoomControl{flex:1 1 100%;}}
+@media(max-width:1320px){.helpDetails>summary,.settingsFold>summary,.analysisFold>summary{padding:12px 39px 12px 12px!important;font-size:12.5px;line-height:1.4}.helpDetails>summary:after,.settingsFold>summary:after,.analysisFold>summary:after{right:15px}.matchControls{gap:10px}#coordsSection .coordZoomControl{flex:1 1 100%;}}
 
 /* v4.3 · clipboard feedback: visible tick only after confirmed copy */
 #coordsSection .coordCopyToast[hidden]{display:none!important}
@@ -93,7 +93,7 @@ summary::marker{content:""!important;font-size:0!important}
   border-right:2px solid currentColor;border-bottom:2px solid currentColor;
   transform:rotate(45deg);transition:transform .35s cubic-bezier(.22,1,.36,1)}
 .jumpToggle .jumpMenuText{white-space:nowrap}
-@media(max-width:720px){
+@media(max-width:1320px){
   .jumpDock{width:100%;min-width:0;max-width:100%;top:8px;z-index:160;margin-bottom:20px;isolation:isolate}
   .jumpToggle{width:100%;min-height:53px;padding:0 17px;display:flex;align-items:center;gap:12px;
     border:1px solid #075e68;border-radius:13px;box-shadow:0 4px 14px #123e4b22;
@@ -185,7 +185,7 @@ button:not(:disabled):active,.filebtn:active,.coords .pick:active{
 }
 /* Section headings keep breathing room beneath the sticky menu. */
 #uploadsSection,#prepSection,#evalSection,#matchSection,#coordsSection{scroll-margin-top:86px}
-@media(max-width:720px){
+@media(max-width:1320px){
   #uploadsSection,#prepSection,#evalSection,#matchSection,#coordsSection{scroll-margin-top:86px}
   .jumpPanel{max-width:100%;}
   .jumpLink{touch-action:manipulation;}
@@ -200,7 +200,7 @@ button:not(:disabled):active,.filebtn:active,.coords .pick:active{
 }
 
 /* v4.1 final: calibrated navigation, smooth accordions and aligned controls */
-@media(min-width:721px){
+@media(min-width:1321px){
   #jumpPanel{position:relative;isolation:isolate;}
   #jumpActiveIndicator{
     position:absolute;left:0;top:0;z-index:0;display:block;pointer-events:none;
@@ -213,7 +213,7 @@ button:not(:disabled):active,.filebtn:active,.coords .pick:active{
   #jumpPanel .jumpLink{position:relative;z-index:1;background:transparent!important}
   #jumpPanel .jumpLink:hover,#jumpPanel .jumpLink.isActive{background:transparent!important}
 }
-@media(max-width:720px){#jumpActiveIndicator{display:none!important}}
+@media(max-width:1320px){#jumpActiveIndicator{display:none!important}}
 #prepSection .prepActionRow{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-top:16px}
 #prepSection .prepActionRow .prepImageCount{flex:0 1 235px;min-width:200px;gap:7px;line-height:1.35}
 #prepSection .prepActionRow .prepImageCount input{height:44px;min-height:44px;line-height:normal;margin:0;width:100%}

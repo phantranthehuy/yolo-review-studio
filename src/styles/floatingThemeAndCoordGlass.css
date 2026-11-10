@@ -1,9 +1,9 @@
 
 #jumpDock{--theme-space:0px}
-@media(min-width:721px){
+@media(min-width:1321px){
  #jumpDock #jumpPanel{width:calc(100% - var(--theme-space));transition:width .46s cubic-bezier(.22,1,.36,1)}
 }
-@media(max-width:720px){
+@media(max-width:1320px){
  #jumpDock #jumpToggle{width:calc(100% - var(--theme-space));transition:width .46s cubic-bezier(.22,1,.36,1);background:rgba(9,100,109,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
  #jumpDock #jumpPanel{width:calc(100% - var(--theme-space))}
 }

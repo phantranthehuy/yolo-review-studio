@@ -7,7 +7,7 @@
  const marker=document.createElement('div');marker.style.cssText='height:0;pointer-events:none';dock.before(marker);
  let floating=false,frame=0,motion;
  function sizeThemeButton(){
-  const surface=document.getElementById(innerWidth<=720?'jumpToggle':'jumpPanel');
+  const surface=document.getElementById(innerWidth<=1320?'jumpToggle':'jumpPanel');
   const height=surface.getBoundingClientRect().height;
   // Navigation can wrap on narrow desktops. Keep the icon button compact,
   // and ignore expanded mobile-menu height when crossing the breakpoint.

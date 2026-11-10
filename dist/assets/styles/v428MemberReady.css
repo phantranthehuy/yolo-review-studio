@@ -1,0 +1,137 @@
+/* YOLO Review Studio v5.0 — member export: legible in both appearance modes.
+   Explicit local palette avoids inheriting --surface from unrelated components. */
+#prepSection .memberExportPanel {
+  --member-bg:#f7fafb;
+  --member-ink:#233a48;
+  --member-muted:#536b78;
+  --member-line:#d3e0e5;
+  --member-control:#ffffff;
+  --member-control-line:#a9c0c9;
+  --member-accent:#086e72;
+  margin:14px 0 12px;
+  padding:15px 17px;
+  border:1px solid var(--member-line);
+  border-radius:11px;
+  background:var(--member-bg);
+  color:var(--member-ink);
+  box-shadow:none;
+}
+#prepSection .memberExportPanel>strong {
+  display:block;
+  color:var(--member-ink);
+  font-size:14px;
+  font-weight:750;
+  line-height:1.55;
+}
+#prepSection .qcExportBody .memberExportPanel .memberExportIntro {
+  margin:5px 0 12px;
+  color:var(--member-muted);
+  font-size:12.5px;
+  line-height:1.6;
+  max-width:100%;
+}
+#prepSection .memberExportPanel code {
+  background:#e6eff2;
+  border:1px solid #dae7eb;
+  color:#334e5f;
+  padding:1px 5px;
+  border-radius:4px;
+}
+#prepSection .memberExportControls {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:end;
+  gap:9px;
+}
+#prepSection .memberExportControls label {
+  display:grid;
+  gap:5px;
+  min-width:180px;
+  max-width:250px;
+  font-size:12px;
+  font-weight:650;
+  color:var(--member-ink);
+}
+#prepSection .memberExportControls select {
+  width:100%;
+  min-height:38px;
+  border:1px solid var(--member-control-line);
+  background:var(--member-control);
+  color:var(--member-ink);
+  border-radius:8px;
+  padding:7px 10px;
+  font-size:12.5px;
+}
+#prepSection .memberExportControls button {
+  min-height:38px;
+  padding:8px 13px;
+  white-space:normal;
+  border:1px solid var(--member-accent);
+  background:var(--member-accent);
+  color:#fff;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  transition:background-color .12s,border-color .12s;
+}
+#prepSection .memberExportControls button:not(:disabled):hover {
+  background:#07565a;
+  border-color:#07565a;
+}
+#prepSection .memberExportControls button:disabled {
+  opacity:1;
+  cursor:not-allowed;
+  background:#e4ebee;
+  border-color:#c6d5db;
+  color:#657987;
+}
+#prepSection .memberExportControls :is(button,select):focus-visible {
+  outline:2px solid #087d83;
+  outline-offset:2px;
+}
+#prepSection .qcExportBody .memberExportPanel .memberExportStatus {
+  margin:10px 0 0;
+  color:var(--member-muted);
+  font-size:12px;
+  line-height:1.5;
+  overflow-wrap:anywhere;
+}
+#prepSection .qcExportBody .memberExportPanel .memberExportStatus.is-error {
+  color:#a93431;
+}
+/* A coherent charcoal panel in the dark theme, including code chips and controls. */
+html[data-theme="dark"] #prepSection .memberExportPanel {
+  --member-bg:#253741;
+  --member-ink:#edf6f7;
+  --member-muted:#bdd0d8;
+  --member-line:#48616d;
+  --member-control:#1d303a;
+  --member-control-line:#67818c;
+  --member-accent:#117e80;
+}
+html[data-theme="dark"] #prepSection .memberExportPanel code {
+  background:#334c58;
+  border-color:#4e6975;
+  color:#e3f0f3;
+}
+html[data-theme="dark"] #prepSection .memberExportControls button:not(:disabled):hover {
+  background:#169193;
+  border-color:#169193;
+}
+html[data-theme="dark"] #prepSection .memberExportControls button:disabled {
+  background:#354953;
+  border-color:#566c78;
+  color:#bfd0d8;
+}
+html[data-theme="dark"] #prepSection .qcExportBody .memberExportPanel .memberExportStatus.is-error {
+  color:#ffbbb6;
+}
+html[data-theme="dark"] #prepSection .memberExportControls :is(button,select):focus-visible {
+  outline-color:#83d9d3;
+}
+@media(max-width:620px) {
+  #prepSection .memberExportPanel{padding:13px 12px}
+  #prepSection .memberExportControls label{max-width:none;width:100%}
+  #prepSection .memberExportControls button{flex:1 1 150px}
+}
+@media(prefers-reduced-motion:reduce){#prepSection .memberExportControls button{transition:none}}

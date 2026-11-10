@@ -5,7 +5,7 @@ const panel=document.getElementById('jumpPanel');
 const toggle=document.getElementById('jumpToggle');
 const indicator=document.getElementById('jumpActiveIndicator');
 const links=Array.from(panel.querySelectorAll('.jumpLink'));
-const mobile=window.matchMedia('(max-width: 720px)');
+const mobile=window.matchMedia('(max-width: 1320px)');
 const reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
 let open=false,scrollFrame=0,indicatorReady=false,spyFrame=0;
 function positionIndicator(link){
