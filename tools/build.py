@@ -17,5 +17,13 @@ for name, settings in themes.items():
     html = template.replace('{{THEME_ASSETS}}', settings['decoration'])
     html = html.replace('href="' + name + '.html"', 'aria-current="page" href="' + name + '.html"')
     (DIST / (name + '.html')).write_text(html)
-(DIST / 'index.html').write_text((DIST / 'forest.html').read_text())
+# Plain default theme is intentionally the starting screen for uncluttered QC work.
+(DIST / 'index.html').write_text((DIST / 'default.html').read_text())
 print('Built four themes in dist/')
+
+# Keep root-level entry pages and assets in sync. Users normally open ./index.html.
+for folder in ('styles','scripts'):
+    shutil.copytree(ROOT/'src'/folder, ROOT/'assets'/folder, dirs_exist_ok=True)
+for page in ('index.html', *[name + '.html' for name in themes]):
+    shutil.copy2(DIST/page, ROOT/page)
+print('Synced root-level index.html and theme assets.')

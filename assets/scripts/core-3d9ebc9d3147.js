@@ -2,9 +2,16 @@
 'use strict';
 const $=id=>document.getElementById('coord_'+id),c=$('canvas'),ctx=c.getContext('2d');
 let img=null,rect=null,start=null,active=null,filename='',scale=1,loadSeq=0,labelSeq=0;
-let labels=[],labelFile=null,selected=-1,overlap=[],regionSource='none';
+let labels=[],beforeLabels=[],labelFile=null,selected=-1,selectedBefore=-1,hoverBefore=-1,showBefore=true,overlap=[],regionSource='none';
 let drawnBoxes=[],nextBoxNo=1,selectedDrawId=null,hoverDrawId=null,operation=null;
 let actionTarget=null,hoverLabel=-1;
+// Bounding boxes and tags are vector shapes. A tiny canvas is kept only as the pointer/measure surface.
+const SVG_NS='http://www.w3.org/2000/svg';
+const vectors=document.createElementNS(SVG_NS,'svg');
+vectors.id='coord_vectorOverlay';vectors.setAttribute('aria-hidden','true');
+c.after(vectors);
+const svgNode=(tag,props={})=>{const n=document.createElementNS(SVG_NS,tag);for(const [k,v] of Object.entries(props))n.setAttribute(k,String(v));return n;};
+let loadedAfterId='',lastCommittedA=null;
 const savedRegions=new Map(),MIN_BOX=12,MAX_ZOOM=32,INVALID_BOX_REMOVE_DELAY=500;
 function imageId(name){return cleanId(name.replace(/\.(?:png|jpe?g|webp|bmp|gif|avif)$/i,'.txt'),true);}
 function imageKey(){return img&&filename?imageId(filename)+'|'+img.naturalWidth+'x'+img.naturalHeight:'';}
@@ -98,12 +105,68 @@ function hitCandidates(boxes,point,width,height){return boxes.map((b,i)=>({index
 function labelName(b){let names=null;try{names=currentNames();}catch{}return names?`${names[b.c]} (ID ${b.c})`:`ID ${b.c}`;}
 function bounds(e){const b=c.getBoundingClientRect();return {x:Math.max(0,Math.min(img.naturalWidth,(e.clientX-b.left)*img.naturalWidth/b.width)),y:Math.max(0,Math.min(img.naturalHeight,(e.clientY-b.top)*img.naturalHeight/b.height))};}
 function make(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
-function setOptions(){const target=$('boxSelect');target.replaceChildren();const none=make('option',null,'Chọn dòng TXT');none.value='';target.append(none);labels.forEach((b,i)=>{const op=make('option',null,`Dòng ${b.line}: ${labelName(b)}`);op.value=String(i);target.append(op);});target.value=selected<0?'':String(selected);}
+function setOptions(){const target=$('boxSelect');target.replaceChildren();const none=make('option',null,'Chọn box A');none.value='';target.append(none);labels.forEach((b,i)=>{const op=make('option',null,`Dòng ${b.line}: ${labelName(b)}`);op.value=String(i);target.append(op);});target.value=selected<0?'':String(selected);}
 function setOverlap(){const target=$('overlap');target.replaceChildren();for(const index of overlap){const b=labels[index],op=make('option',null,`Dòng ${b.line}: ${labelName(b)}`);op.value=String(index);target.append(op);}target.value=String(selected);$('overlapWrap').hidden=overlap.length<2;}
 function savedBox(id){return drawnBoxes.find(b=>b.id===id)||null;}
 function focusOnImage(r){if(!img)return;const stage=$('stage'),sx=c.clientWidth/img.naturalWidth,sy=c.clientHeight/img.naturalHeight;stage.scrollLeft=Math.max(0,(r.x1+r.x2)*sx/2-stage.clientWidth/2);stage.scrollTop=Math.max(0,(r.y1+r.y2)*sy/2-stage.clientHeight/2);}
-function selectDraw(id,fromCanvas=false){const b=savedBox(id);if(!b)return;selected=-1;selectedDrawId=id;rect={...b.rect};regionSource=b.source;start=null;active=null;overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';$('status').textContent=`Đã chọn Box #${String(id).padStart(2,'0')}.`;redraw();if(!fromCanvas)focusOnImage(rect);}
-function selectBox(index){if(!img||!Number.isInteger(index)||index<0||index>=labels.length)return;selected=index;selectedDrawId=null;rect=pixelBox(labels[index],img.naturalWidth,img.naturalHeight);regionSource='label';start=null;active=null;setToolMode('select',false);$('showBoxes').checked=true;$('boxSelect').value=String(index);if(overlap.includes(index))$('overlap').value=String(index);$('status').textContent=overlap.length>1?'Nhiều box chồng nhau. Chọn đúng số dòng TXT.':'Đã chọn box có sẵn từ TXT; không thêm vào danh sách vùng mới.';redraw();renderDrawnList();}
+function selectDraw(id,fromCanvas=false){const b=savedBox(id);if(!b)return;selected=-1;selectedBefore=-1;selectedDrawId=id;rect={...b.rect};regionSource=b.source;start=null;active=null;overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';$('status').textContent=`Đã chọn Box #${String(id).padStart(2,'0')}.`;redraw();if(!fromCanvas)focusOnImage(rect);}
+function selectBox(index){if(!img||!Number.isInteger(index)||index<0||index>=labels.length)return;selectedBefore=-1;selected=index;selectedDrawId=null;rect=pixelBox(labels[index],img.naturalWidth,img.naturalHeight);regionSource='label';start=null;active=null;setToolMode('select',false);$('showBoxes').checked=true;$('boxSelect').value=String(index);if(overlap.includes(index))$('overlap').value=String(index);$('status').textContent=overlap.length>1?'Nhiều box chồng nhau. Chọn đúng số dòng TXT.':'Đã chọn box A. Kéo bên trong để di chuyển; chọn lần nữa và kéo mép/góc để chỉnh kích thước.';redraw();renderDrawnList();}
+function selectBeforeBox(index){
+ if(!img||index<0||index>=beforeLabels.length)return;
+ selectedBefore=index;selected=-1;selectedDrawId=null;regionSource='before';
+ rect=pixelBox(beforeLabels[index],img.naturalWidth,img.naturalHeight);
+ $('boxSelect').value='';start=null;active=null;overlap=[];$('overlapWrap').hidden=true;
+ $('status').textContent='Nhãn B ban đầu chỉ để đối chiếu. Không thể sửa tọa độ, lớp hoặc xóa tại mục 05.';
+ redraw();renderDrawnList();
+}
+function boxRect(b,index){return operation?.kind?.startsWith('label-')&&operation.index===index&&operation.preview?operation.preview:pixelBox(b,img.naturalWidth,img.naturalHeight);}
+function afterEntry(){if(!img)return null;try{return nameMap(state.after).get(imageId(filename))||null;}catch{return null;}}
+function canEditAfter(){return !!(afterEntry()&&labelFile&&loadedAfterId===imageId(filename));}
+function syncAfterControls(){
+ const editable=canEditAfter(),selectedA=selected>=0&&editable;
+ let names=CANONICAL;try{names=currentNames()||CANONICAL;}catch{}
+ for(let i=0;i<4;i++)$('afterClass').options[i+1].textContent=`${i} · ${names[i]}`;
+ $('afterClass').disabled=!selectedA;$('deleteAfter').disabled=!selectedA;$('exportAfter').disabled=!editable;
+ $('afterClass').value=selectedA?String(labels[selected].c):'';
+ $('useBefore').textContent=showBefore?'Ẩn nhãn B':'Hiện nhãn B';$('useBefore').setAttribute('aria-pressed',String(showBefore));
+}
+function syncBeforeOverlay(){
+ if(!img){beforeLabels=[];return;}
+ try{const source=nameMap(state.before).get(imageId(filename));beforeLabels=source?parseLabels(source,false):[];}
+ catch(e){beforeLabels=[];$('status').textContent='Không đọc được B: '+e.message;}
+}
+function recordAfterEdit(nextLines,info){
+ const source=afterEntry();if(!source)throw Error('Phải nạp nhãn A sau sửa vào mục 01 trước khi chỉnh.');
+ const fresh=nextLines.join('\n').replace(/\n*$/,'')+'\n';
+ const check=parseLabels({...source,text:fresh},false);
+ // Chỉ khống chế hình học của box vừa sửa trong rewriteAfter.
+ // Những box còn sai ở các dòng khác được giữ để có thể sửa lần lượt qua QC.
+ lastCommittedA={imageId:imageId(filename),previous:source.text};
+ const shortened=check.length<labels.length;
+ source.text=fresh;labelFile=source;loadedAfterId=imageId(filename);labels=check;
+ if(shortened||selected>=labels.length){selected=-1;rect=null;regionSource='none';hoverLabel=-1;overlap=[];}
+ state.matchReviews.clear();invalidate();updateCounts();
+ window.dispatchEvent(new CustomEvent('yolo:labels-updated',{detail:{side:'after',source:'coordinates'}}));
+ $('labelMeta').textContent=`A · ${source.name}: ${labels.length} box · đã chỉnh trong phiên, hãy tải TXT A.`;
+ setOptions();syncAfterControls();redraw();
+ $('status').textContent=info+' File trên ổ đĩa chưa bị ghi đè; nhấn Tải TXT A để lưu.';
+}
+function rewriteAfter(index,options){
+ if(!canEditAfter())throw Error('Chỉ sửa nhãn A sau sửa đã nạp tại mục 01.');
+ const source=afterEntry(),old=labels[index];if(!old)throw Error('Box A không còn tồn tại.');
+ const lines=source.text.replace(/^\uFEFF/,'').split(/\r?\n/);
+ const line=old.line-1,parts=old.raw.split(/\s+/);
+ if(options.remove){lines.splice(line,1);return recordAfterEdit(lines,`Đã xóa box A dòng ${old.line}.`);}
+ if(options.classId!==undefined)parts[0]=String(options.classId);
+ if(options.rect){
+  const r=options.rect,W=img.naturalWidth,H=img.naturalHeight;
+  if(!(r.x2>r.x1&&r.y2>r.y1&&r.x1>=0&&r.y1>=0&&r.x2<=W&&r.y2<=H))throw Error('Tọa độ box A không hợp lệ hoặc vượt ảnh.');
+  const f=n=>Number(n.toFixed(10)).toString();
+  parts.splice(1,4,f((r.x1+r.x2)/(2*W)),f((r.y1+r.y2)/(2*H)),f((r.x2-r.x1)/W),f((r.y2-r.y1)/H));
+ }
+ lines[line]=parts.join(' ');recordAfterEdit(lines,`Đã cập nhật box A dòng ${old.line}.`);
+}
+
 function hitDrawn(point){if(!img)return null;const padding=Math.max(1,5/(c.clientWidth/img.naturalWidth));const possible=drawnBoxes.filter(b=>point.x>=b.rect.x1-padding&&point.x<=b.rect.x2+padding&&point.y>=b.rect.y1-padding&&point.y<=b.rect.y2+padding);if(!possible.length)return null;possible.sort((a,b)=>{const ra=a.rect,rb=b.rect,area=(ra.x2-ra.x1)*(ra.y2-ra.y1)-(rb.x2-rb.x1)*(rb.y2-rb.y1);return area||b.id-a.id;});return possible[0];}
 function renderDrawnList(){
  $('boxCount').textContent=`(${drawnBoxes.length} vùng)`;
@@ -113,16 +176,18 @@ function toolbarInfo(){
  if(!img||active!==null)return null;
  const hover=savedBox(hoverDrawId), chosen=savedBox(selectedDrawId);
  if(hover)return {kind:'draw',box:hover,r:hover.rect};
- if(hoverLabel>=0&&labels[hoverLabel])return {kind:'label',index:hoverLabel,r:pixelBox(labels[hoverLabel],img.naturalWidth,img.naturalHeight)};
+ if(hoverLabel>=0&&labels[hoverLabel])return {kind:'label',index:hoverLabel,r:boxRect(labels[hoverLabel],hoverLabel)};
+ if(hoverBefore>=0&&beforeLabels[hoverBefore])return {kind:'before',index:hoverBefore,r:pixelBox(beforeLabels[hoverBefore],img.naturalWidth,img.naturalHeight)};
  if(chosen)return {kind:'draw',box:chosen,r:chosen.rect};
- if(selected>=0)return {kind:'label',index:selected,r:pixelBox(labels[selected],img.naturalWidth,img.naturalHeight)};
+ if(selected>=0)return {kind:'label',index:selected,r:boxRect(labels[selected],selected)};
+ if(selectedBefore>=0&&beforeLabels[selectedBefore])return {kind:'before',index:selectedBefore,r:pixelBox(beforeLabels[selectedBefore],img.naturalWidth,img.naturalHeight)};
  return null;
 }
 function syncToolbar(){
  const el=$('boxActions'),info=toolbarInfo();actionTarget=info;
  if(!info){el.hidden=true;return;}
  el.hidden=false;
- $('actionBoxLabel').textContent=info.kind==='draw'?`#${String(info.box.id).padStart(2,'0')}`:`TXT ${labels[info.index].line}`;
+ $('actionBoxLabel').textContent=info.kind==='draw'?`Vùng #${String(info.box.id).padStart(2,'0')}`:info.kind==='before'?`B · ${beforeLabels[info.index].line} (chỉ xem)`:`A · ${labels[info.index].line}`;
  $('actionDelete').hidden=info.kind!=='draw';
  // Locate controls in the same CSS coordinate space as the canvas, including at zoom 400%.
  el.style.visibility='hidden';
@@ -156,6 +221,22 @@ function cursorForEdge(edge){
  if(edge==='left-top'||edge==='right-bottom')return 'nwse-resize';
  if(edge==='right-top'||edge==='left-bottom')return 'nesw-resize';
  return 'move';
+}
+function applyLabelDrag(point){
+ const op=operation;if(!op?.kind?.startsWith('label-')||!point||!img)return;
+ const r={...op.orig},W=img.naturalWidth,H=img.naturalHeight;
+ if(op.kind==='label-move'){
+  const dx=point.x-op.origin.x,dy=point.y-op.origin.y;
+  const shiftX=clamp(dx,-r.x1,W-r.x2),shiftY=clamp(dy,-r.y1,H-r.y2);
+  r.x1+=shiftX;r.x2+=shiftX;r.y1+=shiftY;r.y2+=shiftY;
+ }else{
+  const e=op.edge;if(e.includes('left'))r.x1=clamp(point.x,0,r.x2-.1);
+  if(e.includes('right'))r.x2=clamp(point.x,r.x1+.1,W);
+  if(e.includes('top'))r.y1=clamp(point.y,0,r.y2-.1);
+  if(e.includes('bottom'))r.y2=clamp(point.y,r.y1+.1,H);
+ }
+ op.preview=r;op.changed=Object.keys(r).some(k=>Math.abs(r[k]-op.orig[k])>=0.04);
+ rect={...r};
 }
 function applyDrag(point){
  if(!operation||operation.kind==='draw'||!img)return;
@@ -193,7 +274,7 @@ function addDrawnBox(r,source){
  $('status').textContent=`Đã vẽ Box #${String(b.id).padStart(2,'0')} ${tuple()}; nút sao chép và Xóa hiện ngay trên ảnh${isSmall(b.rect)?' — ⚠ '+axisWarnings(b.rect).join('; '):''}.`;
  return true;
 }
-function clear(){if(operation?.kind==='pan')c.style.cursor='grab';if(active!==null&&c.hasPointerCapture(active))c.releasePointerCapture(active);rect=null;selected=-1;selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;operation=null;regionSource='none';start=null;active=null;overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';$('fallback').hidden=true;$('status').textContent='';redraw();renderDrawnList();}
+function clear(){selectedBefore=-1;hoverBefore=-1;if(operation?.kind==='pan')c.style.cursor='grab';if(active!==null&&c.hasPointerCapture(active))c.releasePointerCapture(active);rect=null;selected=-1;selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;operation=null;regionSource='none';start=null;active=null;overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';$('fallback').hidden=true;$('status').textContent='';redraw();renderDrawnList();}
 function syncSourcePicks(){
  const imagePick=document.getElementById('coord_imagePick');
  const labelPick=document.getElementById('coord_labelPick');
@@ -202,10 +283,37 @@ function syncSourcePicks(){
  labelPick.textContent=labelFile?'Chọn nhãn .txt khác':'Chọn nhãn .txt của ảnh';
  labelPick.classList.toggle('isLoadedFile',!!labelFile);
 }
-function resetLabels(){labels=[];labelFile=null;selected=-1;hoverDrawId=null;hoverLabel=-1;if(regionSource==='label'){rect=null;regionSource='none';}overlap=[];$('overlapWrap').hidden=true;$('labelMeta').textContent='Chưa có nhãn cho ảnh này';syncSourcePicks();setOptions();redraw();renderDrawnList();}
-function attachLabels(file){const boxes=parseLabels(file,false);hoverDrawId=null;hoverLabel=-1;if(img&&imageId(file.name)!==imageId(filename))throw Error('Tên nhãn không khớp ảnh: '+file.name+' / '+filename+'. Chọn đúng nhãn; hậu tố .rf được nhận diện tự động.');boxes.forEach(b=>pixelBox(b,1,1));labelFile=file;labels=boxes;selected=-1;selectedDrawId=null;regionSource='none';rect=null;overlap=[];$('overlapWrap').hidden=true;$('labelMeta').textContent=`${file.name}: ${labels.length} box. Số trên ảnh là số dòng trong TXT.`;syncSourcePicks();$('showBoxes').checked=true;setOptions();redraw();renderDrawnList();$('status').textContent=img?(labels.length?'Có thể bấm box TXT hoặc khoanh thêm nhiều vùng khác.':'Nhãn rỗng: chọn Khoanh tay vùng mới.'):'Đã đọc nhãn. Chọn ảnh gốc cùng ID để hiển thị.';}
-function useLoaded(side,silent=false){try{if(!img){if(!silent)$('status').textContent='Chọn ảnh gốc trước.';return false;}const map=nameMap(state[side]),f=map.get(imageId(filename));if(!f){if(!silent)$('status').textContent='Không có nhãn cùng ID trong bộ '+(side==='before'?'ban đầu':'sau sửa')+'. Có thể chọn file TXT riêng.';return false;}labelSeq++;attachLabels(f);return true;}catch(e){if(!silent)$('status').textContent=e.message;return false;}}
-function drawTag(text,x,y,color,dpr){ctx.save();const font=11*dpr;ctx.font=`600 ${font}px Arial`;const pad=5*dpr,tagW=Math.min(c.width-4*dpr,ctx.measureText(text).width+2*pad),tagH=font+9*dpr;if(tagW<=0){ctx.restore();return;}const bx=Math.max(2*dpr,Math.min(c.width-tagW-2*dpr,x)),by=Math.max(2*dpr,Math.min(c.height-tagH-2*dpr,y-tagH-3*dpr));ctx.fillStyle=color;ctx.fillRect(bx,by,tagW,tagH);ctx.fillStyle='#fff';ctx.textBaseline='middle';ctx.fillText(text,bx+pad,by+tagH/2,Math.max(1,tagW-2*pad));ctx.restore();}
+function resetLabels(){labels=[];labelFile=null;loadedAfterId='';selected=-1;selectedBefore=-1;hoverDrawId=null;hoverLabel=-1;if(regionSource==='label'){rect=null;regionSource='none';}overlap=[];$('overlapWrap').hidden=true;$('labelMeta').textContent='Chưa có nhãn A cho ảnh này';syncSourcePicks();setOptions();syncAfterControls();redraw();renderDrawnList();}
+function attachLabels(file,side='manual'){const boxes=parseLabels(file,false);hoverDrawId=null;hoverLabel=-1;if(img&&imageId(file.name)!==imageId(filename))throw Error('Tên nhãn không khớp ảnh: '+file.name+' / '+filename+'. Chọn đúng nhãn; hậu tố .rf được nhận diện tự động.');boxes.forEach(b=>pixelBox(b,1,1));labelFile=file;loadedAfterId=side==='after'?imageId(filename):'';labels=boxes;selected=-1;selectedBefore=-1;selectedDrawId=null;regionSource='none';rect=null;overlap=[];$('overlapWrap').hidden=true;$('labelMeta').textContent=`${side==='after'?'A · ':''}${file.name}: ${labels.length} box.${side==='after'?' Chọn khung để sửa và tải TXT A.':' Chỉ xem (không thuộc bộ A đã nạp).'}`;syncSourcePicks();$('showBoxes').checked=true;setOptions();syncAfterControls();redraw();renderDrawnList();$('status').textContent=img?(labels.length?'Có thể bấm box TXT hoặc khoanh thêm nhiều vùng khác.':'Nhãn rỗng: chọn Khoanh tay vùng mới.'):'Đã đọc nhãn. Chọn ảnh gốc cùng ID để hiển thị.';}
+function useLoaded(side,silent=false){try{if(!img){if(!silent)$('status').textContent='Chọn ảnh gốc trước.';return false;}const map=nameMap(state[side]),f=map.get(imageId(filename));if(!f){if(!silent)$('status').textContent='Không có nhãn A cùng ID trong bộ sau sửa. Nạp bộ A tại mục 01 trước.';return false;}labelSeq++;attachLabels(f,side);return true;}catch(e){if(!silent)$('status').textContent=e.message;return false;}}
+// Render text and boxes as SVG primitives at final CSS pixel positions.
+// Unlike the 8 MP bitmap canvas, vectors never lose resolution when zoom exceeds 400%.
+let vectorFragment=null;
+function vectorRect(r,color,width=1.8,fill='none',dash=''){
+ if(!r||!Number.isFinite(r.x1+r.y1+r.x2+r.y2))return;
+ const x=r.x1*scale,y=r.y1*scale,w=(r.x2-r.x1)*scale,h=(r.y2-r.y1)*scale;
+ const node=svgNode('rect',{x,y,width:Math.max(0,w),height:Math.max(0,h),fill,stroke:color,'stroke-width':width,'vector-effect':'non-scaling-stroke','shape-rendering':'geometricPrecision',...(dash?{'stroke-dasharray':dash}:{})});
+ vectorFragment.append(node);
+}
+function drawTag(text,x,y,color,emphasis=false){
+ if(!img||!vectorFragment)return;
+ const fontPx=scale>=5?10:scale>=2?10.5:11.5,tagH=fontPx+10,pad=5;
+ ctx.font=`${emphasis?750:650} ${fontPx}px Arial, sans-serif`;
+ const stage=$('stage'),left=stage.scrollLeft,top=stage.scrollTop;
+ const viewportWidth=Math.min(c.clientWidth,stage.clientWidth),viewportHeight=Math.min(c.clientHeight,stage.clientHeight);
+ const tagW=Math.max(20,Math.min(340,viewportWidth-10,ctx.measureText(text).width+pad*2));
+ if(tagW<=5)return;
+ const bx=clamp(x,Math.max(2,left+5),Math.max(2,left+viewportWidth-tagW-5));
+ const preferred=y-tagH-4;
+ const by=clamp(preferred,Math.max(2,top+4),Math.max(2,top+viewportHeight-tagH-4));
+ const group=svgNode('g',{'pointer-events':'none'});
+ group.append(svgNode('rect',{x:bx,y:by,width:tagW,height:tagH,rx:3.5,fill:color,'fill-opacity':'.96'}));
+ const t=svgNode('text',{x:bx+pad,y:by+tagH/2+.35,fill:'#fff','font-family':'Arial, sans-serif','font-weight':emphasis?'750':'650','font-size':fontPx,'dominant-baseline':'middle','text-rendering':'geometricPrecision'});
+ t.textContent=text;
+ // Using textLength only for lengthy coordinate text preserves all box positions at deep zoom.
+ if(ctx.measureText(text).width>tagW-pad*2){t.setAttribute('textLength',tagW-pad*2);t.setAttribute('lengthAdjust','spacingAndGlyphs');}
+ group.append(t);vectorFragment.append(group);
+}
 /* Bat dock chi khi chon box va con trong khu vuc 05. Khong chup scroll neu nguoi dung ra khoi khu vuc. */
 let coordDockScheduled=false;
 let coordCanvasEngaged=false;
@@ -252,19 +360,41 @@ function redraw(){
  const valid=!!(img&&rect&&rect.x2>rect.x1&&rect.y2>rect.y1),small=!!(img&&rect&&(regionSource==='draw'||regionSource==='input')&&isSmall(rect));
  updateSizePopup(small);
  $('applyNote').disabled=!valid;$('boxSelect').disabled=!img||!labels.length;$('showBoxes').disabled=!labels.length;
- 
- $('selectedName').textContent=selected>=0?`Box TXT dòng ${labels[selected].line}`:selectedDrawId!==null?`Box #${String(selectedDrawId).padStart(2,'0')} đang chọn`:operation?.kind==='draw'?'Đang khoanh vùng mới':'Chưa chọn box';
+ $('selectedName').textContent=selected>=0?`A · ${labelName(labels[selected])} · dòng ${labels[selected].line}`:selectedBefore>=0?`B · ${labelName(beforeLabels[selectedBefore])} · chỉ xem`:selectedDrawId!==null?`Vùng #${String(selectedDrawId).padStart(2,'0')} đang chọn`:operation?.kind==='draw'?'Đang khoanh vùng mới':'Chưa chọn box';
  $('coord').textContent=valid?tuple():'—';$('details').textContent=valid?`Rộng ${Number((rect.x2-rect.x1).toFixed(6))} px; cao ${Number((rect.y2-rect.y1).toFixed(6))} px`:'';
-  $('raw').textContent=selected>=0?'Nhãn YOLO: '+labels[selected].raw:'';
- const outside=selected>=0&&rect&&(rect.x1<0||rect.y1<0||rect.x2>img.naturalWidth||rect.y2>img.naturalHeight);$('overflow').hidden=!outside;$('overflow').textContent=outside?'Box gốc có phần vượt ảnh. Giữ nguyên tọa độ từ TXT; không tự cắt biên.':'';
- if(!img){syncToolbar();return;}
- ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);
- const sx=c.width/img.naturalWidth,sy=c.height/img.naturalHeight,dpr=c.width/(img.naturalWidth*scale);
- const dockUI=document.getElementById('coord_floatingTools');
- const suppressBoxText=!!(dockUI?.classList.contains('isDocked') && !dockUI?.classList.contains('coordMobileOffscreen') && !dockUI?.classList.contains('coordMobileCollapsed'));
- if($('showBoxes').checked)labels.forEach((box,index)=>{const r=pixelBox(box,img.naturalWidth,img.naturalHeight);ctx.strokeStyle=index===selected?'#d07400':'#164acb';ctx.lineWidth=(index===selected?3:1)*dpr;ctx.strokeRect(r.x1*sx,r.y1*sy,(r.x2-r.x1)*sx,(r.y2-r.y1)*sy);if($('showNumbers').checked&&!suppressBoxText){drawTag('TXT '+box.line,r.x1*sx,r.y1*sy,index===selected?'#a65b00':'#1246b4',dpr);}});
- for(const b of drawnBoxes){const r=b.rect,chosen=b.id===selectedDrawId,warn=isSmall(r),clr=chosen?'#7545cf':warn?'#b93422':b.source==='input'?'#7346ae':'#087b72';ctx.lineWidth=(chosen?3.5:2)*dpr;ctx.strokeStyle=clr;ctx.fillStyle=chosen?'rgba(114,65,220,.16)':'rgba(0,110,103,.045)';ctx.fillRect(r.x1*sx,r.y1*sy,(r.x2-r.x1)*sx,(r.y2-r.y1)*sy);ctx.strokeRect(r.x1*sx,r.y1*sy,(r.x2-r.x1)*sx,(r.y2-r.y1)*sy);if(chosen){ctx.strokeStyle='#fff';ctx.lineWidth=1*dpr;ctx.strokeRect((r.x1-1)*sx,(r.y1-1)*sy,(r.x2-r.x1+2)*sx,(r.y2-r.y1+2)*sy);}if($('showRegionLabels').checked&&!suppressBoxText)drawTag(`${warn?'⚠ ':''}#${String(b.id).padStart(2,'0')} ${tupleFor(r,$('format').value)}`,r.x1*sx,r.y1*sy,clr,dpr);}
- if(active!==null&&rect){const r=rect,clr=isSmall(r)?'#b93422':'#00826e';ctx.lineWidth=2*dpr;ctx.strokeStyle=clr;ctx.fillStyle='rgba(0,150,125,.15)';ctx.fillRect(r.x1*sx,r.y1*sy,(r.x2-r.x1)*sx,(r.y2-r.y1)*sy);ctx.strokeRect(r.x1*sx,r.y1*sy,(r.x2-r.x1)*sx,(r.y2-r.y1)*sy);drawTag(`${operation?.kind==='draw'?'Đang vẽ':'Đang chỉnh'} ${tupleFor(r,'integer')} | RỘNG ${fmtPx(r.x2-r.x1)}px | CAO ${fmtPx(r.y2-r.y1)}px ${r.y2-r.y1<MIN_BOX?'⚠':''}`,r.x1*sx,r.y1*sy,clr,dpr);}
+ $('raw').textContent=selected>=0?'Nhãn A YOLO: '+labels[selected].raw:selectedBefore>=0?'Nhãn B YOLO (chỉ xem): '+beforeLabels[selectedBefore].raw:'';
+ const outside=selected>=0&&rect&&(rect.x1<0||rect.y1<0||rect.x2>img.naturalWidth||rect.y2>img.naturalHeight);
+ $('overflow').hidden=!outside;$('overflow').textContent=outside?'Box A có phần vượt ảnh. Kiểm tra lại, không tự cắt biên.':'';
+ syncAfterControls();
+ if(!img){vectors.replaceChildren();syncToolbar();return;}
+ vectorFragment=document.createDocumentFragment();
+ const stage=$('stage'),left=stage.scrollLeft,top=stage.scrollTop,right=left+stage.clientWidth,bottom=top+stage.clientHeight;
+ function visible(r){return r.x2*scale>=left-4&&r.x1*scale<=right+4&&r.y2*scale>=top-4&&r.y1*scale<=bottom+4;}
+ // B = blue dashed; ALWAYS readonly. A = turquoise solid and editable. Temporary regions = purple.
+ if(showBefore)beforeLabels.forEach((box,index)=>{
+  const r=pixelBox(box,img.naturalWidth,img.naturalHeight);if(!visible(r))return;
+  const chosen=index===selectedBefore,clr=chosen?'#17419b':'#325cc0';
+  vectorRect(r,clr,chosen?2.9:1.65,'none','7 4');
+  if($('showNumbers').checked)drawTag(`B · ${labelName(box)} · #${box.line}`,r.x1*scale,r.y1*scale,clr,chosen);
+ });
+ if($('showBoxes').checked)labels.forEach((box,index)=>{
+  const r=boxRect(box,index);if(!visible(r))return;
+  const chosen=index===selected,clr=chosen?'#006c61':'#078779';
+  vectorRect(r,clr,chosen?3:2,chosen?'rgba(14,173,144,.08)':'none');
+  if($('showNumbers').checked)drawTag(`A · ${labelName(box)} · #${box.line}${chosen?' · '+tupleFor(r,$('format').value):''}`,r.x1*scale,r.y1*scale,clr,chosen);
+ });
+ for(const box of drawnBoxes){
+  const r=box.rect;if(!visible(r))continue;
+  const chosen=box.id===selectedDrawId,warn=isSmall(r),clr=warn?'#bf3932':chosen?'#7047bd':'#8959c2';
+  vectorRect(r,clr,chosen?3:2,chosen?'rgba(115,65,205,.10)':'rgba(135,80,200,.03)');
+  if($('showRegionLabels').checked)drawTag(`${warn?'⚠ ':''}Vùng #${String(box.id).padStart(2,'0')} · ${tupleFor(r,$('format').value)}`,r.x1*scale,r.y1*scale,clr,chosen);
+ }
+ if(active!==null&&rect&&operation?.kind==='draw'){
+  const r=rect,clr=isSmall(r)?'#bf3932':'#8959c2';
+  vectorRect(r,clr,2,'rgba(135,80,200,.09)','5 3');
+  drawTag(`Đang vẽ ${tupleFor(r,'integer')} · ${fmtPx(r.x2-r.x1)}×${fmtPx(r.y2-r.y1)} px`,r.x1*scale,r.y1*scale,clr,true);
+ }
+ vectors.replaceChildren(vectorFragment);vectorFragment=null;
  syncToolbar();
 }
 function fitImageScale(){
@@ -289,13 +419,14 @@ function layout(anchor=null){
  if(!img)return;
  scale=$('zoom').value==='fit'?fitImageScale():Number($('zoom').value);
  const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
- // The source image stays at its native resolution underneath the box overlay.
- // Bound the overlay allocation even when a large photo is zoomed to 32x.
- const dpr=Math.min(window.devicePixelRatio||1,8192/w,8192/h,Math.sqrt(8000000/(w*h)));
+ // The image remains a native raster photo; frame and label overlay is lossless SVG.
+ // No full-size canvas allocation, so even 3200% zoom cannot blur box strokes or text.
  img.classList.toggle('coordPixelImage',scale>=2);
  $('canvasWrap').style.width=w+'px';$('canvasWrap').style.height=h+'px';
  c.style.width=w+'px';c.style.height=h+'px';
- c.width=Math.max(1,Math.round(w*dpr));c.height=Math.max(1,Math.round(h*dpr));
+ c.width=1;c.height=1;
+ vectors.style.width=w+'px';vectors.style.height=h+'px';
+ vectors.setAttribute('width',w);vectors.setAttribute('height',h);
  if(anchor){
   const stage=$('stage'),r=c.getBoundingClientRect();
   const point=anchor.center?zoomCenter():anchor.point;
@@ -306,7 +437,36 @@ function layout(anchor=null){
 }
 
 // Mở ảnh trực tiếp từ File dùng chung với mục 04 mà không cần gán FileList vào input.
-function openCoordinateImage(file){coordCanvasEngaged=false;if(!file)return;const seq=++loadSeq,url=URL.createObjectURL(file),next=new Image();next.onload=()=>{URL.revokeObjectURL(url);if(seq!==loadSeq)return;rememberImage();if(zoomFrame)cancelAnimationFrame(zoomFrame);zoomFrame=0;pendingZoom=null;touchPoints.clear();pinch=null;safariGesture=null;$('canvasWrap').querySelector('.coordSourceImage')?.remove();img=next;img.className='coordSourceImage';img.alt='';img.draggable=false;$('canvasWrap').prepend(img);filename=file.name;restoreImage();clear();if(labelFile&&imageId(labelFile.name)!==imageId(filename))resetLabels();$('empty').hidden=true;$('canvasWrap').hidden=false;c.hidden=false;$('toolSelect').disabled=false;$('toolDraw').disabled=false;$('workspace').hidden=false;document.getElementById('coord_floatingTools').hidden=false;document.getElementById('coord_stageShell').classList.add('has-image');document.querySelector('.coordExtras').hidden=false;$('meta').textContent=`${filename}; ${img.naturalWidth} × ${img.naturalHeight} px`;syncSourcePicks();$('fallback').hidden=true;if(!labelFile)useLoaded('before',true);setOptions();layout();renderDrawnList();$('status').textContent=`Đã mở ảnh. Có ${drawnBoxes.length} box đã khoanh/nhập trên ảnh này.`;};next.onerror=()=>{URL.revokeObjectURL(url);if(seq===loadSeq)$('status').textContent='Không mở được ảnh. Chọn JPG/PNG hợp lệ.';};next.src=url;}
+function openCoordinateImage(file){
+ coordCanvasEngaged=false;
+ if(!file)return Promise.resolve(false);
+ const seq=++loadSeq,url=URL.createObjectURL(file),next=new Image();
+ return new Promise(resolve=>{
+  next.onload=()=>{
+   URL.revokeObjectURL(url);
+   if(seq!==loadSeq){resolve(false);return;}
+   rememberImage();if(zoomFrame)cancelAnimationFrame(zoomFrame);
+   zoomFrame=0;pendingZoom=null;touchPoints.clear();pinch=null;safariGesture=null;
+   $('canvasWrap').querySelector('.coordSourceImage')?.remove();
+   img=next;img.className='coordSourceImage';img.alt='';img.draggable=false;$('canvasWrap').prepend(img);
+   filename=file.name;restoreImage();clear();
+   if(labelFile&&imageId(labelFile.name)!==imageId(filename))resetLabels();
+   $('empty').hidden=true;$('canvasWrap').hidden=false;c.hidden=false;
+   $('toolSelect').disabled=false;$('toolDraw').disabled=false;$('workspace').hidden=false;
+   document.getElementById('coord_floatingTools').hidden=false;
+   document.getElementById('coord_stageShell').classList.add('has-image');
+   document.querySelector('.coordExtras').hidden=false;
+   $('meta').textContent=`${filename}; ${img.naturalWidth} × ${img.naturalHeight} px`;
+   syncSourcePicks();$('fallback').hidden=true;syncBeforeOverlay();
+   if(!labelFile)useLoaded('after',true);
+   setOptions();layout();renderDrawnList();
+   $('status').textContent=`Đã mở ảnh. Có ${drawnBoxes.length} box đã khoanh/nhập trên ảnh này.`;
+   resolve(true);
+  };
+  next.onerror=()=>{URL.revokeObjectURL(url);if(seq===loadSeq)$('status').textContent='Không mở được ảnh. Chọn JPG/PNG hợp lệ.';resolve(false);};
+  next.src=url;
+ });
+}
 $('file').addEventListener('change',()=>{
  const file=$('file').files[0];if(!file)return;
  openCoordinateImage(file);
@@ -349,7 +509,13 @@ window.addEventListener('yolo:images-updated',syncSharedImageIds);
 queueMicrotask(syncSharedImageIds);
 
 $('labelFile').addEventListener('change',async()=>{const file=$('labelFile').files[0];if(!file)return;const seq=++labelSeq;try{const text=await file.text();if(seq!==labelSeq)return;attachLabels({name:file.name,path:file.name,text});}catch(e){if(seq!==labelSeq)return;resetLabels();$('status').textContent=e.message;}});
-$('useBefore').onclick=()=>useLoaded('before');$('useAfter').onclick=()=>useLoaded('after');
+$('useBefore').onclick=()=>{showBefore=!showBefore;selectedBefore=-1;syncAfterControls();redraw();};
+$('useAfter').onclick=()=>{if(!useLoaded('after'))$('status').textContent='Nhãn A chưa được nạp ở mục 01.';};
+$('afterClass').addEventListener('change',()=>{if(selected<0||!canEditAfter())return;try{rewriteAfter(selected,{classId:Number($('afterClass').value)});selectBox(Math.min(selected,labels.length-1));}catch(e){$('status').textContent=e.message;}});
+$('deleteAfter').addEventListener('click',()=>{if(selected<0||!canEditAfter())return;const i=selected,box=labels[i];if(!window.confirm(`Xóa box A dòng ${box.line} (${labelName(box)})? Chỉ thay đổi nhãn A trong phiên; B được giữ nguyên.`))return;try{rewriteAfter(i,{remove:true});clear();}catch(e){$('status').textContent=e.message;}});
+$('exportAfter').addEventListener('click',()=>{const source=afterEntry();if(!source)return;const data=new Blob([source.text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(data),a=document.createElement('a');a.href=url;a.download=source.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);$('status').textContent=`Đã yêu cầu tải ${source.name}. Đây là nhãn A đang có trong phiên, không phải nhãn B.`;});
+window.addEventListener('yolo:labels-updated',event=>{if(!img||event.detail?.source==='coordinates')return;if(event.detail?.side==='before')syncBeforeOverlay();if(event.detail?.side==='after'){resetLabels();useLoaded('after',true);}redraw();});
+
 $('boxSelect').onchange=()=>{if($('boxSelect').value===''){clear();return;}overlap=[];$('overlapWrap').hidden=true;selectBox(Number($('boxSelect').value));};$('overlap').onchange=()=>selectBox(Number($('overlap').value));
 function syncToolButtons(){
  const isSelect=$('mode').value==='select';
@@ -390,9 +556,20 @@ c.addEventListener('pointerdown',e=>{
   redraw();return;
  }
  if($('mode').value==='select'){
-  hoverDrawId=null;hoverLabel=-1;
+  hoverDrawId=null;hoverLabel=-1;hoverBefore=-1;
   overlap=$('showBoxes').checked?hitCandidates(labels,point,img.naturalWidth,img.naturalHeight):[];
-  if(overlap.length){selectBox(overlap[0]);setOverlap();return;}
+  if(overlap.length){
+   const index=overlap[0],wasSelected=index===selected;
+   selectBox(index);setOverlap();
+   if(canEditAfter()){
+    const initial=pixelBox(labels[index],img.naturalWidth,img.naturalHeight);
+    const edge=wasSelected?resizeEdges(point,initial):'';
+    active=e.pointerId;c.setPointerCapture(active);
+    operation={kind:edge?'label-resize':'label-move',index,edge,origin:point,orig:{...initial},preview:{...initial},changed:false};
+   }
+   return;
+  }
+  if(showBefore){const beforeHit=hitCandidates(beforeLabels,point,img.naturalWidth,img.naturalHeight)[0];if(beforeHit!==undefined){selectBeforeBox(beforeHit);return;}}
   clear();
   const stage=$('stage');
   operation={kind:'pan',x:e.clientX,y:e.clientY,left:stage.scrollLeft,top:stage.scrollTop};
@@ -418,20 +595,23 @@ c.addEventListener('pointermove',e=>{
  const point=bounds(e);
  if(active===e.pointerId){
   if(operation?.kind==='draw'&&start)rect=normalized(start,point);
+  else if(operation?.kind?.startsWith('label-'))applyLabelDrag(point);
   else applyDrag(point);
   redraw();return;
  }
  const hit=hitDrawn(point),nextHover=hit?.id||null;
  const nextLabel=!hit&&e.pointerType!=='touch'&&$('mode').value==='select'&&$('showBoxes').checked
    ? hitCandidates(labels,point,img.naturalWidth,img.naturalHeight)[0]??-1 : -1;
- if(hoverDrawId!==nextHover||hoverLabel!==nextLabel){hoverDrawId=nextHover;hoverLabel=nextLabel;syncToolbar();}
+ const nextBefore=!hit&&nextLabel<0&&showBefore&&$('mode').value==='select'?hitCandidates(beforeLabels,point,img.naturalWidth,img.naturalHeight)[0]??-1:-1;
+ if(hoverDrawId!==nextHover||hoverLabel!==nextLabel||hoverBefore!==nextBefore){hoverDrawId=nextHover;hoverLabel=nextLabel;hoverBefore=nextBefore;syncToolbar();}
  if(hit){const edge=hit.id===selectedDrawId?resizeEdges(point,hit.rect):'';c.style.cursor=edge?cursorForEdge(edge):'move';}
- else c.style.cursor=$('mode').value==='select'?(nextLabel>=0?'pointer':'grab'):'crosshair';
+ else if(nextLabel>=0&&canEditAfter()){const edge=selected===nextLabel?resizeEdges(point,pixelBox(labels[nextLabel],img.naturalWidth,img.naturalHeight)):'';c.style.cursor=edge?cursorForEdge(edge):'move';}
+ else c.style.cursor=$('mode').value==='select'?(nextLabel>=0||nextBefore>=0?'pointer':'grab'):'crosshair';
 });
-c.addEventListener('pointerleave',e=>{if(e.relatedTarget===$('boxActions')||$('boxActions').contains(e.relatedTarget))return;if(active===null){hoverDrawId=null;hoverLabel=-1;syncToolbar();}});
+c.addEventListener('pointerleave',e=>{if(e.relatedTarget===$('boxActions')||$('boxActions').contains(e.relatedTarget))return;if(active===null){hoverDrawId=null;hoverLabel=-1;hoverBefore=-1;syncToolbar();}});
 $('boxActions').addEventListener('pointerleave',e=>{
  if(e.relatedTarget===c)return;
- hoverDrawId=null;hoverLabel=-1;syncToolbar();
+ hoverDrawId=null;hoverLabel=-1;hoverBefore=-1;syncToolbar();
 });
 function end(e){
  if(active!==e.pointerId)return;
@@ -444,6 +624,15 @@ function end(e){
   return;
  }
  const point=img?bounds(e):null;
+ if(op?.kind?.startsWith('label-')){
+  if(e.type==='pointerup'){applyLabelDrag(point);if(op.changed){
+    try{rewriteAfter(op.index,{rect:op.preview});selected=op.index;rect=pixelBox(labels[op.index],img.naturalWidth,img.naturalHeight);regionSource='label';}
+    catch(error){$('status').textContent=error.message;rect=op.orig;}
+   }}
+  start=null;active=null;operation=null;
+  if(c.hasPointerCapture(e.pointerId))c.releasePointerCapture(e.pointerId);
+  redraw();return;
+ }
  if(e.type==='pointerup'&&op?.kind==='draw'&&start){const fresh=normalized(start,point);start=null;active=null;operation=null;if(c.hasPointerCapture(e.pointerId))c.releasePointerCapture(e.pointerId);
   if(fresh.x2>fresh.x1&&fresh.y2>fresh.y1){addDrawnBox(fresh,'draw');}else{rect=null;regionSource='none';$('status').textContent='Vùng có chiều rộng hoặc cao bằng 0 px, chưa lưu.';redraw();}
   return;
@@ -462,7 +651,7 @@ c.addEventListener('lostpointercapture',e=>{if(operation?.kind==='pan')end(e);})
 // Nhấn vùng trống trên trang để bỏ chọn, trừ nút nổi và các điều khiển phải giữ box để thao tác.
 document.addEventListener('click',e=>{
  if(!rect||active!==null||e.target===c)return;
- if(e.target.closest('#coord_boxActions, #coord_floatingTools, #coord_overlapWrap, #coord_boxSelect, #coord_applyNote, #coord_format, .coordZoomControl'))return;
+ if(e.target.closest('#coordsSection, #coord_boxActions, #coord_floatingTools, #coord_overlapWrap, #coord_boxSelect, #coord_applyNote, #coord_format, .coordZoomControl, .qcInlineActions'))return;
  clear();
 });
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('stageShell').classList.contains('coordExpanded')&&(!e.target.closest('input,textarea,select')||e.target===c))clear();});
@@ -481,7 +670,7 @@ function setZoom(value,anchor){
   option.value=String(value);option.textContent=Math.round(Number(value)*100)+'%';
   option.dataset.customZoom='true';zoomSelect.append(option);
  }
- const focus=anchor||{...zoomAnchor(),center:true};
+ const focus=anchor||(rect&&img?{x:(rect.x1+rect.x2)/2,y:(rect.y1+rect.y2)/2,point:zoomCenter(),center:true}:{...zoomAnchor(),center:true});
  zoomSelect.value=String(value);
  syncZoomButtons();layout(focus);
  zoomSelect.dispatchEvent(new Event('change',{bubbles:true}));
@@ -543,6 +732,8 @@ function endPinch(e){
 }
 zoomStage.addEventListener('pointerup',endPinch,{capture:true});
 zoomStage.addEventListener('pointercancel',endPinch,{capture:true});
+let svgScrollFrame=0;
+zoomStage.addEventListener('scroll',()=>{if(svgScrollFrame)return;svgScrollFrame=requestAnimationFrame(()=>{svgScrollFrame=0;redraw();});},{passive:true});
 zoomStage.addEventListener('wheel',e=>{
  if(!img||e.target!==c||!(e.ctrlKey||e.metaKey))return;
  e.preventDefault();
@@ -731,11 +922,13 @@ function deleteBox(id,silent=false){
 $('actionCopy').onclick=()=>{
  const t=actionTarget;if(!t)return;
  if(t.kind==='draw'){selectDraw(t.box.id,true);copy(tupleFor(t.box.rect,$('format').value),$('actionCopy'));}
+ else if(t.kind==='before'){selectBeforeBox(t.index);copy(tupleFor(t.r,$('format').value),$('actionCopy'));}
  else{selectBox(t.index);copy(tupleFor(t.r,$('format').value),$('actionCopy'));}
 };
 $('actionNote').onclick=()=>{
  const t=actionTarget;if(!t)return;
  if(t.kind==='draw'){selectDraw(t.box.id,true);copy(noteFor(t.box.rect,t.box.source,t.box.id),$('actionNote'));}
+ else if(t.kind==='before'){selectBeforeBox(t.index);copy(`image_id: ${imageId(filename)}\nsource: B_initial_readonly\nregion_xyxy: ${tupleFor(t.r,$('format').value)}\nclass_id: ${beforeLabels[t.index].c}\nyolo: ${beforeLabels[t.index].raw}`, $('actionNote'));}
  else{selectBox(t.index);copy(noteFor(t.r,'label',null,t.index),$('actionNote'));}
 };
 $('actionDelete').onclick=()=>{const t=actionTarget;if(t?.kind==='draw')deleteBox(t.box.id);};
@@ -776,5 +969,37 @@ for(const id of ['copyAll','applyNote','deleteAll'])$(id).addEventListener('clic
 
 $('deleteAll').onclick=()=>{if(!drawnBoxes.length)return;if(!window.confirm(`Xóa toàn bộ ${drawnBoxes.length} box đã vẽ trên ảnh này? Việc này không sửa nhãn TXT.`))return;cancelAllInvalidBoxRemovals();drawnBoxes=[];nextBoxNo=1;rememberImage();clear();$('status').textContent='';showActionFeedback('Đã xóa toàn bộ box được khoanh/nhập trên ảnh này.');};
 $('applyNote').onclick=()=>{if(!rect||rect.x2<=rect.x1||rect.y2<=rect.y1)return;const context=selected>=0?`box TXT dòng ${labels[selected].line}, lớp ${labelName(labels[selected])}`:selectedDrawId!==null?`box #${String(selectedDrawId).padStart(2,'0')}, ${regionSource==='input'?'nhập tọa độ':'khoanh tay'}`:'vùng khoanh tay';const ok=applyPixelRegion(filename,tuple(),context);$('status').textContent=ok?'Đã ghi tọa độ box đang chọn vào notes đúng ảnh.':'Chưa thấy ảnh trong log. Chạy So sánh nhãn và dùng đúng ID ảnh.';};
-window.YoloCoords={normalized,pixelBox,tupleFor,hitCandidates,tuple,refresh:redraw,setZoom:queueZoom,getZoom:()=>scale,getFitScale:()=>img?fitImageScale():1,getMaxZoom:()=>img?Math.max(MAX_ZOOM,fitImageScale()):MAX_ZOOM,getRegions:()=>drawnBoxes.map(b=>({...b,rect:{...b.rect}}))};redraw();renderDrawnList();
+// Nhảy trực tiếp từ QC tới đúng ảnh + đúng dòng A. Không chỉnh nhãn B.
+async function focusQCBox(id,line,code=''){
+ const key=String(id||'').trim(),targetLine=Number(line);
+ if(!key||!Number.isInteger(targetLine)||targetLine<1)throw Error('Chưa có image_id hoặc dòng box hợp lệ.');
+ const source=nameMap(state.after).get(key);
+ if(!source)throw Error(`Không tìm thấy nhãn A của ${key}. Nạp nhãn A ở mục 01.`);
+ const file=window.MatchReview?.getImageFile?.(key);
+ if(!file)throw Error(`Thiếu ảnh gốc ${key}. Nạp ảnh gốc ở mục 01 trước khi sửa trực quan.`);
+ if(!img||imageId(filename)!==key){
+  if(!await openCoordinateImage(file))throw Error(`Không mở được ảnh ${key}.`);
+ }
+ // Bắt buộc lấy bản nhãn A mới nhất, tránh chỉnh nhầm file TXT được mở thủ công.
+ if(labelFile!==source||loadedAfterId!==key){if(!useLoaded('after'))throw Error('Không đọc được nhãn A. Hãy sửa các dòng TXT sai định dạng ở QC trước.');}
+ const index=labels.findIndex(b=>b.line===targetLine);
+ if(index<0)throw Error(`Không tìm thấy box A dòng ${targetLine}. Hãy chạy QC lại.`);
+ selectBox(index);
+ const r=pixelBox(labels[index],img.naturalWidth,img.naturalHeight);
+ const w=Math.max(.1,r.x2-r.x1),h=Math.max(.1,r.y2-r.y1);
+ const focusZoom=Math.min(16,Math.max(scale,Math.min(16,75/Math.min(w,h))));
+ if(focusZoom>scale*1.3)setZoom(focusZoom,{x:(r.x1+r.x2)/2,y:(r.y1+r.y2)/2,point:zoomCenter(),center:true});
+ requestAnimationFrame(()=>focusOnImage(r));
+ const context=document.getElementById('coord_qcContext');
+ if(context){context.hidden=false;document.getElementById('coord_qcContextText').textContent=`Từ QC · ${key} · box A${targetLine}${code?' · '+code:''} · chỉ sửa nhãn A`;} 
+ $('imageId').value=key;
+ $('status').textContent=`Đang sửa box A${targetLine} (${key}) từ QC. Khung A xanh ngọc được chọn; khung B xanh lam chỉ xem. Kéo cạnh/góc để chỉnh và tải lại TXT A.`;
+ document.getElementById('coordsSection').scrollIntoView({behavior:'smooth',block:'start'});
+ return true;
+}
+const backQC=document.getElementById('coord_qcBack');
+if(backQC)backQC.addEventListener('click',()=>{
+ document.getElementById('prepSection').scrollIntoView({behavior:'smooth',block:'start'});
+});
+window.YoloCoords={normalized,pixelBox,tupleFor,hitCandidates,tuple,refresh:redraw,focusQCBox,setZoom:queueZoom,getZoom:()=>scale,getFitScale:()=>img?fitImageScale():1,getMaxZoom:()=>img?Math.max(MAX_ZOOM,fitImageScale()):MAX_ZOOM,getRegions:()=>drawnBoxes.map(b=>({...b,rect:{...b.rect}}))};redraw();renderDrawnList();
 })();

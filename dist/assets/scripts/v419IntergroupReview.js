@@ -3,7 +3,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const NAMES=['2-wheel vehicles','bus','car','truck'];
-const IG={assignments:[],assignmentFile:'',images:new Map(),baseline:new Map(),source:new Map(),reviews:new Map(),issues:[],selected:'',group:'',scope:'main',zoom:1,cx:.5,cy:.5,view:'overlay',bitmap:null,bitmapUrl:'',drag:null};
+const IG={assignments:[],assignmentFile:'',images:new Map(),baseline:new Map(),source:new Map(),reviews:new Map(),issues:[],selected:'',group:'',scope:'main',zoom:1,cx:.5,cy:.5,view:'overlay',bitmap:null,bitmapUrl:'',drag:null,parseError:'',loadSeq:0};
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
 const escCSV=s=>'"'+String(s??'').replace(/"/g,'""')+'"';
 const imageExt=/\.(?:png|jpe?g|webp|bmp|gif|avif)$/i;
@@ -18,12 +18,78 @@ function typeOf(file){const p=path(file),s=p.toLowerCase();if(/(^|\/)intergroup_
 function classify(files){const data={assign:[],image:[],baseline:[],source:[],other:[]},main=[];
  for(const f of files){const t=typeOf(f);if(t)data[t].push(f);else main.push(f);}
  return {main,data};}
+// The intergroup viewer must not depend on the main B/A comparison global.
+// Some offline/browser builds initialize that global later or not at all.
+function parseIntergroupLabels(name,text){
+ const out=[];
+ String(text).replace(/^\uFEFF/,'').split(/\r?\n/).forEach((raw,index)=>{
+  if(!raw.trim())return;
+  const parts=raw.trim().split(/\s+/),cls=Number(parts[0]),g=parts.slice(1).map(Number);
+  if(parts.length!==5||!/^[0-3]$/.test(parts[0])||!Number.isInteger(cls)||g.length!==4||g.some(x=>!Number.isFinite(x))||g[2]<=0||g[3]<=0)
+   throw Error(`${name}, dòng ${index+1}: cần class ID 0–3 và 4 giá trị YOLO hữu hạn (rộng/cao > 0).`);
+  out.push({line:index+1,c:cls,g,raw:raw.trim()});
+ });
+ return out;
+}
+function parseIntergroupCSV(text){
+ const rows=[];let row=[],cell='',quoted=false;const input=String(text).replace(/^\uFEFF/,'');
+ for(let i=0;i<input.length;i++){const c=input[i];
+  if(c==='"'){if(quoted&&input[i+1]==='"'){cell+='"';i++;}else if(quoted)quoted=false;else if(cell==='')quoted=true;else throw Error('CSV có dấu ngoặc kép không hợp lệ.');}
+  else if(c===','&&!quoted){row.push(cell);cell='';}
+  else if((c==='\r'||c==='\n')&&!quoted){if(c==='\r'&&input[i+1]==='\n')i++;row.push(cell);if(row.some(x=>x!==''))rows.push(row);row=[];cell='';}
+  else cell+=c;
+ }
+ if(quoted)throw Error('CSV thiếu dấu ngoặc kép đóng.');
+ if(cell!==''||row.length){row.push(cell);if(row.some(x=>x!==''))rows.push(row);}
+ if(!rows.length)throw Error('CSV trống.');
+ const fields=rows.shift();if(new Set(fields).size!==fields.length)throw Error('CSV bị trùng tên cột.');
+ return {fields,rows:rows.map((r,i)=>{if(r.length!==fields.length)throw Error('CSV sai số cột ở dòng '+(i+2));return Object.fromEntries(fields.map((f,j)=>[f,r[j]]));})};
+}
+// Same one-to-one assignment principle as B/A; intergroup comparisons are hints,
+// never automatic proof of correctness against the source image.
+function intergroupIoU(a,b){
+ const [ax,ay,aw,ah]=a.g,[bx,by,bw,bh]=b.g;
+ const left=Math.max(ax-aw/2,bx-bw/2),top=Math.max(ay-ah/2,by-bh/2);
+ const right=Math.min(ax+aw/2,bx+bw/2),bottom=Math.min(ay+ah/2,by+bh/2);
+ const area=Math.max(0,right-left)*Math.max(0,bottom-top);
+ return area?area/(aw*ah+bw*bh-area):0;
+}
+function intergroupHungarian(matrix){
+ if(!matrix.length||!matrix[0]?.length)return [];
+ const n=matrix.length,m=matrix[0].length,full=m+n;
+ const u=Array(n+1).fill(0),v=Array(full+1).fill(0),p=Array(full+1).fill(0),way=Array(full+1).fill(0);
+ for(let i=1;i<=n;i++){p[0]=i;let j0=0;const minv=Array(full+1).fill(Infinity),used=Array(full+1).fill(false);
+  do{used[j0]=true;const i0=p[j0];let delta=Infinity,j1=0;
+   for(let j=1;j<=full;j++){if(used[j])continue;const cost=j<=m?-matrix[i0-1][j-1]:0,cur=cost-u[i0]-v[j];
+    if(cur<minv[j]){minv[j]=cur;way[j]=j0;}if(minv[j]<delta){delta=minv[j];j1=j;}}
+   for(let j=0;j<=full;j++){if(used[j]){u[p[j]]+=delta;v[j]-=delta;}else minv[j]-=delta;}j0=j1;
+  }while(p[j0]!==0);
+  do{const j1=way[j0];p[j0]=p[j1];j0=j1;}while(j0!==0);
+ }
+ const pairs=[];for(let j=1;j<=m;j++)if(p[j]&&matrix[p[j]-1][j-1]>0)pairs.push([p[j]-1,j-1]);return pairs;
+}
+function intergroupDiff(a,b,threshold=.5){
+ const old=new Set(a.map((_,i)=>i)),next=new Set(b.map((_,i)=>i)),pairs=[];
+ const equal=(x,y)=>x.g.every((z,i)=>Math.abs(z-y.g[i])<=1e-9);
+ for(const i of [...old])for(const j of next){if(a[i].c===b[j].c&&equal(a[i],b[j])){pairs.push([i,j,1]);old.delete(i);next.delete(j);break;}}
+ const ai=[...old],bi=[...next],ov=ai.map(i=>bi.map(j=>intergroupIoU(a[i],b[j])));
+ for(const [i,j] of intergroupHungarian(ov.map(row=>row.map(x=>x>=threshold?x:-1)))){
+  pairs.push([ai[i],bi[j],ov[i][j]]);old.delete(ai[i]);next.delete(bi[j]);
+ }
+ const counts={boxes_added:next.size,boxes_removed:old.size,boxes_modified:0,class_changes:0,geometry_changes:0},events=[];
+ for(const [i,j,value] of pairs){const changedClass=a[i].c!==b[j].c,changedGeom=!equal(a[i],b[j]);
+  if(changedClass||changedGeom){counts.boxes_modified++;counts.class_changes+=+changedClass;counts.geometry_changes+=+changedGeom;
+   events.push({change_type:'modified',before_line:a[i].line,after_line:b[j].line,iou:value.toFixed(9)});}}
+ for(const i of old)events.push({change_type:'removed',before_line:a[i].line,after_line:'',iou:''});
+ for(const j of next)events.push({change_type:'added',before_line:'',after_line:b[j].line,iou:''});
+ return {counts,events,pairs,unmatchedBefore:[...old],unmatchedAfter:[...next]};
+}
 function message(s,bad=false){const n=$('igMessage');if(!n)return;n.textContent=s;n.classList.toggle('igBad',bad);}
 function imgOf(id){return IG.images.get(id)||null;}
 function allIds(){const a=IG.assignments.length?IG.assignments.map(r=>r.image_id):[...new Set([...IG.images.keys(),...IG.baseline.keys(),...IG.source.keys()])];return [...new Set(a)].filter(Boolean);}
 function rowFor(id){return IG.assignments.find(x=>x.image_id===id)||{image_id:id};}
 function completeness(){const ids=allIds();return {ids,images:ids.filter(id=>IG.images.has(id)).length,base:ids.filter(id=>IG.baseline.has(id)).length,source:ids.filter(id=>IG.source.has(id)).length,checked:ids.filter(id=>IG.reviews.has(id)).length};}
-async function parseAssign(file){const text=await file.text();const parsed=window.YoloDiff?.parseCSV?.(text);if(!parsed)throw Error('Chưa khởi tạo bộ đọc CSV.');const cols=parsed.fields;const get=(r,names)=>{const key=cols.find(c=>names.includes(c.toLowerCase().trim()));return key?String(r[key]||'').trim():'';};
+async function parseAssign(file){const text=await file.text();const parsed=parseIntergroupCSV(text);const cols=parsed.fields;const get=(r,names)=>{const key=cols.find(c=>names.includes(c.toLowerCase().trim()));return key?String(r[key]||'').trim():'';};
  const ids=parsed.rows.map(r=>({image_id:get(r,['image_id','assigned_image_id','source_image_id']),source_group_id:get(r,['source_group_id','source_group','owner_group','original_group_id']),checker_group_id:get(r,['checker_group_id','checker_group','review_group_id']),checker_id:get(r,['checker_id','assigned_checker_id']),original_reviewer_id:get(r,['original_reviewer_id','source_reviewer_id']),checked_revision:get(r,['checked_revision','source_revision']),check_type:'intergroup'})).filter(r=>r.image_id);
  if(!ids.length)throw Error('intergroup_assignments.csv thiếu cột image_id hoặc không có ID hợp lệ.');
  const dup=ids.find((r,i)=>ids.findIndex(x=>x.image_id===r.image_id)!==i);if(dup)throw Error('Trùng image_id trong intergroup_assignments.csv: '+dup.image_id);
@@ -42,10 +108,51 @@ async function ingest(data){let count=0;for(const f of data.assign||[]){try{cons
  render();if(IG.selected)void openImage(IG.selected);window.dispatchEvent(new CustomEvent('yolo:intergroup-updated',{detail:completeness()}));
  return `Kiểm giữa nhóm: ${IG.assignments.length} ID được giao, ${IG.images.size} ảnh, ${IG.baseline.size} baseline TXT, ${IG.source.size} nhãn nhóm nguồn đã sửa`;
 }
-async function ingestSource(files){const seen=[];for(const f of files){if(!/\.txt$/i.test(f.name))continue;const id=normalId(f.name);if(IG.source.has(id)&&IG.source.get(id)!==f){seen.push(id);continue;}IG.source.set(id,f);}if(seen.length)IG.issues.push(`${seen.length} nhãn nhóm nguồn trùng image_id; giữ bản đã nạp trước.`);render();if(IG.selected)void openImage(IG.selected);return `Đã nhận ${files.length} nhãn nhóm nguồn (bộ kiểm giữa nhóm), chỉ dùng đối chiếu các ID được giao.`;}
+async function ingestSource(files){const seen=[];for(const f of files){if(!/\.txt$/i.test(f.name))continue;const id=normalId(f.name);if(IG.source.has(id)&&IG.source.get(id)!==f){seen.push(id);continue;}IG.source.set(id,f);}if(seen.length)IG.issues.push(`${seen.length} nhãn nhóm nguồn trùng image_id; giữ bản đã nạp trước.`);render();if(IG.selected)void openImage(IG.selected);window.dispatchEvent(new CustomEvent('yolo:intergroup-updated',{detail:completeness()}));return `Đã nhận ${files.length} nhãn nhóm nguồn (bộ kiểm giữa nhóm), chỉ dùng đối chiếu các ID được giao.`;}
+// Clear only source labels for cross-group checking. Stored decisions depend on
+// those labels, so discard the decisions too rather than exporting stale reviews.
+function clearSource(){
+ const removed=IG.source.size,invalidated=IG.reviews.size;
+ if(!removed)return {removed:0,invalidated:0};
+ IG.source.clear();IG.reviews.clear();IG.loadSeq++;IG.parseError='';currentSource=[];currentDiff=null;
+ const ids=allIds();
+ if(!ids.includes(IG.selected))IG.selected=ids[0]||'';
+ if(!IG.selected){
+  if(IG.bitmapUrl){URL.revokeObjectURL(IG.bitmapUrl);IG.bitmapUrl='';}
+  IG.bitmap=null;
+  $('igImageId').value='';$('igImageInfo').textContent='Chưa có ảnh hoặc nhãn kiểm giữa nhóm.';
+  $('igDifferences').replaceChildren();$('igSave').disabled=true;
+ }
+ render();
+ if(IG.selected)void openImage(IG.selected);else draw();
+ window.dispatchEvent(new CustomEvent('yolo:intergroup-updated',{detail:completeness()}));
+ message(`Đã xóa ${removed} nhãn nhóm nguồn. Nhãn A/B, ảnh và baseline không thay đổi.`
+   +(invalidated?` Đã hủy ${invalidated} kết luận cũ phụ thuộc bộ nhãn này.`:''));
+ return {removed,invalidated};
+}
+function clearRole(role){
+ const maps={image:IG.images,baseline:IG.baseline,source:IG.source};
+ if(role==='source')return clearSource();
+ const map=maps[role],isAssign=role==='assign',isReviews=role==='reviews';
+ if(!map&&!isAssign&&!isReviews)throw Error('Nhóm dữ liệu kiểm giữa nhóm không hợp lệ.');
+ const removed=isAssign?IG.assignments.length:isReviews?IG.reviews.size:map.size;
+ const invalidated=isReviews?0:IG.reviews.size;
+ if(isAssign){IG.assignments=[];IG.assignmentFile='';}
+ else if(isReviews)IG.reviews.clear();
+ else map.clear();
+ if(!isReviews)IG.reviews.clear();
+ IG.loadSeq++;IG.parseError='';currentBase=[];currentSource=[];currentDiff=null;
+ const ids=allIds();if(!ids.includes(IG.selected))IG.selected=ids[0]||'';
+ if(!IG.selected){if(IG.bitmapUrl){URL.revokeObjectURL(IG.bitmapUrl);IG.bitmapUrl='';}IG.bitmap=null;$('igImageId').value='';$('igImageInfo').textContent='Chưa có dữ liệu kiểm giữa nhóm.';$('igDifferences').replaceChildren();$('igSave').disabled=true;}
+ render();if(IG.selected)void openImage(IG.selected);else draw();
+ window.dispatchEvent(new CustomEvent('yolo:intergroup-updated',{detail:completeness()}));
+ const labels={image:'ảnh kiểm giữa nhóm',baseline:'nhãn baseline',assign:'phân công liên nhóm',reviews:'kết luận kiểm giữa nhóm'};
+ message(`Đã xóa ${removed} ${labels[role]}.`+(invalidated?` Đã hủy ${invalidated} kết luận phụ thuộc dữ liệu cũ.`:''));
+ return {removed,invalidated};
+}
 function setScope(scope){IG.scope=scope;const inter=scope==='intergroup';$('mainMatchWorkspace').hidden=inter;$('intergroupWorkspace').hidden=!inter;const note=$('hubNeedMatch');if(note)note.hidden=inter;document.body.classList.toggle('intergroupMode',inter);
  $('matchScopeMain').setAttribute('aria-pressed',String(!inter));$('matchScopeInter').setAttribute('aria-pressed',String(inter));if(inter)render();}
-async function readBoxes(file){if(!file)return null;const text=await file.text();try{return window.YoloDiff.parseLabels({name:file.name,text},false);}catch(e){throw Error(`${file.name}: ${e.message}`);}}
+async function readBoxes(file){if(!file)return null;const text=await file.text();return parseIntergroupLabels(file.name,text);}
 function corners(b){const [x,y,w,h]=b.g;return[x-w/2,y-h/2,x+w/2,y+h/2];}
 function drawnBox(ctx,b,W,H,color,dashed,selected=false){const [x1,y1,x2,y2]=corners(b);ctx.save();ctx.strokeStyle=color;ctx.lineWidth=selected?3:1.8;ctx.setLineDash(dashed?[6,4]:[]);ctx.strokeRect(x1*W,y1*H,(x2-x1)*W,(y2-y1)*H);ctx.setLineDash([]);const caption=(dashed?'S':'BL')+b.line;ctx.font='bold 12px system-ui';const tw=ctx.measureText(caption).width+10;const px=Math.max(1,Math.min(W-tw,x1*W)),py=Math.max(15,y1*H);ctx.fillStyle=color;ctx.fillRect(px,py-15,tw,17);ctx.fillStyle='#fff';ctx.fillText(caption,px+5,py-3);ctx.restore();}
 let currentBase=[],currentSource=[],currentDiff=null;
@@ -59,7 +166,15 @@ function paint(ctx,w,h,role){ctx.fillStyle='#111d23';ctx.fillRect(0,0,w,h);if(!I
  if(role!=='source')currentBase.forEach(b=>drawnBox(ctx,b,im.naturalWidth,im.naturalHeight,'#03a58f',false));
  if(role!=='baseline')currentSource.forEach(b=>drawnBox(ctx,b,im.naturalWidth,im.naturalHeight,'#ee8a3d',true));ctx.restore();}
 function draw(){const view=IG.view,split=view==='split';$('igCanvasSecondary').hidden=!split;$('igCanvasPrimary').setAttribute('aria-label',split?'Ảnh với baseline':'Ảnh chồng baseline và nhãn nhóm nguồn');for(const [id,role] of [['igCanvasPrimary',split?'baseline':'both'],['igCanvasSecondary','source']]){const c=$(id);if(c.hidden)continue;const {ctx,w,h}=canvasProjection(c);paint(ctx,w,h,role);}}
-async function openImage(id){if(!id||!allIds().includes(id))return;IG.selected=id;const baseF=IG.baseline.get(id),srcF=IG.source.get(id);currentBase=[];currentSource=[];currentDiff=null;try{currentBase=await readBoxes(baseF)||[];currentSource=await readBoxes(srcF)||[];if(baseF&&srcF)currentDiff=window.YoloDiff.diff(currentBase,currentSource,.50);}catch(e){message('Nhãn lỗi: '+e.message,true);}await loadImage(id);renderSelection();}
+async function openImage(id){if(!id||!allIds().includes(id))return;
+ const seq=++IG.loadSeq;IG.selected=id;IG.parseError='';$('igSave').disabled=true;
+ const baseF=IG.baseline.get(id),srcF=IG.source.get(id);currentBase=[];currentSource=[];currentDiff=null;
+ try{currentBase=await readBoxes(baseF)||[];if(seq!==IG.loadSeq)return;currentSource=await readBoxes(srcF)||[];if(seq!==IG.loadSeq)return;
+  if(baseF&&srcF)currentDiff=intergroupDiff(currentBase,currentSource,.50);
+ }catch(e){IG.parseError=e.message;}
+ if(seq!==IG.loadSeq)return;await loadImage(id);if(seq!==IG.loadSeq)return;renderSelection();
+ if(IG.parseError)message('Nhãn lỗi: '+IG.parseError,true);
+}
 function renderSelection(){const id=IG.selected,c=completeness();$('igImageSelect').value=id;$('igImageId').value=id;
  const msg=[`Ảnh ${c.ids.indexOf(id)+1}/${c.ids.length}.`,!imgOf(id)&&'Thiếu ảnh gốc.',!IG.baseline.has(id)&&'Thiếu baseline_labels.',!IG.source.has(id)&&'Thiếu nhãn nhóm nguồn đã sửa.'].filter(Boolean).join(' ');
  $('igImageInfo').textContent=msg;const out=$('igDifferences');out.replaceChildren();if(currentDiff){
@@ -68,9 +183,10 @@ function renderSelection(){const id=IG.selected,c=completeness();$('igImageSelec
   t.append(el('span',`${label} · BL${e.before_line||'–'} / S${e.after_line||'–'}`,'igEvent'));}if(!items.length)t.textContent='Các box được ghép không phát hiện thay đổi; vẫn cần xem ảnh để xác nhận.';if(currentDiff.events.length>80)t.append(el('span',`Còn ${currentDiff.events.length-80} thay đổi trong dữ liệu.`,''));out.append(t);
  }else out.append(el('p',IG.source.has(id)?'Chưa có baseline: vẫn có thể xem ảnh và nhãn đã sửa của nhóm nguồn để kết luận; không có gợi ý khác biệt trước/sau.':'Chưa có nhãn đã sửa của nhóm nguồn: chưa được kết luận agree/disagree.','igHint'));
  const saved=IG.reviews.get(id);$('igResult').value=saved?.result||'';$('igErrorType').value=saved?.error_type||'';$('igResolution').value=saved?.resolution||'';$('igNotes').value=saved?.notes||'';$('igCheckedAt').value=saved?.checked_at||'';$('igCheckerId').value=saved?.checker_id||$('igCheckerId').value||'';
- $('igSave').disabled=!(imgOf(id)&&IG.source.has(id));$('igSave').title=$('igSave').disabled?'Cần ảnh và nhãn đã sửa của nhóm nguồn':'';draw();}
+ $('igSave').disabled=!(imgOf(id)&&IG.source.has(id))||!!IG.parseError;$('igSave').title=IG.parseError?'Nhãn TXT không hợp lệ: '+IG.parseError:$('igSave').disabled?'Cần ảnh và nhãn đã sửa của nhóm nguồn':'';draw();}
 function validateISO(s){return !s||/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(s);}
 function saveReview(){const id=IG.selected,result=$('igResult').value,checker=$('igCheckerId').value.trim(),at=$('igCheckedAt').value.trim(),error=$('igErrorType').value,notes=$('igNotes').value.trim(),resolution=$('igResolution').value.trim();
+ if(IG.parseError)return message('Không thể lưu kết luận vì TXT không hợp lệ: '+IG.parseError,true);
  if(!imgOf(id)||!IG.source.has(id))return message('Thiếu ảnh hoặc nhãn đã sửa từ nhóm nguồn; chưa thể xác nhận kết quả.',true);
  if(!checker||!/^G\d{2}_SV\d{2}$/i.test(checker))return message('Nhập checker_id dạng G11_SV01 (đúng thành viên đang kiểm).',true);const assignedGroup=rowFor(id).checker_group_id;if(rowFor(id).original_reviewer_id&&checker.toUpperCase()===rowFor(id).original_reviewer_id.toUpperCase())return message('Người kiểm tra chéo phải khác người rà soát ban đầu.',true);if(assignedGroup&&!checker.toUpperCase().startsWith(assignedGroup.toUpperCase()+'_'))return message('checker_id không thuộc nhóm được giao kiểm ('+assignedGroup+').',true);
  if(!['agree','disagree'].includes(result))return message('Hãy xem ảnh rồi chọn agree hoặc disagree.',true);
@@ -103,6 +219,6 @@ function zoom(factor){IG.zoom=Math.min(32,Math.max(1,IG.zoom*factor));if(IG.zoom
 for(const id of ['igCanvasPrimary','igCanvasSecondary']){const c=$(id);c.addEventListener('wheel',e=>{e.preventDefault();zoom(Math.exp(-e.deltaY*.003));},{passive:false});c.addEventListener('pointerdown',e=>{if(IG.zoom<=1)return;IG.drag={x:e.clientX,y:e.clientY,cx:IG.cx,cy:IG.cy};c.setPointerCapture(e.pointerId);});c.addEventListener('pointermove',e=>{if(!IG.drag||!IG.bitmap)return;const im=IG.bitmap,w=c.clientWidth,h=c.clientHeight,s=Math.min(w/im.naturalWidth,h/im.naturalHeight)*IG.zoom;IG.cx=Math.min(1,Math.max(0,IG.drag.cx-(e.clientX-IG.drag.x)/(im.naturalWidth*s)));IG.cy=Math.min(1,Math.max(0,IG.drag.cy-(e.clientY-IG.drag.y)/(im.naturalHeight*s)));draw();});c.addEventListener('pointerup',()=>IG.drag=null);c.addEventListener('pointercancel',()=>IG.drag=null);}
 document.addEventListener('keydown',e=>{if(IG.scope!=='intergroup'||e.target.closest('input,textarea,select,[contenteditable]'))return;if(e.key.toLowerCase()==='z'){e.preventDefault();$('igZoom').click();}else if(e.key==='+'||e.key==='='){e.preventDefault();zoom(1.25);}else if(e.key==='-'){e.preventDefault();zoom(1/1.25);}else if(e.key==='0'){e.preventDefault();IG.zoom=1;IG.cx=IG.cy=.5;draw();}});
 window.addEventListener('resize',()=>{if(IG.scope==='intergroup')draw();});
-window.YoloIntergroup={classify,ingest,ingestSource,setScope,getSummary:()=>({...completeness(),assignmentFile:IG.assignmentFile,issues:IG.issues.slice()})};
+window.YoloIntergroup={classify,ingest,ingestSource,clearSource,clearRole,setScope,getLoadedFileNames:()=>({source:[...IG.source.values()].map(path),baseline:[...IG.baseline.values()].map(path),image:[...IG.images.values()].map(path),assign:IG.assignmentFile?[IG.assignmentFile]:[],reviews:IG.reviews.size?['crosscheck_log_intergroup_draft.csv']:[]}),getSummary:()=>({...completeness(),sourceTotal:IG.source.size,imageTotal:IG.images.size,baselineTotal:IG.baseline.size,assignmentTotal:IG.assignments.length,reviewTotal:IG.reviews.size,assignmentFile:IG.assignmentFile,issues:IG.issues.slice()})};
 render();
 })();
