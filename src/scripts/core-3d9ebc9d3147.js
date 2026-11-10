@@ -26,13 +26,18 @@ function renumberBoxes(){
 }
 function restoreImage(){cancelAllInvalidBoxRemovals();const item=savedRegions.get(imageKey());drawnBoxes=item?item.boxes.map(b=>({...b,rect:{...b.rect}})):[];selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;actionTarget=null;renumberBoxes();drawnBoxes.forEach(scheduleInvalidBoxRemoval);}
 function normalized(a,b){return {x1:Math.floor(Math.min(a.x,b.x)),y1:Math.floor(Math.min(a.y,b.y)),x2:Math.ceil(Math.max(a.x,b.x)),y2:Math.ceil(Math.max(a.y,b.y))};}
+const pixelRectCache=new WeakMap();
 function pixelBox(box,width,height){
+ const cached=pixelRectCache.get(box);
+ if(cached&&cached.width===width&&cached.height===height)return cached.rect;
  // Exact decimal conversion of finite YOLO decimals; never clamps or edits source labels.
  const values=box.raw.split(/\s+/).slice(1).map(raw=>{const m=raw.match(/^([+-]?)(\d*\.?\d+|\d+\.)(?:[eE]([+-]?\d+))?$/);if(!m)throw Error('Tọa độ phải là số thập phân YOLO.');const digits=m[2].replace('.',''),exp=Number(m[3]||0)-(m[2].split('.')[1]||'').length;if(Math.abs(exp)>120||digits.length>240)throw Error('Độ chính xác tọa độ vượt giới hạn hiển thị.');return {n:BigInt((m[1]==='-'?'-':'')+digits),exp};});
  const scale=Math.max(0,...values.map(v=>-v.exp)),factor=10n**BigInt(scale),[x,y,w,h]=values.map(v=>v.n*10n**BigInt(v.exp+scale));
  function decimal(n){const negative=n<0n;if(negative)n=-n;const digits=(n*5n).toString().padStart(scale+2,'0');let out=digits.slice(0,-scale-1)+'.'+digits.slice(-scale-1);out=out.replace(/0+$/,'').replace(/\.$/,'');return (negative?'-':'')+out;}
  const exact=[decimal((2n*x-w)*BigInt(width)),decimal((2n*y-h)*BigInt(height)),decimal((2n*x+w)*BigInt(width)),decimal((2n*y+h)*BigInt(height))];
- return {x1:Number(exact[0]),y1:Number(exact[1]),x2:Number(exact[2]),y2:Number(exact[3]),exact};
+ const rect={x1:Number(exact[0]),y1:Number(exact[1]),x2:Number(exact[2]),y2:Number(exact[3]),exact};
+ pixelRectCache.set(box,{width,height,rect});
+ return rect;
 }
 
 function tupleFor(r,format='exact'){if(format==='integer')return `(${Math.floor(r.x1)}, ${Math.floor(r.y1)}, ${Math.ceil(r.x2)}, ${Math.ceil(r.y2)})`;return '('+(r.exact||[r.x1,r.y1,r.x2,r.y2]).join(', ')+')';}
@@ -101,7 +106,16 @@ function updateSizePopup(small){
   sizePopupCount.textContent=String(remaining);
  },100);
 }
-function hitCandidates(boxes,point,width,height){return boxes.map((b,i)=>({index:i,r:pixelBox(b,width,height)})).filter(x=>point.x>=x.r.x1&&point.x<=x.r.x2&&point.y>=x.r.y1&&point.y<=x.r.y2).sort((a,b)=>(a.r.x2-a.r.x1)*(a.r.y2-a.r.y1)-(b.r.x2-b.r.x1)*(b.r.y2-b.r.y1)||a.index-b.index).map(x=>x.index);}
+function hitCandidates(boxes,point,width,height){
+ const hits=[];
+ for(let i=0;i<boxes.length;i++){
+  const r=pixelBox(boxes[i],width,height);
+  if(point.x>=r.x1&&point.x<=r.x2&&point.y>=r.y1&&point.y<=r.y2)
+   hits.push({index:i,area:(r.x2-r.x1)*(r.y2-r.y1)});
+ }
+ hits.sort((a,b)=>a.area-b.area||a.index-b.index);
+ return hits.map(x=>x.index);
+}
 function labelName(b){let names=null;try{names=currentNames();}catch{}return names?`${names[b.c]} (ID ${b.c})`:`ID ${b.c}`;}
 function bounds(e){const b=c.getBoundingClientRect();return {x:Math.max(0,Math.min(img.naturalWidth,(e.clientX-b.left)*img.naturalWidth/b.width)),y:Math.max(0,Math.min(img.naturalHeight,(e.clientY-b.top)*img.naturalHeight/b.height))};}
 function make(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
@@ -188,7 +202,10 @@ function syncToolbar(){
  if(!info){el.hidden=true;return;}
  el.hidden=false;
  $('actionBoxLabel').textContent=info.kind==='draw'?`Vùng #${String(info.box.id).padStart(2,'0')}`:info.kind==='before'?`B · ${beforeLabels[info.index].line} (chỉ xem)`:`A · ${labels[info.index].line}`;
- $('actionDelete').hidden=info.kind!=='draw';
+ const allowRemove=info.kind==='draw'||(info.kind==='label'&&canEditAfter());
+ $('actionDelete').hidden=!allowRemove;
+ $('actionDelete').disabled=!allowRemove;
+ $('actionDelete').textContent=info.kind==='label'?'Xóa box A':'Xóa vùng tạm';
  // Locate controls in the same CSS coordinate space as the canvas, including at zoom 400%.
  el.style.visibility='hidden';
  const sx=c.clientWidth/img.naturalWidth,sy=c.clientHeight/img.naturalHeight;
@@ -196,8 +213,11 @@ function syncToolbar(){
  const r=info.r;
  const center=(r.x1+r.x2)*sx/2;
  const left=Math.max(pad,Math.min(Math.max(pad,c.clientWidth-w-pad),center-w/2));
- let top=r.y1*sy-h-9;
- if(top<pad)top=r.y2*sy+8;
+ // Leave breathing room above the box so the action bar never covers its class tag.
+ // At the top edge place actions below the box instead.
+ const labelClearance=$('showNumbers').checked?30:10;
+ let top=r.y1*sy-h-labelClearance;
+ if(top<pad)top=r.y2*sy+10;
  top=Math.max(pad,Math.min(Math.max(pad,c.clientHeight-h-pad),top));
  // Neu menu nam duoi box, cho vung hover vo hinh mo ve phia tren; nguoc lai mo xuong box.
  // Vung nao cung co do chong len box de chuot khong bi mat hover trong gap.
@@ -289,11 +309,44 @@ function useLoaded(side,silent=false){try{if(!img){if(!silent)$('status').textCo
 // Render text and boxes as SVG primitives at final CSS pixel positions.
 // Unlike the 8 MP bitmap canvas, vectors never lose resolution when zoom exceeds 400%.
 let vectorFragment=null;
+let renderedAfterNodes=new Map(),renderedDrawNodes=new Map();
+let dragPaintFrame=0;
+function updateLiveRect(node,r){
+ if(!node||!r)return;
+ node.setAttribute('x',String(r.x1*scale));node.setAttribute('y',String(r.y1*scale));
+ node.setAttribute('width',String(Math.max(0,(r.x2-r.x1)*scale)));
+ node.setAttribute('height',String(Math.max(0,(r.y2-r.y1)*scale)));
+}
+// During a drag, update only the target SVG element. No full DOM rebuild, BigInt
+// conversion, toolbar measurement, or expensive forced layout per pointer event.
+function paintDragFrame(){
+ dragPaintFrame=0;
+ if(!img||active===null||!operation)return;
+ const op=operation;
+ if(op.kind==='label-move'||op.kind==='label-resize'){
+  const nodes=renderedAfterNodes.get(op.index),r=op.preview;
+  if(nodes&&r){updateLiveRect(nodes.shape,r);
+   if(nodes.tag)nodes.tag.setAttribute('transform',`translate(${(r.x1-nodes.base.x1)*scale} ${(r.y1-nodes.base.y1)*scale})`);
+  }
+ }else if(op.kind==='move'||op.kind==='resize'){
+  const nodes=renderedDrawNodes.get(op.id),r=savedBox(op.id)?.rect;
+  if(nodes&&r){updateLiveRect(nodes.shape,r);
+   if(nodes.tag)nodes.tag.setAttribute('transform',`translate(${(r.x1-nodes.base.x1)*scale} ${(r.y1-nodes.base.y1)*scale})`);
+  }
+ }else if(op.kind==='draw'){
+  redraw();return;
+ }
+ if(rect){$('coord').textContent=tupleFor(rect,$('format').value);
+  $('details').textContent=`Rộng ${Number((rect.x2-rect.x1).toFixed(4))} px; cao ${Number((rect.y2-rect.y1).toFixed(4))} px`;
+ }
+}
+function scheduleDragPaint(){if(!dragPaintFrame)dragPaintFrame=requestAnimationFrame(paintDragFrame);}
+function cancelDragPaint(){if(dragPaintFrame){cancelAnimationFrame(dragPaintFrame);dragPaintFrame=0;}}
 function vectorRect(r,color,width=1.8,fill='none',dash=''){
  if(!r||!Number.isFinite(r.x1+r.y1+r.x2+r.y2))return;
  const x=r.x1*scale,y=r.y1*scale,w=(r.x2-r.x1)*scale,h=(r.y2-r.y1)*scale;
  const node=svgNode('rect',{x,y,width:Math.max(0,w),height:Math.max(0,h),fill,stroke:color,'stroke-width':width,'vector-effect':'non-scaling-stroke','shape-rendering':'geometricPrecision',...(dash?{'stroke-dasharray':dash}:{})});
- vectorFragment.append(node);
+ vectorFragment.append(node);return node;
 }
 function drawTag(text,x,y,color,emphasis=false){
  if(!img||!vectorFragment)return;
@@ -312,7 +365,7 @@ function drawTag(text,x,y,color,emphasis=false){
  t.textContent=text;
  // Using textLength only for lengthy coordinate text preserves all box positions at deep zoom.
  if(ctx.measureText(text).width>tagW-pad*2){t.setAttribute('textLength',tagW-pad*2);t.setAttribute('lengthAdjust','spacingAndGlyphs');}
- group.append(t);vectorFragment.append(group);
+ group.append(t);vectorFragment.append(group);return group;
 }
 /* Bat dock chi khi chon box va con trong khu vuc 05. Khong chup scroll neu nguoi dung ra khoi khu vuc. */
 let coordDockScheduled=false;
@@ -344,7 +397,7 @@ function coordUpdateDock(){
  section.classList.toggle('coordDockInView',enabled||(usesFloatingRail&&sectionVisible&&!floating.hidden));
  if(wasDocked&&!enabled&&document.getElementById('coord_moreMenu')?.hidden===false)setMoreOpen(false);
  // On-canvas tags are painted in canvas, so update them once when dock visibility changes.
- if((wasDocked!==enabled||previousOffscreen!==offscreen)&&window.YoloCoords?.refresh){
+ if(active===null&&(wasDocked!==enabled||previousOffscreen!==offscreen)&&window.YoloCoords?.refresh){
    requestAnimationFrame(()=>window.YoloCoords?.refresh());
  }
 }
@@ -367,7 +420,7 @@ function redraw(){
  $('overflow').hidden=!outside;$('overflow').textContent=outside?'Box A có phần vượt ảnh. Kiểm tra lại, không tự cắt biên.':'';
  syncAfterControls();
  if(!img){vectors.replaceChildren();syncToolbar();return;}
- vectorFragment=document.createDocumentFragment();
+ vectorFragment=document.createDocumentFragment();renderedAfterNodes=new Map();renderedDrawNodes=new Map();
  const stage=$('stage'),left=stage.scrollLeft,top=stage.scrollTop,right=left+stage.clientWidth,bottom=top+stage.clientHeight;
  function visible(r){return r.x2*scale>=left-4&&r.x1*scale<=right+4&&r.y2*scale>=top-4&&r.y1*scale<=bottom+4;}
  // B = blue dashed; ALWAYS readonly. A = turquoise solid and editable. Temporary regions = purple.
@@ -380,14 +433,16 @@ function redraw(){
  if($('showBoxes').checked)labels.forEach((box,index)=>{
   const r=boxRect(box,index);if(!visible(r))return;
   const chosen=index===selected,clr=chosen?'#006c61':'#078779';
-  vectorRect(r,clr,chosen?3:2,chosen?'rgba(14,173,144,.08)':'none');
-  if($('showNumbers').checked)drawTag(`A · ${labelName(box)} · #${box.line}${chosen?' · '+tupleFor(r,$('format').value):''}`,r.x1*scale,r.y1*scale,clr,chosen);
+  const shape=vectorRect(r,clr,chosen?3:2,chosen?'rgba(14,173,144,.08)':'none');
+  const tag=$('showNumbers').checked?drawTag(`A · ${labelName(box)} · #${box.line}${chosen?' · '+tupleFor(r,$('format').value):''}`,r.x1*scale,r.y1*scale,clr,chosen):null;
+  renderedAfterNodes.set(index,{shape,tag,base:{...r}});
  });
  for(const box of drawnBoxes){
   const r=box.rect;if(!visible(r))continue;
   const chosen=box.id===selectedDrawId,warn=isSmall(r),clr=warn?'#bf3932':chosen?'#7047bd':'#8959c2';
-  vectorRect(r,clr,chosen?3:2,chosen?'rgba(115,65,205,.10)':'rgba(135,80,200,.03)');
-  if($('showRegionLabels').checked)drawTag(`${warn?'⚠ ':''}Vùng #${String(box.id).padStart(2,'0')} · ${tupleFor(r,$('format').value)}`,r.x1*scale,r.y1*scale,clr,chosen);
+  const shape=vectorRect(r,clr,chosen?3:2,chosen?'rgba(115,65,205,.10)':'rgba(135,80,200,.03)');
+  const tag=$('showRegionLabels').checked?drawTag(`${warn?'⚠ ':''}Vùng #${String(box.id).padStart(2,'0')} · ${tupleFor(r,$('format').value)}`,r.x1*scale,r.y1*scale,clr,chosen):null;
+  renderedDrawNodes.set(box.id,{shape,tag,base:{...r}});
  }
  if(active!==null&&rect&&operation?.kind==='draw'){
   const r=rect,clr=isSmall(r)?'#bf3932':'#8959c2';
@@ -512,7 +567,13 @@ $('labelFile').addEventListener('change',async()=>{const file=$('labelFile').fil
 $('useBefore').onclick=()=>{showBefore=!showBefore;selectedBefore=-1;syncAfterControls();redraw();};
 $('useAfter').onclick=()=>{if(!useLoaded('after'))$('status').textContent='Nhãn A chưa được nạp ở mục 01.';};
 $('afterClass').addEventListener('change',()=>{if(selected<0||!canEditAfter())return;try{rewriteAfter(selected,{classId:Number($('afterClass').value)});selectBox(Math.min(selected,labels.length-1));}catch(e){$('status').textContent=e.message;}});
-$('deleteAfter').addEventListener('click',()=>{if(selected<0||!canEditAfter())return;const i=selected,box=labels[i];if(!window.confirm(`Xóa box A dòng ${box.line} (${labelName(box)})? Chỉ thay đổi nhãn A trong phiên; B được giữ nguyên.`))return;try{rewriteAfter(i,{remove:true});clear();}catch(e){$('status').textContent=e.message;}});
+function deleteAfterIndex(index){
+ if(!Number.isInteger(index)||index<0||!canEditAfter())return;
+ const box=labels[index];if(!box)return;
+ if(!window.confirm(`Xóa box A dòng ${box.line} (${labelName(box)})?\n\nChỉ thay đổi nhãn A trong phiên. B ban đầu và file trên máy được giữ nguyên.`))return;
+ try{rewriteAfter(index,{remove:true});clear();}catch(e){$('status').textContent=e.message;}
+}
+$('deleteAfter').addEventListener('click',()=>deleteAfterIndex(selected));
 $('exportAfter').addEventListener('click',()=>{const source=afterEntry();if(!source)return;const data=new Blob([source.text],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(data),a=document.createElement('a');a.href=url;a.download=source.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);$('status').textContent=`Đã yêu cầu tải ${source.name}. Đây là nhãn A đang có trong phiên, không phải nhãn B.`;});
 window.addEventListener('yolo:labels-updated',event=>{if(!img||event.detail?.source==='coordinates')return;if(event.detail?.side==='before')syncBeforeOverlay();if(event.detail?.side==='after'){resetLabels();useLoaded('after',true);}redraw();});
 
@@ -552,7 +613,7 @@ c.addEventListener('pointerdown',e=>{
   hoverDrawId=hit.id;selectDraw(hit.id,true);
   const edge=previouslySelected?resizeEdges(point,hit.rect):'';
   active=e.pointerId;c.setPointerCapture(active);
-  operation={kind:edge?'resize':'move',id:hit.id,edge,origin:point,orig:{...hit.rect},changed:false};
+  operation={kind:edge?'resize':'move',id:hit.id,edge,origin:point,orig:{...hit.rect},changed:false,dragStartClient:{x:e.clientX,y:e.clientY},startScale:scale};
   redraw();return;
  }
  if($('mode').value==='select'){
@@ -565,7 +626,7 @@ c.addEventListener('pointerdown',e=>{
     const initial=pixelBox(labels[index],img.naturalWidth,img.naturalHeight);
     const edge=wasSelected?resizeEdges(point,initial):'';
     active=e.pointerId;c.setPointerCapture(active);
-    operation={kind:edge?'label-resize':'label-move',index,edge,origin:point,orig:{...initial},preview:{...initial},changed:false};
+    operation={kind:edge?'label-resize':'label-move',index,edge,origin:point,orig:{...initial},preview:{...initial},changed:false,dragStartClient:{x:e.clientX,y:e.clientY},startScale:scale};
    }
    return;
   }
@@ -578,9 +639,20 @@ c.addEventListener('pointerdown',e=>{
   return;
  }
  selected=-1;selectedDrawId=null;hoverDrawId=null;hoverLabel=-1;regionSource='draw';overlap=[];$('overlapWrap').hidden=true;$('boxSelect').value='';
- active=e.pointerId;c.setPointerCapture(active);start=point;operation={kind:'draw'};rect=normalized(start,start);
+ active=e.pointerId;c.setPointerCapture(active);start=point;operation={kind:'draw',origin:point,dragStartClient:{x:e.clientX,y:e.clientY},startScale:scale};rect=normalized(start,start);
  $('status').textContent='Đang khoanh box mới; thả chuột để lưu. Chỉ cảnh báo khi chiều cao dưới 12 px.';redraw();
 });
+// Keep drag coordinates stable even if a sticky toolbar or browser scroll shifts
+// the canvas while the pointer is captured. Delta is measured in screen pixels.
+function dragPoint(e){
+ const op=operation;
+ if(op?.dragStartClient&&op.origin){
+  const factor=op.startScale||scale;
+  return {x:op.origin.x+(e.clientX-op.dragStartClient.x)/factor,
+          y:op.origin.y+(e.clientY-op.dragStartClient.y)/factor};
+ }
+ return bounds(e);
+}
 function panImage(e){
  const stage=$('stage');
  stage.scrollLeft=operation.left+operation.x-e.clientX;
@@ -592,12 +664,12 @@ c.addEventListener('pointermove',e=>{
   if(active===e.pointerId)panImage(e);
   return;
  }
- const point=bounds(e);
+ const point=active===e.pointerId?dragPoint(e):bounds(e);
  if(active===e.pointerId){
   if(operation?.kind==='draw'&&start)rect=normalized(start,point);
   else if(operation?.kind?.startsWith('label-'))applyLabelDrag(point);
   else applyDrag(point);
-  redraw();return;
+  scheduleDragPaint();return;
  }
  const hit=hitDrawn(point),nextHover=hit?.id||null;
  const nextLabel=!hit&&e.pointerType!=='touch'&&$('mode').value==='select'&&$('showBoxes').checked
@@ -615,6 +687,7 @@ $('boxActions').addEventListener('pointerleave',e=>{
 });
 function end(e){
  if(active!==e.pointerId)return;
+ cancelDragPaint();
  const op=operation;
  if(op?.kind==='pan'){
   if(e.type==='pointerup')panImage(e);
@@ -623,7 +696,7 @@ function end(e){
   c.style.cursor='grab';
   return;
  }
- const point=img?bounds(e):null;
+ const point=img?dragPoint(e):null;
  if(op?.kind?.startsWith('label-')){
   if(e.type==='pointerup'){applyLabelDrag(point);if(op.changed){
     try{rewriteAfter(op.index,{rect:op.preview});selected=op.index;rect=pixelBox(labels[op.index],img.naturalWidth,img.naturalHeight);regionSource='label';}
@@ -931,7 +1004,12 @@ $('actionNote').onclick=()=>{
  else if(t.kind==='before'){selectBeforeBox(t.index);copy(`image_id: ${imageId(filename)}\nsource: B_initial_readonly\nregion_xyxy: ${tupleFor(t.r,$('format').value)}\nclass_id: ${beforeLabels[t.index].c}\nyolo: ${beforeLabels[t.index].raw}`, $('actionNote'));}
  else{selectBox(t.index);copy(noteFor(t.r,'label',null,t.index),$('actionNote'));}
 };
-$('actionDelete').onclick=()=>{const t=actionTarget;if(t?.kind==='draw')deleteBox(t.box.id);};
+$('actionDelete').onclick=()=>{
+ const t=actionTarget;
+ if(t?.kind==='draw')deleteBox(t.box.id);
+ else if(t?.kind==='label')deleteAfterIndex(t.index);
+ // Before/B is deliberately read-only even if a stale click reaches here.
+};
 $('copyAll').onclick=()=>{if(drawnBoxes.length)copy(drawnBoxes.map(b=>`#${String(b.id).padStart(2,'0')} ${tupleFor(b.rect,$('format').value)}${isSmall(b.rect)?' [CẢNH BÁO: '+axisWarnings(b.rect).join('; ')+ ' dưới 12 px]':''}`).join('\n'),$('copyAll'));};
 // Menu thao tác bổ sung; giữ trạng thái chọn box khi tương tác thanh nổi.
 const moreToggle=$('moreToggle'),moreMenu=$('moreMenu');

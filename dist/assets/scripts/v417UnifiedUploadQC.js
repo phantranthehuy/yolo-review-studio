@@ -355,6 +355,7 @@ const qcRules=[
  {title:'Độ đầy đủ ảnh và nhãn',subtitle:'Khớp image_id với manifest và ảnh đã nạp',codes:['MANIFEST_ID_INVALID','MANIFEST_ID_DUPLICATE','MISSING_LABEL','EXTRA_LABEL','IMAGE_MISSING'],kind:'coverage'}
 ];
 let issues=[],scanSeq=0,scanning=false,unknownImageCount=0;
+let qcRevision=0,lastCompleteRevision=-1;
 let qcMetrics={boxes:0,validBoxes:0,pixelScanned:0,matchedImages:0,coverage:null};
 const dimensionCache=new WeakMap();
 function issue(severity,key,line,clazz,code,description){issues.push({severity,image_id:key,after_line:line,class_name:clazz,check_code:code,message:description});}
@@ -411,13 +412,24 @@ function evaluateSync(){
    boxes.push({line,cls,g,w,h,left,top,right,bottom});
   }
   if(!boxes.length&&!lines.some(v=>v.trim()))issue('INFO',id,0,'','EMPTY_LABEL','TXT trống. Xác nhận ảnh thực sự không có phương tiện.');
-  for(let i=0;i<boxes.length;i++)for(let j=0;j<i;j++){
-   const a=boxes[i],b=boxes[j];if(a.cls!==b.cls)continue;
-   const ix=Math.max(0,Math.min(a.right,b.right)-Math.max(a.left,b.left));
-   const iy=Math.max(0,Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top));
-   const overlap=ix*iy,union=a.w*a.h+b.w*b.h-overlap;
-   if(overlap>0&&union>0&&overlap/union>=.995&&[a.cls,...a.g].join('|')!==[b.cls,...b.g].join('|'))
-    issue('WARNING',id,a.line,typeNames[a.cls],'NEAR_DUPLICATE',`Gần trùng với box A dòng ${b.line} (IoU ${(overlap/union).toFixed(4)}). Xem lại trên ảnh.`);
+  // Sweep line: only compare boxes whose horizontal ranges overlap.
+  // A near-duplicate (IoU >= .995) must have near-equal areas.
+  const sorted=boxes.slice().sort((a,b)=>a.left-b.left||a.line-b.line),activeBoxes=[];
+  for(const a of sorted){
+   for(let k=activeBoxes.length-1;k>=0;k--)if(activeBoxes[k].right<a.left)activeBoxes.splice(k,1);
+   for(const b of activeBoxes){
+    if(a.cls!==b.cls||a.top>=b.bottom||b.top>=a.bottom)continue;
+    const ar=a.w*a.h,br=b.w*b.h;
+    if(Math.min(ar,br)/Math.max(ar,br)<.995)continue;
+    const ix=Math.min(a.right,b.right)-Math.max(a.left,b.left);
+    const iy=Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top);
+    const overlap=ix*iy,union=ar+br-overlap;
+    if(overlap>0&&union>0&&overlap/union>=.995&&[a.cls,...a.g].join('|')!==[b.cls,...b.g].join('|')){
+     const later=a.line>b.line?a:b,earlier=a.line>b.line?b:a;
+     issue('WARNING',id,later.line,typeNames[a.cls],'NEAR_DUPLICATE',`Gần trùng với box A dòng ${earlier.line} (IoU ${(overlap/union).toFixed(4)}). Xem lại trên ảnh.`);
+    }
+   }
+   activeBoxes.push(a);
   }
   if(images.has(id))qcMetrics.matchedImages++;
   else unknownImageCount++;
@@ -458,9 +470,10 @@ function imageDimensions(file){
  })();dimensionCache.set(file,promise);return promise;
 }
 async function scanQC(){
- const seq=++scanSeq;
- if(!state.after.length){issues=[];scanning=false;qcMetrics={boxes:0,validBoxes:0,pixelScanned:0,matchedImages:0,coverage:getCoverage()};unknownImageCount=0;display();return;}
- scanning=true;evaluateSync();display();
+ const seq=++scanSeq,revision=qcRevision;
+ if(!state.after.length){issues=[];scanning=false;lastCompleteRevision=revision;qcMetrics={boxes:0,validBoxes:0,pixelScanned:0,matchedImages:0,coverage:getCoverage()};unknownImageCount=0;display();return;}
+ scanning=true;evaluateSync();
+ const qcStatus=$('afterQcStatus');qcStatus.textContent='Đang kiểm tra kích thước pixel trên ảnh gốc…';qcStatus.className='qcStatus is-pending';
  const maps=state.after.map(file=>({key:cleanId(file.name,$('normalize').checked),file})).filter(x=>window.MatchReview?.getImageFile?.(x.key));
  let cursor=0;
  await Promise.all(Array.from({length:Math.min(3,maps.length)},async()=>{
@@ -476,7 +489,7 @@ async function scanQC(){
    }
   }catch(e){if(seq===scanSeq)issue('WARNING',key,0,'','IMAGE_DECODE',`Không đọc được ảnh để kiểm tra pixel: ${e.message}`);}
  }}));
- if(seq!==scanSeq)return;scanning=false;display();
+ if(seq!==scanSeq)return;scanning=false;lastCompleteRevision=revision;display();
 }
 const qcRuleStatuses={ERROR:'Lỗi',WARNING:'Cảnh báo',INFO:'Thông tin'};
 const severityTitle={ERROR:'Lỗi',WARNING:'Cảnh báo',INFO:'Thông tin'};
@@ -554,7 +567,7 @@ function commitQCLine(info,expected,replacement,verb){
  state.matchReviews.clear();invalidate();updateCounts();
  window.dispatchEvent(new CustomEvent('yolo:labels-updated',{detail:{side:'after',source:'qc'}}));
  qcFeedback(`${verb} · ${info.image_id} · A${info.after_line}. Nhãn A đã cập nhật trong phiên; tải ZIP nhãn A để lưu. Đối chiếu B–A cần chạy lại.`);
- void scanQC();
+ scheduleQC();
 }
 function qcDelete(info,expected){
  try{
@@ -613,28 +626,104 @@ async function qcEdit(info,expected){
   qcFeedback('Chưa thể mở mục 05: '+e.message+' Dùng “Sửa TXT” ở mục 02 nếu tệp có dòng hỏng.',true);
  }
 }
+// Batch remediation is deliberately opt-in. Group by image_id and commit once
+// so labels are not repeatedly rescanned/repainted after every deleted row.
+const batchModes=[
+ ['HEIGHT_LT_12PX','qcQuickHeight'],
+ ['WIDTH_LT_1PX','qcQuickWidth'],
+ ['DUPLICATE_EXACT','qcQuickDuplicate'],
+ ['CLAMP_TINY','qcQuickClamp']
+];
+function refreshQuickActions(){
+ for(const [code,id] of batchModes){
+  const btn=$(id);if(!btn)continue;
+  const unique=new Set(issues.filter(e=>e.check_code===code&&e.after_line>0).map(e=>e.image_id+'::'+e.after_line));
+  btn.disabled=!unique.size||scanning||lastCompleteRevision!==qcRevision;
+  const count=btn.querySelector('[data-count]');if(count)count.textContent=String(unique.size);
+ }
+}
+function quickBatch(code){
+ try{
+  if(scanning||lastCompleteRevision!==qcRevision)throw Error('Dữ liệu A vừa thay đổi hoặc QC đang kiểm tra. Hãy chạy QC lại trước khi xử lý nhanh.');
+  const matching=issues.filter(e=>e.check_code===code&&e.after_line>0);
+  const byId=new Map();
+  for(const e of matching){let group=byId.get(e.image_id);if(!group){group=new Map();byId.set(e.image_id,group);}group.set(e.after_line,e);}
+  const count=[...byId.values()].reduce((n,g)=>n+g.size,0);
+  if(!count){qcFeedback('Không còn cảnh báo loại này.',false);return;}
+  const clamp=code==='CLAMP_TINY';
+  const names={HEIGHT_LT_12PX:'box cao dưới 12px',WIDTH_LT_1PX:'box rộng dưới 1px',DUPLICATE_EXACT:'box trùng hoàn toàn',CLAMP_TINY:'box vượt biên rất nhỏ'};
+  const fileMap=nameMap(state.after),changes=[];
+  // Validate every candidate before asking for confirmation, then apply atomically.
+  for(const [id,group] of byId){
+   const file=fileMap.get(id);if(!file)throw Error('Không tìm thấy TXT A cho '+id);
+   const rows=file.text.replace(/^\uFEFF/,'').split(/\r?\n/),edits=[];
+   for(const [line,e] of group){
+    const raw=rows[line-1]?.trim();
+    if(!raw||raw!==originalLine(e))throw Error('Nhãn A đã thay đổi. Hãy chạy QC lại trước khi xử lý.');
+    if(!clamp){edits.push({line,replacement:null});continue;}
+    const parts=raw.split(/\s+/),[x,y,w,h]=parts.slice(1).map(Number);
+    if(parts.length!==5||[x,y,w,h].some(n=>!Number.isFinite(n))||w<=0||h<=0)throw Error('Không thể cắt biên tại '+id+' dòng '+line);
+    const x1=x-w/2,y1=y-h/2,x2=x+w/2,y2=y+h/2;
+    const exceed=Math.max(0,-x1,-y1,x2-1,y2-1);
+    if(exceed<=0||exceed>1e-5+1e-12)throw Error('Sai số biên không còn trong ngưỡng an toàn. Kiểm tra lại.');
+    const l=Math.max(0,x1),t=Math.max(0,y1),r=Math.min(1,x2),b=Math.min(1,y2);
+    if(r<=l||b<=t)throw Error('Box không hợp lệ sau cắt biên.');
+    const fmt=n=>Number(n.toFixed(12)).toString();
+    edits.push({line,replacement:[parts[0],fmt((l+r)/2),fmt((t+b)/2),fmt(r-l),fmt(b-t)].join(' ')});
+   }
+   changes.push({file,rows,edits});
+  }
+  const sample=[...byId].flatMap(([id,group])=>[...group.keys()].slice(0,3).map(n=>`${id} · A${n}`)).slice(0,7).join('\n');
+  const action=clamp?'Cắt biên':'Xóa';
+  if(!window.confirm(`${action} ${count} ${names[code]} trong ${byId.size} ảnh?\n\n${sample}${count>7?'\n…':''}\n\n${clamp?'Chỉ cắt sai số ≤ 0,00001; không tự suy đoán vật thể.':'Box có thể là vật thể thật. Chỉ tiếp tục sau khi đã rà soát ảnh.'}\n\nChỉ thay đổi nhãn A trong phiên. Nhãn B và file gốc trên máy không bị sửa.`))return;
+  for(const {file,rows,edits} of changes){
+   for(const edit of edits.sort((a,b)=>b.line-a.line)){
+    if(edit.replacement===null)rows.splice(edit.line-1,1);
+    else rows[edit.line-1]=edit.replacement;
+   }
+   file.text=rows.join('\n');
+  }
+  state.matchReviews.clear();invalidate();updateCounts();
+  window.dispatchEvent(new CustomEvent('yolo:labels-updated',{detail:{side:'after',source:'qc-batch'}}));
+  qcFeedback(`Đã ${clamp?'cắt biên':'xóa'} ${count} box A thuộc ${byId.size} ảnh. Tải lại nhãn A để lưu; kết quả B–A cần đối chiếu lại.`);
+  scheduleQC();
+ }catch(e){qcFeedback('Xử lý nhanh không thành công: '+e.message,true);}
+}
+for(const [code,id] of batchModes){$(id)?.addEventListener('click',()=>quickBatch(code));}
+
 function renderFindings(){
  const filter=$('qcSeverityFilter').value;
  const findings=issues.filter(x=>filter==='all'||x.severity===filter);
- const rows=$('afterQcRows');rows.replaceChildren();const limit=150;
+ const rows=$('afterQcRows');rows.replaceChildren();const limit=100;
+ const afterMap=nameMap(state.after),canOpenCache=new Map(),linesCache=new Map();
+ function readOriginal(entry){
+  let lines=linesCache.get(entry.image_id);
+  if(!lines){lines=afterMap.get(entry.image_id)?.text.replace(/^\uFEFF/,'').split(/\r?\n/)||[];linesCache.set(entry.image_id,lines);}
+  return lines[entry.after_line-1]?.trim()??null;
+ }
+ function canOpenId(id){
+  if(canOpenCache.has(id))return canOpenCache.get(id);
+  let result=false;try{parseLabels(afterMap.get(id),false);result=true;}catch{}
+  canOpenCache.set(id,result);return result;
+ }
  for(const entry of findings.slice(0,limit)){
   const tr=document.createElement('tr');tr.className='qc'+entry.severity;
   const values=[severityTitle[entry.severity],entry.image_id||'—',entry.after_line?'A'+entry.after_line:'—',entry.class_name||'—',entry.check_code,entry.message];
   for(const [i,value] of values.entries()){const td=document.createElement('td');td.textContent=value;if(i===0)td.className='qcSeverityCell '+entry.severity;if(i===4)td.className='qcCodeCell';tr.append(td);}
   const action=document.createElement('td'),group=document.createElement('div');group.className='qcInlineActions';
-  const expected=entry.after_line>0?originalLine(entry):null;
+  const expected=entry.after_line>0?readOriginal(entry):null;
   const make=(label,handler,kind='')=>{const b=document.createElement('button');b.type='button';b.className='qcIssueAction'+(kind?' '+kind:'');b.textContent=label;b.addEventListener('click',handler);group.append(b);return b;};
   if(entry.check_code==='HEIGHT_LT_12PX')make('Xem',()=>window.QCShortBoxes?.open(entry.image_id,entry.after_line));
   if(entry.after_line>0&&qcLineCodes.has(entry.check_code)&&expected!==null){
    if(qcStructuralCodes.has(entry.check_code))make('Sửa TXT',()=>showRawEditor(entry,expected));
    else{
-    let canOpen=true;try{parseLabels(nameMap(state.after).get(entry.image_id),false);}catch{canOpen=false;}
+    const canOpen=canOpenId(entry.image_id);
     if(canOpen)make('Chỉnh sửa',()=>void qcEdit(entry,expected),'is-edit');
     else make('Sửa TXT',()=>showRawEditor(entry,expected),'is-edit');
-    if(entry.check_code==='CLAMP_TINY')make('Cắt biên',()=>qcClampTiny(entry,expected));
+    if(entry.check_code==='CLAMP_TINY')make('Cắt biên',()=>qcClampTiny(entry,expected),'is-quick');
     if(canOpen&&['OUT_OF_BOUNDS','CENTER_OUTSIDE'].includes(entry.check_code))make('Sửa số',()=>showRawEditor(entry,expected));
    }
-   make('Xóa',()=>{
+   make(entry.check_code==='DUPLICATE_EXACT'?'Bỏ trùng':'Xóa',()=>{
     if(entry.check_code==='HEIGHT_LT_12PX'&&window.QCShortBoxes?.deleteOne?.(entry.image_id,entry.after_line))return;
     qcDelete(entry,expected);
    },'is-delete');
@@ -660,7 +749,7 @@ function display(){
   el.textContent=scanning?'Đang kiểm tra kích thước pixel trên ảnh gốc…':errorCount?'Có lỗi cần sửa trước khi xuất dữ liệu.':warningCount?'Không có lỗi nghiêm trọng; còn cảnh báo cần xem.':'Không phát hiện lỗi trong các phép kiểm đã chạy. Các mục chưa đủ dữ liệu được ghi riêng bên dưới.';
   el.className='qcStatus '+(errorCount?'is-bad':warningCount?'is-warn':'is-good');
  }
- renderOverview();renderCoverage();renderRules();renderFindings();
+ renderOverview();renderCoverage();renderRules();renderFindings();refreshQuickActions();
 }
 function downloadQC(){
  if(!state.after.length){status('Chưa có nhãn A để kiểm tra.',true);return;}
@@ -678,11 +767,11 @@ $('qcRawEditModal').addEventListener('click',event=>{if(event.target===$('qcRawE
 $('afterQcDownload').addEventListener('click',downloadQC);
 $('qcLabels').addEventListener('click',scanQC);
 $('qcSeverityFilter').addEventListener('change',renderFindings);
-$('normalize')?.addEventListener('change',()=>scheduleQC());
-window.addEventListener('yolo:labels-updated',event=>{if(event.detail?.side==='after')scheduleQC();});
+$('normalize')?.addEventListener('change',()=>{qcRevision++;refreshQuickActions();scheduleQC();});
+window.addEventListener('yolo:labels-updated',event=>{if(event.detail?.side==='after'){qcRevision++;refreshQuickActions();scheduleQC();}});
 window.addEventListener('yolo:manifest-updated',()=>{refresh();scheduleQC();});
 let scanTimer;
-function scheduleQC(){clearTimeout(scanTimer);scanTimer=setTimeout(scanQC,120);}
+function scheduleQC(){clearTimeout(scanTimer);scanTimer=setTimeout(scanQC,280);}
 window.YoloAfterQC={scan:scanQC,inspectSync:evaluateSync,assertValid,assertCoverage,download:downloadQC,getSnapshot:()=>({issues:issues.map(x=>({...x})),metrics:{...qcMetrics},scanning})};
 window.YoloUploadHub={refresh,go:()=>hub.scrollIntoView({behavior:'smooth',block:'start'})};
 refresh();scheduleQC();

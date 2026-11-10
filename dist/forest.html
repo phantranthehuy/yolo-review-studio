@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>YOLO Review Studio | QC rõ ràng · đối chiếu B–A · v4.2.4</title>
+<title>YOLO Review Studio | QC rõ ràng · đối chiếu B–A · v4.2.5</title>
 <link rel="stylesheet" href="assets/styles/core-8c3715a44704.css">
 <link rel="stylesheet" href="assets/styles/theme-picker.css">
 <style id="hubPickerCriticalV4182">
@@ -90,14 +90,14 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
     </a>
   </div>
 </nav>
-<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT & KIỂM CHÉO TRAFFIC DATASET <span>·</span> v4.2.4</div>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT & KIỂM CHÉO TRAFFIC DATASET <span>·</span> v4.2.5</div>
   <h1 id="pageTitle">Rà soát nhãn giao thông.<br><span>Nạp một lần, kiểm tra theo từng bước.</span></h1>
   <p class="intro">Đọc bộ dữ liệu Gxx và ZIP Roboflow, kiểm tra nhãn, đối chiếu box, xác nhận kiểm chéo trong nhóm hoặc giữa nhóm. Dữ liệu chỉ xử lý trong trình duyệt, không thay đổi ảnh gốc.</p>
   <section class="releaseNotes" aria-label="Cập nhật gần đây">
    <div class="releaseNotesViewport" id="releaseNotesViewport" tabindex="0" aria-label="Nhật ký cập nhật. Rê chuột để dừng, cuộn để xem thêm.">
     <div class="releaseNotesTrack">
      <div class="releaseNotesGroup">
-      <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.2.4</span><span class="releaseNew">New</span></div><h2>QC sửa hoặc xóa đúng box, mở mục 05 tự highlight.</h2><p>Cảnh báo box có nút Chỉnh sửa, Xóa; TXT lỗi có Sửa TXT; sai số biên rất nhỏ có Cắt biên. Nhãn B luôn chỉ đọc.</p></article>
+      <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.2.5</span><span class="releaseNew">New</span></div><h2>Kéo box mượt hơn · nút QC rõ trên nền tối · xử lý theo nhóm.</h2><p>Kéo box bằng SVG cập nhật riêng khung đang sửa; giảm số lượt dựng lại QC, bỏ blur nặng. Thêm tác vụ nhóm có xác nhận; nhãn B chỉ đọc.</p></article>
       <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.2.3</span><span class="releaseNew">New</span></div><h2>Mục 05: sửa riêng nhãn A, khung vector sắc nét khi zoom.</h2><p>Nhãn B xanh lam nét đứt và chỉ đọc; A xanh ngọc nét liền được sửa tọa độ, đổi lớp, xóa và tải TXT. Tên nhãn không còn ẩn khi chọn box.</p></article>
       <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.2.2</span><span class="releaseNew">New</span></div><h2>Tên tệp nguồn hiển thị dưới từng nút quản lý.</h2><p>Xem chính xác tệp đã nạp, mở danh sách đầy đủ khi có nhiều nhãn; giữ nguyên nhóm xóa độc lập và chức năng kiểm giữa nhóm.</p></article>
       <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.1.9</span><span class="releaseNew">New</span></div><h2>Hướng dẫn ngay trong trang · kiểm chéo giữa nhóm.</h2><p>Đọc luồng làm việc tại đầu trang; mục 04 chuyển giữa batch chính và 30 ảnh kiểm giữa nhóm. Intergroup tự phân loại ảnh, baseline, danh sách và nhận nhãn sửa từ nhóm nguồn, xuất nhật ký riêng.</p></article>
@@ -270,6 +270,16 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
   <div class="qcRuleHeading"><div><h4>Những quy tắc đã kiểm tra</h4><p>Không có cảnh báo nghĩa là chưa phát hiện lỗi theo quy tắc, <em>không</em> đồng nghĩa nhãn đã đúng với vật thể.</p></div></div>
   <div id="qcRules" class="qcRules" aria-label="Trạng thái từng nhóm quy tắc"></div>
   <div class="qcFindingsTop"><div><h4>Vấn đề cần xem lại</h4><p>Chọn <strong>Chỉnh sửa</strong> để mở ảnh và highlight đúng box A ở mục 05; chọn <strong>Xóa</strong> khi đã xác minh box không cần giữ. Dòng TXT hỏng có nút <strong>Sửa TXT</strong>.</p></div><label class="qcFilterLabel" for="qcSeverityFilter">Hiển thị <select id="qcSeverityFilter"><option value="all">Tất cả</option><option value="ERROR">Lỗi nghiêm trọng</option><option value="WARNING">Cảnh báo</option><option value="INFO">Thông tin</option></select></label></div>
+  <details class="qcBatchQuick" id="qcBatchQuick">
+   <summary><strong>Xử lý nhanh theo nhóm</strong><span>Chỉ lỗi có quy tắc rõ ràng · luôn xác nhận trước khi thay đổi</span></summary>
+   <div class="qcBatchActions" role="group" aria-label="Xử lý nhanh nhãn A">
+    <button id="qcQuickHeight" type="button" disabled>Xóa box cao &lt; 12px <span data-count>0</span></button>
+    <button id="qcQuickWidth" type="button" disabled>Xóa box rộng &lt; 1px <span data-count>0</span></button>
+    <button id="qcQuickDuplicate" type="button" disabled>Xóa box trùng hệt <span data-count>0</span></button>
+    <button id="qcQuickClamp" type="button" disabled>Cắt biên rất nhỏ <span data-count>0</span></button>
+   </div>
+   <p>Chỉ thay đổi nhãn A trong phiên. Box gần trùng, sai class hoặc vượt biên lớn vẫn cần kiểm tra bằng mắt và chỉnh sửa ở mục 05.</p>
+  </details>
   <div id="qcNoFindings" class="qcEmptyMessage" role="status">Chưa nạp nhãn A để kiểm tra.</div>
   <div id="afterQcTableWrap" class="afterQcTableWrap" hidden><table><thead><tr><th>Mức độ</th><th>image_id</th><th>Box A</th><th>Loại xe</th><th>Mã kiểm tra</th><th>Vấn đề</th><th>Thao tác</th></tr></thead><tbody id="afterQcRows"></tbody></table><p id="afterQcMore" class="small"></p></div>
   <div class="qcFooter"><span>QC kỹ thuật không thay thế việc rà soát ảnh bằng mắt hoặc chấm với Ground Truth.</span><button type="button" data-hub-go="after">Nạp / bổ sung dữ liệu ở mục 01</button></div>
@@ -403,7 +413,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
  <span class="coordKey" aria-label="Quy ước màu khung"><span class="coordKeyItem"><i class="coordKeyMark coordKeyB"></i>B · Ban đầu <small>Chỉ xem</small></span><span class="coordKeyItem"><i class="coordKeyMark coordKeyA"></i>A · Sau sửa <small>Có thể chỉnh</small></span><span class="coordKeyItem"><i class="coordKeyMark coordKeyTemp"></i>Vùng tạm <small>Ngoại lệ</small></span></span>
  <button id="coord_useBefore" class="secondary" type="button" aria-pressed="true">Ẩn nhãn B</button><button id="coord_useAfter" class="secondary" type="button">Nạp lại nhãn A</button>
  <label class="coordAfterClassField" for="coord_afterClass">Đổi lớp A <select id="coord_afterClass" disabled aria-label="Đổi lớp box A đang chọn"><option value="">Chọn box A</option><option value="0">0 · Xe hai bánh</option><option value="1">1 · Bus</option><option value="2">2 · Car</option><option value="3">3 · Truck</option></select></label>
- <button id="coord_deleteAfter" class="secondary coordDeleteAfter" type="button" disabled>Xóa box A</button><button id="coord_exportAfter" class="secondary coordExportAfter" type="button" disabled>Tải TXT A</button>
+ <button id="coord_exportAfter" class="secondary coordExportAfter" type="button" disabled>Tải TXT A</button>
  <span id="coord_labelMeta" class="coordLoadedLabelMeta">Chưa có nhãn A cho ảnh này</span>
  </div>
 <details class="settingsFold coordExtras" hidden><summary><span>⌗</span> Nhập tọa độ thủ công <small>Dán tọa độ để thêm box</small></summary><div class="foldBody"><div class="bar coordInputPanel" aria-labelledby="coord_inputTitle">
@@ -467,6 +477,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
    <div id="coord_moreMenu" class="coordMoreMenu" role="group" aria-label="Thao tác bổ sung" hidden>
     <button id="coord_fullscreen" data-action-icon="coord-fullscreen" type="button" class="secondary">Toàn màn hình</button>
     <button id="coord_copySelected" data-action-icon="coord-copy" type="button" class="secondary" disabled>Chép tọa độ box đang chọn</button>
+    <button id="coord_deleteAfter" data-action-icon="coord-delete" class="secondary coordDeleteAfter coordDangerAction" type="button" disabled>Xóa box A đang chọn</button>
     <button id="coord_copySelectedId" data-action-icon="coord-id" type="button" class="secondary" disabled>Chép ID + box</button>
     <button id="coord_copyAll" data-action-icon="coord-copy-all" type="button" class="secondary" disabled>Chép tất cả tọa độ</button>
     <button id="coord_applyNote" data-action-icon="coord-note" type="button" class="secondary" disabled>Ghi vùng vào notes trong log</button>
@@ -475,12 +486,12 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
    </div>
   </div>
  </div>
- <div id="coord_stage"><div id="coord_empty"><strong>Chưa có ảnh gốc</strong><span>Nạp thư mục ảnh tại mục 01 rồi nhập image_id để hiển thị box và sử dụng công cụ tọa độ.</span><small>Ảnh và nhãn được xử lý ngay trong trình duyệt.</small></div><div id="coord_canvasWrap" class="coordCanvasWrap" hidden><canvas id="coord_canvas" hidden></canvas><div id="coord_boxActions" class="coordBoxActions" role="group" aria-label="Thao tác với box trên ảnh" hidden><span id="coord_actionBoxLabel" class="coordActionTitle">Box</span><button id="coord_actionCopy" type="button">Chép tọa độ</button><button id="coord_actionNote" type="button">Chép ID + box</button><button id="coord_actionDelete" type="button" class="danger">Xóa</button></div></div></div>
+ <div id="coord_stage"><div id="coord_empty"><strong>Chưa có ảnh gốc</strong><span>Nạp thư mục ảnh tại mục 01 rồi nhập image_id để hiển thị box và sử dụng công cụ tọa độ.</span><small>Ảnh và nhãn được xử lý ngay trong trình duyệt.</small></div><div id="coord_canvasWrap" class="coordCanvasWrap" hidden><canvas id="coord_canvas" hidden></canvas><div id="coord_boxActions" class="coordBoxActions" role="group" aria-label="Thao tác với box trên ảnh" hidden><span id="coord_actionBoxLabel" class="coordActionTitle">Box</span><button id="coord_actionCopy" type="button">Chép tọa độ</button><button id="coord_actionNote" type="button">Chép ID + box</button><button id="coord_actionDelete" type="button" class="danger" hidden>Xóa vùng tạm</button></div></div></div>
 </div><!-- /coordStageShell -->
 <div id="coord_sizeWarning" class="coordSmallWarning" hidden role="status" aria-live="polite"></div>
 <div id="coord_workspace" hidden><div id="coord_overlapWrap" class="bar" hidden><label>Box chồng nhau tại điểm bấm <select id="coord_overlap"></select></label><span class="hint">Chọn đúng số dòng để tránh lấy nhầm khung xe bên cạnh.</span></div>
 
-<details class="helpDetails coordAdvancedHelp"><summary><span class="helpSymbol">?</span> Hướng dẫn thao tác box và quy tắc 12 px</summary><div class="helpBody"><p>Dùng <strong>bàn tay (V hoặc D)</strong> để chọn box và <strong>bút (B)</strong> để khoanh vùng mới. Với vùng tự vẽ hoặc nhập tay, kéo bên trong để di chuyển hoặc kéo cạnh hay góc sau khi chọn để đổi kích thước. <strong>Chép tọa độ · Chép ID + box · Xóa</strong> hiện cạnh box khi rê chuột hoặc chạm để chọn. Menu ⋯ cũng có các thao tác cho box đang chọn. Giữ Shift và kéo trên box cũ để vẽ box chồng. Chỉ khung A sau sửa được chỉnh tọa độ và lớp; khung B chỉ xem, không thể sửa. Dữ liệu A cập nhật trong phiên trình duyệt; tải TXT A về máy để lưu.</p><p>Khi khoanh tay hoặc nhập tọa độ, chỉ cảnh báo nếu <strong>chiều cao (dọc) dưới 12 px</strong>. Chiều rộng vẫn được hiển thị nhưng không dùng để cảnh báo. Nếu box tự vẽ hoặc nhập tay cao dưới 12 px, box sẽ tự xóa sau 0,5 giây; cảnh báo vẫn hiển thị 5 giây rồi tự tắt. Kích thước tính trên ảnh gốc, không theo zoom.</p><p><strong>Toạ độ thập phân:</strong> giữ độ chính xác từ nhãn YOLO / box gốc, không tự làm tròn. <strong>Toạ độ số nguyên:</strong> làm tròn ra phía ngoài (xmin/ymin xuống, xmax/ymax lên) để bao trọn vùng pixel. Hai chế độ chỉ thay đổi cách hiển thị và sao chép; chỉnh hình học box A bằng thao tác kéo được ghi thành tọa độ YOLO mới trong bộ nhãn A.</p><p>Tọa độ luôn theo ảnh gốc, không thay đổi theo zoom. Box đạt ngưỡng được giữ lại đến khi bạn xóa; box cao dưới 12 px sẽ tự xóa sau 0,5 giây. Box A chọn từ TXT có thể kéo/chỉnh cạnh, đổi lớp hoặc xóa với xác nhận; nhãn B luôn chỉ đọc. Box vùng tạm không tự thêm vào TXT A. Gốc (0, 0) ở góc trên trái. Esc bỏ chọn hiện tại (không xóa danh sách).</p></div></details>
+<details class="helpDetails coordAdvancedHelp"><summary><span class="helpSymbol">?</span> Hướng dẫn thao tác box và quy tắc 12 px</summary><div class="helpBody"><p>Dùng <strong>bàn tay (V hoặc D)</strong> để chọn box và <strong>bút (B)</strong> để khoanh vùng mới. Với vùng tự vẽ hoặc nhập tay, kéo bên trong để di chuyển hoặc kéo cạnh hay góc sau khi chọn để đổi kích thước. <strong>Chép tọa độ · Chép ID + box · Xóa box A</strong> hiện cạnh khung A khi chọn; vùng tạm có nút Xóa vùng tạm, box B chỉ xem và không có nút xóa. Menu ⋯ cũng có các thao tác cho box đang chọn. Giữ Shift và kéo trên box cũ để vẽ box chồng. Chỉ khung A sau sửa được chỉnh tọa độ và lớp; khung B chỉ xem, không thể sửa. Dữ liệu A cập nhật trong phiên trình duyệt; tải TXT A về máy để lưu.</p><p>Khi khoanh tay hoặc nhập tọa độ, chỉ cảnh báo nếu <strong>chiều cao (dọc) dưới 12 px</strong>. Chiều rộng vẫn được hiển thị nhưng không dùng để cảnh báo. Nếu box tự vẽ hoặc nhập tay cao dưới 12 px, box sẽ tự xóa sau 0,5 giây; cảnh báo vẫn hiển thị 5 giây rồi tự tắt. Kích thước tính trên ảnh gốc, không theo zoom.</p><p><strong>Toạ độ thập phân:</strong> giữ độ chính xác từ nhãn YOLO / box gốc, không tự làm tròn. <strong>Toạ độ số nguyên:</strong> làm tròn ra phía ngoài (xmin/ymin xuống, xmax/ymax lên) để bao trọn vùng pixel. Hai chế độ chỉ thay đổi cách hiển thị và sao chép; chỉnh hình học box A bằng thao tác kéo được ghi thành tọa độ YOLO mới trong bộ nhãn A.</p><p>Tọa độ luôn theo ảnh gốc, không thay đổi theo zoom. Box đạt ngưỡng được giữ lại đến khi bạn xóa; box cao dưới 12 px sẽ tự xóa sau 0,5 giây. Box A chọn từ TXT có thể kéo/chỉnh cạnh, đổi lớp hoặc xóa với xác nhận; nhãn B luôn chỉ đọc. Box vùng tạm không tự thêm vào TXT A. Gốc (0, 0) ở góc trên trái. Esc bỏ chọn hiện tại (không xóa danh sách).</p></div></details>
 <p id="coord_raw" class="hint" style="overflow-wrap:anywhere"></p><p id="coord_overflow" class="notice" hidden></p>
 <div id="coord_status" hidden aria-hidden="true"></div><div id="coord_copyToast" class="coordCopyToast" role="status" aria-live="polite" aria-atomic="true" hidden><span class="coordCopyToastIcon" aria-hidden="true">✓</span><span id="coord_copyToastText">Đã sao chép</span></div><textarea id="coord_fallback" hidden readonly aria-label="Nội dung để sao chép thủ công"></textarea>
 
@@ -723,5 +734,6 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 <script src="assets/scripts/v419IntergroupReview.js?v=422"></script>
 <script src="assets/scripts/v417UnifiedUploadQC.js?v=422"></script>
 <link rel="stylesheet" href="assets/styles/v420QcClarity.css">
+<link rel="stylesheet" href="assets/styles/v425PerformanceAndContrast.css">
 </body>
 </html>

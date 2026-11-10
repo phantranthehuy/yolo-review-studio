@@ -1,8 +1,18 @@
-# YOLO Review Studio — v4.2.4
+# YOLO Review Studio — v4.2.5
 
 QC nhãn A độc lập, xử lý box dưới 12 px trong mục 02; đối chiếu box B–A trong mục 04.
 
 Ứng dụng chạy offline bằng trình duyệt, không cần npm hay backend.
+
+## v4.2.5 — Kéo box gọn hơn, QC nhanh và tương phản tối
+
+- Mục 05: **“Xóa box A” nằm cạnh “Chép tọa độ”** trên thanh thao tác cạnh box và nằm sau lệnh sao chép trong menu `⋯`. Bỏ nút xóa A thừa ở thanh nguồn dữ liệu. Box B không có nút xóa; vùng tạm có “Xóa vùng tạm”. Mọi thao tác xóa đều xác nhận và chỉ cập nhật nhãn A trong bộ nhớ.
+- Khi kéo/chỉnh box, chỉ cập nhật phần tử SVG đang sửa theo `requestAnimationFrame`, không dựng lại toàn bộ overlay cho mỗi sự kiện con trỏ. Dùng tọa độ con trỏ làm điểm neo để tránh lệch vị trí khi thanh công cụ nổi hoặc vùng cuộn thay đổi. Nhãn và đường khung vẫn sắc nét khi zoom lớn.
+- Mục 02: tăng tương phản nút **Chỉnh sửa / Cắt biên / Xóa** trong chế độ tối, dàn lại nút theo cột để không tràn.
+- Thêm khối thu gọn **Xử lý nhanh theo nhóm** cho box cao <12 px, box rộng <1 px, box trùng hoàn toàn và box vượt biên rất nhỏ. Tất cả đều xác nhận trước khi thao tác. Không tự xử lý box gần trùng hoặc sai lớp chỉ dựa vào thuật toán.
+- Tối ưu QC: so box gần trùng bằng sweep-line thay vì kiểm mọi cặp không liên quan, giảm dựng lại bảng khi quét ảnh, giới hạn số dòng hiển thị ban đầu và ngăn xử lý hàng loạt khi kết quả QC đã cũ.
+- Đã thử trên dữ liệu tổng hợp với 100 box, 50 bước kéo, QC và xóa nhanh theo nhóm; kiểm tra không có lỗi JavaScript. Cần kiểm thử thêm trên dữ liệu thực tế của bạn.
+
 
 ## v4.2.3 — chỉnh nhãn A trong mục 05, overlay sắc nét
 

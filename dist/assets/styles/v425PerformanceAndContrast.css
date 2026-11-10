@@ -1,0 +1,81 @@
+/* v4.2.5 · High-contrast actions and low-overhead coordinate editing.
+   Deliberately no gradients, glow, heavy blur or decorative animation. */
+#prepSection .qcInlineActions{
+ display:grid;grid-template-columns:repeat(2,minmax(82px,1fr));
+ gap:6px;min-width:178px;max-width:212px;align-items:stretch;
+}
+#prepSection .qcInlineActions .qcIssueAction{
+ display:inline-flex;align-items:center;justify-content:center;
+ width:100%;min-height:34px;white-space:normal;word-break:normal;
+ padding:7px 9px;line-height:1.25;font-weight:750;font-size:11.6px;
+ border:1px solid #79909b;border-radius:7px;
+ color:#243d48;background:#eef3f5;box-shadow:none;transition:none;
+}
+#prepSection .qcInlineActions .qcIssueAction.is-edit{
+ color:#075c50;background:#e3f7f0;border-color:#289b86;
+}
+#prepSection .qcInlineActions .qcIssueAction.is-quick{
+ color:#594320;background:#fff3d7;border-color:#bb8b35;
+}
+#prepSection .qcInlineActions .qcIssueAction.is-delete{
+ color:#a32125;background:#fff0f0;border-color:#d48383;
+}
+#prepSection .qcInlineActions .qcIssueAction:hover:not(:disabled){filter:brightness(.95);}
+#prepSection .qcInlineActions .qcIssueAction:focus-visible,
+#prepSection .qcBatchQuick button:focus-visible{
+ outline:3px solid #72aeea;outline-offset:2px;
+}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIssueAction{
+ color:#f1f7fa;background:#304650;border-color:#7e9ba8;
+}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIssueAction.is-edit{
+ color:#d1fff2;background:#12584f;border-color:#58cdb4;
+}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIssueAction.is-quick{
+ color:#fff3c3;background:#655027;border-color:#e6bf67;
+}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIssueAction.is-delete{
+ color:#ffe1df;background:#6b3237;border-color:#ea999c;
+}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIssueAction:hover:not(:disabled){filter:brightness(1.13)}
+#prepSection .afterQcTableWrap table td:last-child,#prepSection .afterQcTableWrap table th:last-child{min-width:198px}
+#prepSection .qcBatchQuick{border:1px solid var(--qc-border);border-radius:9px;background:var(--qc-wash);margin:10px 0 13px;overflow:hidden;color:var(--qc-text)}
+#prepSection .qcBatchQuick>summary{list-style:none;display:flex;gap:6px 14px;flex-wrap:wrap;align-items:center;padding:12px 15px;cursor:pointer;line-height:1.5}
+#prepSection .qcBatchQuick>summary::-webkit-details-marker{display:none}
+#prepSection .qcBatchQuick>summary::after{content:'▾';margin-left:auto;font-size:15px;color:var(--qc-secondary)}
+#prepSection .qcBatchQuick[open]>summary::after{content:'▴'}
+#prepSection .qcBatchQuick>summary strong{font-size:12.5px;color:var(--qc-text)}
+#prepSection .qcBatchQuick>summary span{font-size:11.3px;color:var(--qc-secondary)}
+#prepSection .qcBatchActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 15px 10px;max-width:650px}
+#prepSection .qcBatchActions button{border:1px solid var(--qc-border);border-radius:7px;min-height:39px;display:flex;align-items:center;justify-content:space-between;gap:9px;text-align:left;background:var(--qc-paper);color:var(--qc-text);font-size:12px;font-weight:680;padding:9px 11px;cursor:pointer;box-shadow:none;transition:none}
+#prepSection .qcBatchActions button:hover:not(:disabled){border-color:var(--qc-accent);background:var(--qc-paper)}
+#prepSection .qcBatchActions button:disabled{opacity:.48;cursor:not-allowed}
+#prepSection .qcBatchActions [data-count]{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:25px;padding:2px 6px;border-radius:4px;color:var(--qc-text);background:var(--qc-wash);border:1px solid var(--qc-border);font-variant-numeric:tabular-nums}
+#prepSection .qcBatchQuick>p{font-size:11.4px;line-height:1.55;color:var(--qc-secondary);margin:0;padding:0 15px 13px}
+/* Keep the on-image contextual menu within bounds and readable in dark mode. */
+#coordsSection .coordBoxActions{box-sizing:border-box;max-width:min(390px,calc(100% - 12px));display:flex;flex-wrap:wrap;align-items:center;gap:5px;filter:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+#coordsSection .coordBoxActions .coordActionTitle{flex:0 1 auto;max-width:100%;text-overflow:ellipsis;overflow:hidden}
+#coordsSection .coordBoxActions button{flex:0 0 auto;min-height:30px;padding:7px 9px;line-height:1.2;letter-spacing:0}
+html[data-theme="dark"] #coordsSection .coordBoxActions{background:#243842;color:#f4fafb;border:1px solid #78939d;box-shadow:0 5px 16px #0008}
+html[data-theme="dark"] #coordsSection .coordBoxActions .coordActionTitle{background:#384e74;color:#e3edff}
+html[data-theme="dark"] #coordsSection .coordBoxActions button:not(.danger){background:#116b68;color:#f4ffff;border:1px solid #63b4b1}
+html[data-theme="dark"] #coordsSection .coordBoxActions button.danger{background:#66353a;color:#ffdddd;border:1px solid #d48c91}
+html[data-theme="dark"] #coordsSection .coordLabelSourceBar button:enabled,
+html[data-theme="dark"] #coordsSection .coordAfterClassField select:enabled{color:#f1fcfa;border-color:#6c949b;background:#26434a}
+html[data-theme="dark"] #coordsSection .coordExportAfter:enabled{background:#15584b!important;color:#dcfff3!important;border-color:#6dbaab!important}
+html[data-theme="dark"] #coordsSection .coordDeleteAfter:enabled{background:#633039;color:#ffe4e7;border-color:#c78592}
+/* Blur is costly during repeated zoom/pan and can trap child popovers. */
+#coordsSection .coordFloatingTools.isDocked,
+#coordsSection .coordFloatingTools.isDocked::before,
+#coordsSection .coordFloatingTools.isDocked .coordMoreMenu{
+ backdrop-filter:none!important;-webkit-backdrop-filter:none!important;
+}
+#coordsSection .coordFloatingTools.isDocked::before{background:#e8f3f2!important}
+html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked::before{background:#20343d!important}
+#coordsSection .coordFloatingTools.isDocked .coordMoreMenu{background:#eff7f6!important}
+html[data-theme="dark"] #coordsSection .coordFloatingTools.isDocked .coordMoreMenu{background:#253b44!important}
+@media(max-width:650px){
+ #prepSection .qcBatchActions{grid-template-columns:1fr}
+ #prepSection .qcInlineActions{min-width:174px;max-width:200px;grid-template-columns:repeat(2,minmax(80px,1fr))}
+ #coordsSection .coordBoxActions{max-width:calc(100% - 6px)}
+}
