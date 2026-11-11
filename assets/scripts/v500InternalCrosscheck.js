@@ -50,7 +50,7 @@ async function ingestAssignments(file){
  const prev={rows:IC.rows,byId:IC.byId};IC.rows=entries;IC.byId=next;const errors=integrity();
  if(state.manifest?.rows?.length&&errors.length){IC.rows=prev.rows;IC.byId=prev.byId;throw Error(`Phân công không khớp manifest (${errors.length} lỗi): ${errors[0]}.`);}
  IC.fileName=file.name;IC.checks.clear();IC.selected='';IC.loaded=true;IC.lastOpen='';IC.a=[];IC.b=[];IC.parseError='';IC.bitmap=null;
- render();return `Kiểm chéo nội bộ: nhận ${entries.length} ảnh từ ${file.name}, ${new Set(entries.map(x=>x.checker_id)).size} người kiểm. Kết luận cũ đã được làm mới.`;
+ render();window.dispatchEvent(new CustomEvent('yolo:internal-updated'));return `Kiểm chéo nội bộ: nhận ${entries.length} ảnh từ ${file.name}, ${new Set(entries.map(x=>x.checker_id)).size} người kiểm. Kết luận cũ đã được làm mới.`;
 }
 function norm(name){return String(name||'').split('/').pop().replace(/\.txt$/i,'').replace(/\.rf\.[A-Za-z0-9_-]+$/i,'').replace(/(?:\.(?:png|jpe?g|webp|bmp)|_(?:png|jpe?g|webp|bmp))$/i,'');}
 function getA(id){return state.after.find(f=>norm(f.name)===id)||null;}
@@ -141,7 +141,7 @@ function download(){if(!IC.checks.size)return setMessage('Chưa có kết luận
 }
 function show(){window.YoloIntergroup?.setScope?.('internal');render();if(IC.selected&&IC.lastOpen!==IC.selected)void openImage(IC.selected);else draw();}
 function clearResults(){if(!IC.checks.size)return;if(!confirm(`Xóa ${IC.checks.size} kết luận nội bộ khỏi phiên làm việc? Hãy tải crosscheck_log.csv trước nếu cần lưu.`))return;IC.checks.clear();render();setMessage('Đã xóa kết luận nội bộ. Dữ liệu phân công, ảnh và nhãn A vẫn giữ nguyên.');}
-function clearAssignments(){if(!IC.rows.length)return;if(!confirm(`Xóa ${IC.rows.length} phân công kiểm chéo nội bộ và ${IC.checks.size} kết luận đã lưu? Nhãn A/B, manifest và dữ liệu liên nhóm được giữ nguyên.`))return;IC.token++;IC.rows=[];IC.byId=new Map();IC.fileName='';IC.selected='';IC.checks.clear();IC.lastOpen='';IC.a=[];IC.b=[];IC.loaded=false;clearBitmap();render();draw();setMessage('Đã xóa phân công nội bộ. Nạp lại crosscheck_assignments.csv tại mục 01.');}
+function clearAssignments(){if(!IC.rows.length)return;if(!confirm(`Xóa ${IC.rows.length} phân công kiểm chéo nội bộ và ${IC.checks.size} kết luận đã lưu? Nhãn A/B, manifest và dữ liệu liên nhóm được giữ nguyên.`))return;IC.token++;IC.rows=[];IC.byId=new Map();IC.fileName='';IC.selected='';IC.checks.clear();IC.lastOpen='';IC.a=[];IC.b=[];IC.loaded=false;clearBitmap();render();draw();window.dispatchEvent(new CustomEvent('yolo:internal-updated'));setMessage('Đã xóa phân công nội bộ. Nạp lại crosscheck_assignments.csv tại mục 01.');}
 $('icClearResults').onclick=clearResults;$('icClearAssignments').onclick=clearAssignments;
 $('matchScopeInternal').addEventListener('click',show);
 $('icCheckerFilter').addEventListener('change',()=>{render();if(IC.selected)void openImage(IC.selected);});

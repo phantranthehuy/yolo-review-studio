@@ -1,0 +1,10 @@
+YOLO Review Studio v7.0.7 — giao diện đã đồng bộ build
+
+1. Giải nén ZIP vào một thư mục MỚI, không chồng lên bản cũ.
+2. Mở index.html trong thư mục này (không mở từ ZIP).
+3. Mục 04: nhấn Kiểm tra nội bộ hoặc Kiểm giữa nhóm khi chưa có CSV để thấy trạng thái chờ; mục 01 để nạp CSV.
+4. Thanh tiêu đề bảng đã có nền kính mờ và sticky; kiểm trong bảng Nhật ký đổi phân công tại mục 07 sau khi tính phân công.
+5. Hộp thoại nhận thư mục nhãn theo công tắc Sáng/Tối.
+6. Nút Sáng/Tối gốc được giữ; Update tự cuộn giữ nguyên.
+
+Sửa quan trọng: src/template.html và src/scripts/v500InternalCrosscheck.js cũng được cập nhật; chạy tools/build.py không mất thay đổi.

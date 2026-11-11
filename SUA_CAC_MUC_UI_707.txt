@@ -1,0 +1,8 @@
+YOLO Review Studio v7.0.7 — sửa giao diện (11/11/2026)
+
+1) Thanh quy tắc bắt buộc: thêm nền bán trong suốt + backdrop blur 14px, tăng tương phản chữ/code theo Light/Dark.
+2) Mục 04: Kiểm tra nội bộ và Kiểm giữa nhóm chỉ hiển thị bảng, ảnh và biểu mẫu khi đã nạp CSV phân công tương ứng hợp lệ. Nếu chưa có file, chỉ hiện thông báo và đường dẫn đến mục 01. Khi nạp/xóa CSV hợp lệ, trạng thái được cập nhật ngay.
+3) Hộp thoại xác nhận vai trò thư mục khi upload: nền, ô chọn và nút đồng bộ với Light/Dark.
+4) Thanh tiêu đề các bảng dữ liệu: lớp nền kính mờ (backdrop-filter), giữ chữ rõ và độ tương phản, bao gồm bảng QC và ma trận chia việc.
+
+Không thay đổi thuật toán QC, chia việc, kiểm chéo, nhật ký Update tự cuộn, file xuất hoặc chức năng Sáng/Tối gốc.

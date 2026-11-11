@@ -1,0 +1,89 @@
+/* v7.0.7 UI verify: trạng thái chờ, tương phản, tiêu đề bảng kính mờ.
+   Đây là lớp hiển thị sau cùng; không thay thuật toán/nhãn dữ liệu. */
+html[data-theme="light"] .workflowSafety {
+  background: rgba(249,253,252,.98)!important;
+  color: #193947!important;
+  border: 1px solid #bad5d3!important;
+  border-left: 4px solid #b88831!important;
+  font-size: 13px!important;
+  line-height: 1.7!important;
+  text-shadow: none!important;
+  -webkit-backdrop-filter: blur(18px)!important;
+  backdrop-filter: blur(18px)!important;
+}
+html[data-theme="dark"] .workflowSafety {
+  background: rgba(25,44,54,.97)!important;
+  color: #f1f9f9!important;
+  border: 1px solid #53727d!important;
+  border-left: 4px solid #efc16e!important;
+  font-size: 13px!important;
+  line-height: 1.7!important;
+  text-shadow: none!important;
+  -webkit-backdrop-filter: blur(18px)!important;
+  backdrop-filter: blur(18px)!important;
+}
+html[data-theme="light"] .workflowSafety :is(strong,code){color: #173c43!important}
+html[data-theme="dark"] .workflowSafety :is(strong,code){color: #effbfc!important}
+
+/* Vùng chờ độc lập cho mỗi chế độ kiểm chéo; UI không mở form thiếu CSV. */
+#internalCrosscheckWorkspace.scopePending > :not(.scopeMissingNotice),
+#intergroupWorkspace.scopePending > :not(.scopeMissingNotice){display:none!important}
+#internalCrosscheckWorkspace.scopePending > .scopeMissingNotice,
+#intergroupWorkspace.scopePending > .scopeMissingNotice{display:flex!important;flex-wrap:wrap;}
+html[data-theme="light"] .scopeMissingNotice{
+  background: #ecf7f7!important;color:#173c46!important;
+  border: 1px solid #a9d0d5!important;
+  box-shadow: inset 3px 0 0 #1d969e, 0 3px 12px rgba(22,63,70,.06);
+}
+html[data-theme="dark"] .scopeMissingNotice{
+  background: #203842!important;color:#eff8f9!important;
+  border: 1px solid #4f7986!important;
+  box-shadow: inset 3px 0 0 #52c9d0, 0 4px 12px rgba(0,0,0,.15);
+}
+.scopeMissingNotice strong {font-size:15px!important}
+.scopeMissingNotice p {font-size:13px!important;opacity:1!important}
+
+/* Header sticky với độ mờ thực sự. Không đặt filter:blur lên chữ/cả bảng. */
+html[data-theme="light"] :is(.tablewrap,.matchList,.afterQcTableWrap,.shortATableWrap,.allocTableWrap,.guideTableWrap,.coordTableWrap) table thead th,
+html[data-theme="light"] .afterQcTableWrap th {
+  position:sticky;top:0;z-index:3;
+  background:rgba(229,244,245,.87)!important;
+  color:#163846!important;
+  box-shadow:0 4px 11px rgba(39,102,112,.16)!important;
+  border-bottom:1px solid #8db8c1!important;
+  -webkit-backdrop-filter:blur(20px) saturate(145%)!important;
+  backdrop-filter:blur(20px) saturate(145%)!important;
+}
+html[data-theme="dark"] :is(.tablewrap,.matchList,.afterQcTableWrap,.shortATableWrap,.allocTableWrap,.guideTableWrap,.coordTableWrap) table thead th,
+html[data-theme="dark"] .afterQcTableWrap th {
+  position:sticky;top:0;z-index:3;
+  background:rgba(37,60,70,.88)!important;
+  color:#f0f9fb!important;
+  box-shadow:0 4px 14px rgba(3,13,19,.32)!important;
+  border-bottom:1px solid #648993!important;
+  -webkit-backdrop-filter:blur(20px) saturate(140%)!important;
+  backdrop-filter:blur(20px) saturate(140%)!important;
+}
+/* Ma trận có cột đầu sticky ngang, giữ lớp chồng chính xác. */
+#allocationSection #allocMatrix thead th:first-child{z-index:5!important}
+html[data-theme="light"] #allocationSection #allocMatrix thead th:first-child{background:rgba(219,239,237,.97)!important}
+html[data-theme="dark"] #allocationSection #allocMatrix thead th:first-child{background:rgba(41,69,78,.97)!important}
+@media(prefers-reduced-transparency:reduce){
+ html[data-theme="light"] table thead th{background:#e6f3f4!important}
+ html[data-theme="dark"] table thead th{background:#29454f!important}
+}
+
+/* Nút chuyển phạm vi: tránh trạng thái chữ xám như bị khóa trong Dark. */
+html[data-theme="dark"] #matchScopeSwitch .scopeBtn{
+  background:#243a46!important; color:#f0f8fa!important;
+  opacity:1!important; filter:none!important;
+  border-color:#526f7b!important;
+}
+html[data-theme="dark"] #matchScopeSwitch .scopeBtn[aria-pressed="true"]{
+  background:#126e7c!important;color:#fff!important;
+  border-color:#58c8d0!important;
+  box-shadow:inset 0 0 0 1px rgba(150,244,241,.2)!important;
+}
+html[data-theme="dark"] #matchScopeSwitch .scopeBtn b{color:#f0fafb!important}
+html[data-theme="dark"] #matchScopeSwitch .scopeBtn small{color:#d8e9ed!important}
+html[data-theme="light"] #matchScopeSwitch .scopeBtn b{color:#163643!important}

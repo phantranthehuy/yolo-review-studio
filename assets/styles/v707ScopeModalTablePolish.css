@@ -1,0 +1,85 @@
+/* v7.0.7 · Chỉnh tương phản theo theme và thu gọn kiểm chéo khi thiếu dữ liệu.
+   Chỉ thay đổi phần hiển thị: giữ nguyên bộ kiểm tra, dữ liệu và thao tác xuất. */
+
+/* Quy tắc bắt buộc: không để ảnh nền phong cảnh gây mất tương phản. */
+html[data-theme="light"] .workflowSafety {
+  background:rgba(248,252,250,.95)!important;
+  color:#193846!important;border:1px solid #b9d8d3!important;border-left:4px solid #b37e20!important;
+  box-shadow:0 2px 10px rgba(24,58,62,.08);
+  -webkit-backdrop-filter:blur(14px) saturate(120%);backdrop-filter:blur(14px) saturate(120%);
+}
+html[data-theme="dark"] .workflowSafety {
+  background:rgba(23,42,50,.94)!important;
+  color:#eef7f8!important;border:1px solid #607a80!important;border-left:4px solid #e4b45a!important;
+  box-shadow:0 4px 14px rgba(0,0,0,.18);
+  -webkit-backdrop-filter:blur(14px) saturate(120%);backdrop-filter:blur(14px) saturate(120%);
+}
+.workflowSafety{line-height:1.7!important;font-weight:530;overflow-wrap:anywhere}
+.workflowSafety strong{font-weight:780;color:inherit!important}
+html[data-theme="light"] .workflowSafety code{background:#e2efed!important;color:#11434c!important;border:1px solid #c0d7d3}
+html[data-theme="dark"] .workflowSafety code{background:#334852!important;color:#f6fcfc!important;border:1px solid #546e79}
+
+/* Modal nạp file — theme trên html, không ép nền tối ở chế độ sáng. */
+html[data-theme="light"] .hubRoleOverlay{background:rgba(16,42,52,.33)!important}
+html[data-theme="light"] .hubRoleDialog{background:#f8fbfc!important;color:#203a48!important;border:1px solid #bcd4dd!important;box-shadow:0 22px 65px rgba(15,42,52,.22)!important}
+html[data-theme="light"] .hubRoleTop h2,html[data-theme="light"] .hubRoleRow strong{color:#183343!important}
+html[data-theme="light"] .hubRoleTop p{color:#425b68!important}
+html[data-theme="light"] .hubRoleTop .stepTag{color:#0f7381!important}
+html[data-theme="light"] .hubRoleRow{background:#edf5f7!important;border-color:#b9d2dc!important;color:#203a48!important}
+html[data-theme="light"] .hubRoleRow small{color:#496470!important}
+html[data-theme="light"] .hubRoleSelect{background:#fff!important;color:#183543!important;border-color:#98b7c5!important}
+html[data-theme="light"] .hubRoleError{color:#ab3539!important}
+html[data-theme="light"] #hubRoleCancel{background:#fff!important;color:#1c4050!important;border-color:#b8ccd5!important}
+html[data-theme="light"] #hubRoleApply{background:#087887!important;color:#fff!important;border-color:#087887!important}
+html[data-theme="dark"] .hubRoleOverlay{background:rgba(4,11,15,.76)!important}
+html[data-theme="dark"] .hubRoleDialog{background:#192a34!important;color:#e8f5f8!important;border-color:#52717d!important}
+html[data-theme="dark"] .hubRoleRow{background:#233a46!important;border-color:#456775!important}
+html[data-theme="dark"] .hubRoleSelect{background:#142731!important;color:#f4fcfe!important;border-color:#607e8a!important}
+html[data-theme="dark"] #hubRoleCancel{background:#29414c!important;color:#eef7f9!important;border-color:#53727d!important}
+html[data-theme="dark"] #hubRoleApply{background:#087b89!important;color:#fff!important;border-color:#269ba9!important}
+
+/* Hai chế độ kiểm chéo: khi chưa có phân công hợp lệ, chỉ hiện thông báo nạp dữ liệu. */
+#internalCrosscheckWorkspace.scopePending > :not(.scopeMissingNotice),
+#intergroupWorkspace.scopePending > :not(.scopeMissingNotice){display:none!important}
+.scopeMissingNotice{display:none;margin:0;padding:19px 20px;border-radius:12px;align-items:flex-start;gap:14px}
+.scopePending > .scopeMissingNotice{display:flex}
+.scopeMissingNotice .scopeMissingIcon{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:10px;font-size:22px;font-weight:800}
+.scopeMissingNotice strong{display:block;font-size:14px;line-height:1.5;margin-bottom:4px}
+.scopeMissingNotice p{font-size:12.5px;line-height:1.6;margin:0 0 11px;max-width:850px;opacity:1}
+.scopeMissingNotice a{display:inline-flex;align-items:center;min-height:33px;padding:6px 12px;border-radius:8px;text-decoration:none;font-size:12px;font-weight:750}
+html[data-theme="light"] .scopeMissingNotice{background:#eff7f8;border:1px solid #b6d3d9;color:#183a49}
+html[data-theme="light"] .scopeMissingIcon{background:#d9eff0;color:#0d7581}
+html[data-theme="light"] .scopeMissingNotice a{background:#087d87;color:white}
+html[data-theme="dark"] .scopeMissingNotice{background:#233943;border:1px solid #4f7782;color:#e8f3f7}
+html[data-theme="dark"] .scopeMissingIcon{background:#284f59;color:#86dfdb}
+html[data-theme="dark"] .scopeMissingNotice a{background:#136b78;color:#fff}
+.scopeMissingNotice a:focus-visible{outline:3px solid #36acae;outline-offset:2px}
+@media(max-width:500px){.scopeMissingNotice{padding:14px;gap:10px}.scopeMissingNotice .scopeMissingIcon{width:34px;height:34px}}
+
+/* Thanh tiêu đề các bảng: lớp nền kính mờ, CHỮ giữ sắc nét, không phủ blur lên toàn bảng. */
+html[data-theme="light"] :is(.tablewrap,.matchList,.afterQcTableWrap,.shortATableWrap,.allocTableWrap,.guideTableWrap,.coordTableWrap) table thead th,
+html[data-theme="light"] .afterQcTableWrap th{
+  background:rgba(239,248,249,.91)!important;
+  color:#1b3b49!important;
+  border-bottom:1px solid #b1cdd4!important;
+  -webkit-backdrop-filter:blur(15px) saturate(130%);backdrop-filter:blur(15px) saturate(130%);
+  box-shadow:inset 0 -1px 0 rgba(50,110,119,.10);
+}
+html[data-theme="dark"] :is(.tablewrap,.matchList,.afterQcTableWrap,.shortATableWrap,.allocTableWrap,.guideTableWrap,.coordTableWrap) table thead th,
+html[data-theme="dark"] .afterQcTableWrap th{
+  background:rgba(35,55,64,.92)!important;
+  color:#eff8fa!important;
+  border-bottom:1px solid #526f7c!important;
+  -webkit-backdrop-filter:blur(15px) saturate(125%);backdrop-filter:blur(15px) saturate(125%);
+  box-shadow:inset 0 -1px 0 rgba(156,218,221,.10);
+}
+/* Góc cố định của ma trận vẫn phải đứng trên cột cuộn ngang. */
+html[data-theme="light"] #allocationSection #allocMatrix thead th:first-child{background:rgba(221,240,237,.96)!important;color:#193d3e!important}
+html[data-theme="dark"] #allocationSection #allocMatrix thead th:first-child{background:rgba(43,72,82,.96)!important;color:#eff9fa!important}
+/* Đặc biệt với bảng đang có lớp nền màu cảnh báo, không làm giảm độ đọc chữ. */
+html[data-theme="light"] .afterQcTableWrap table thead th{background:rgba(245,237,223,.94)!important;color:#51391f!important}
+html[data-theme="dark"] .afterQcTableWrap table thead th{background:rgba(76,57,44,.94)!important;color:#fff2db!important}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+ html[data-theme="light"] table thead th{background:#edf6f7!important}
+ html[data-theme="dark"] table thead th{background:#253a45!important}
+}
