@@ -1,0 +1,88 @@
+/* v7.0.7 targeted fix: one QC findings table; same visual language across themes. */
+#prepSection #qcSmallBoxFold{display:none!important} /* retained as a hidden JS control surface; no duplicate issue table */
+#prepSection .qcUnifiedPreview{margin:12px 0;border:1px solid var(--qc-border);background:var(--qc-wash);padding:13px;border-radius:10px;color:var(--qc-text)}
+#prepSection .qcUnifiedPreview[hidden]{display:none!important}
+#prepSection .qcShortPreviewTop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#prepSection .qcPreviewClose{margin-left:auto;min-width:32px;min-height:32px;padding:2px 8px;background:transparent;color:var(--qc-text);border:1px solid var(--qc-border);border-radius:7px;font-size:24px;line-height:1;cursor:pointer}
+#prepSection .qcFindingsTop .qcFilterLabel{flex:0 1 auto;min-width:0}
+#prepSection .qcFindingsTop select{min-width:125px;max-width:220px}
+#prepSection .qcInlineActions{display:flex;flex-wrap:nowrap;gap:5px;min-width:0;max-width:none;align-items:center}
+#prepSection .qcInlineActions .qcIconAction{display:inline-flex;align-items:center;justify-content:center;flex:0 0 33px;width:33px;min-width:33px;min-height:33px;height:33px;padding:0;border-radius:8px;background:var(--qc-wash);color:var(--qc-text);border:1px solid var(--qc-border);cursor:pointer;transition:background .15s,border-color .15s}
+#prepSection .qcInlineActions .qcIconAction.is-edit{color:#0b917b;border-color:#36a596}
+#prepSection .qcInlineActions .qcIconAction.is-delete{color:#c45d59;border-color:#c45d5966}
+#prepSection .qcInlineActions .qcIconAction:hover{background:rgba(15,151,143,.13);border-color:var(--qc-accent)}
+#prepSection .qcInlineActions .qcIconAction:focus-visible{outline:3px solid #49c5bb;outline-offset:2px}
+#prepSection .afterQcTableWrap{max-height:min(530px,64vh)}
+#prepSection .afterQcTableWrap th:last-child{min-width:116px}
+#prepSection .qcActionFeedback button,#prepSection #qcAfterEditedDownload{background:#146e75!important;border:1px solid #2e969a!important;color:#fff!important;border-radius:8px;font-weight:700}
+#prepSection .qcActionFeedback button:hover,#prepSection #qcAfterEditedDownload:hover{background:#0e858c!important}
+html[data-theme="dark"] #allocationSection .allocLockButton:not(:disabled):not([aria-pressed=true]){background:#135f69!important;border:1px solid #268e95!important;color:#e5fbf8!important;box-shadow:none!important}
+html[data-theme="dark"] #allocationSection .allocLockButton:not(:disabled):not([aria-pressed=true]):hover{background:#197b83!important;border-color:#44b6ae!important}
+html[data-theme="dark"] #allocationSection .allocLockButton[aria-pressed=true]:not(:disabled){background:#6f5730!important;border:1px solid #c6a35b!important;color:#ffe2a4!important}
+html[data-theme="dark"] #prepSection .qcActionFeedback button,html[data-theme="dark"] #prepSection #qcAfterEditedDownload{background:#216d75!important;border:1px solid #48a1a5!important;color:#e9ffff!important}
+html[data-theme="dark"] #prepSection .qcActionFeedback button:hover,html[data-theme="dark"] #prepSection #qcAfterEditedDownload:hover{background:#2c8188!important}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction{background:#283e47;border-color:#54717b;color:#e7f5f6}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction.is-edit{color:#8ef0d4;border-color:#3a9687}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction.is-delete{color:#ffaaa4;border-color:#9d5654}
+@media(max-width:760px){#prepSection .qcFindingsTop .qcFilterLabel{flex:1 1 160px}#prepSection .qcFindingsTop select{max-width:100%}#prepSection .qcInlineActions{flex-wrap:wrap}}
+
+/* 7.0.7: all QC controls inherit the active, original Sáng/Tối switch. */
+#prepSection .qcCodeFilterShell{position:relative;display:flex;align-items:center;gap:8px;min-width:215px;font-size:12px;color:var(--qc-secondary)}
+#prepSection .qcFilterCaption{white-space:nowrap}
+#prepSection #qcCodeFilter[hidden]{display:none!important}
+#prepSection .qcCodeFilterMenu{position:relative;min-width:165px;flex:1 1 auto;color:var(--qc-text);z-index:5}
+#prepSection .qcCodeFilterMenu[open]{z-index:40}
+#prepSection .qcCodeFilterMenu>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:37px;padding:7px 10px;border:1px solid var(--qc-border);border-radius:8px;background:var(--qc-paper);color:var(--qc-text);font-weight:600}
+#prepSection .qcCodeFilterMenu>summary::-webkit-details-marker{display:none}
+#prepSection .qcCodeFilterMenu>summary:focus-visible{outline:3px solid var(--qc-accent);outline-offset:2px}
+#prepSection .qcCodeFilterMenu[open]>summary{border-color:var(--qc-accent)}
+#prepSection .qcCodeFilterMenu .qcFilterArrow{font-size:13px;color:var(--qc-secondary)}
+#prepSection .qcCodeFilterItems{position:absolute;top:calc(100% + 5px);right:0;width:max(245px,100%);max-width:min(370px,calc(100vw - 40px));max-height:275px;overflow:auto;padding:5px;background:var(--qc-paper);border:1px solid var(--qc-border);border-radius:9px;box-shadow:0 8px 25px #142a3550;z-index:41}
+#prepSection .qcCodeFilterItems button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:9px 11px;border-radius:6px;border:0;min-height:37px;background:transparent;color:var(--qc-text);text-align:left;font:600 12px/1.35 system-ui,sans-serif;cursor:pointer}
+#prepSection .qcCodeFilterItems button:hover,#prepSection .qcCodeFilterItems button[aria-pressed="true"]{background:var(--qc-wash);color:var(--qc-text)}
+#prepSection .qcCodeFilterItems button[aria-pressed="true"]{box-shadow:inset 3px 0 var(--qc-accent)}
+#prepSection .qcCodeFilterItems b{font-variant-numeric:tabular-nums;padding:2px 7px;border-radius:6px;min-width:22px;text-align:center;background:var(--qc-wash);border:1px solid var(--qc-border);color:var(--qc-text)}
+#prepSection .qcInlineActions .qcIconAction{width:34px!important;min-width:34px!important;min-height:34px!important;height:34px!important;max-width:34px!important;flex:0 0 34px!important;padding:0!important;display:inline-flex!important;line-height:1!important;box-sizing:border-box;white-space:nowrap!important}
+#prepSection .qcInlineActions .qcIconAction svg{display:block;flex:none;pointer-events:none}
+#prepSection .afterQcTableWrap table td:last-child,#prepSection .afterQcTableWrap table th:last-child{min-width:98px!important;width:106px}
+#prepSection .qcFindingsTop .qcFilterLabel select,#prepSection .qcCodeFilterShell select,
+#prepSection .qcShortPreview,#prepSection .qcRawEditCard{color:var(--qc-text);border-color:var(--qc-border)}
+html[data-theme="dark"] #prepSection .qcCodeFilterItems{box-shadow:0 10px 26px #0009}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction{background:#2a454d;border-color:#63828d;color:#f4fafb}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction.is-edit{background:#174f4c;color:#c2f9e9;border-color:#53bea9}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction.is-delete{background:#61393b;color:#ffd4d2;border-color:#c17c7c}
+html[data-theme="light"] #prepSection .qcInlineActions .qcIconAction.is-edit{background:#e4f7f2;color:#075f52}
+html[data-theme="light"] #prepSection .qcInlineActions .qcIconAction.is-delete{background:#fff0f0;color:#a22326}
+html[data-theme="dark"] #prepSection .qcIssueAction:focus-visible{outline:3px solid #99ede5}
+@media(max-width:780px){#prepSection .qcCodeFilterShell{flex:1 1 210px}#prepSection .qcCodeFilterItems{right:0}}
+
+/* Give the QC heading its own line; keep all three filters together below. */
+#prepSection .qcFindingsTop>div:first-child{flex:1 1 100%;min-width:0}
+#prepSection .qcFindingsTop .qcFilterLabel{flex:0 1 auto}
+
+/* Restored QC eye icon, alongside Edit/Delete. */
+#prepSection .afterQcTableWrap table td:last-child,#prepSection .afterQcTableWrap table th:last-child{min-width:137px!important;width:140px!important}
+#prepSection .qcInlineActions .qcIconAction.is-view{color:#146c8b;border-color:#5193a6}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction.is-view{background:#264a58;color:#a8e9fb;border-color:#5a9daf}
+#prepSection .qcShortPreviewGrid[hidden]{display:none!important}
+@media(max-width:760px){#prepSection .afterQcTableWrap table td:last-child,#prepSection .afterQcTableWrap table th:last-child{min-width:132px!important}}
+
+/* v7.0.7: the first sticky matrix column used --surface (#e8f1f1 fallback),
+   which made white cells illegible in Dark. Give matrix surfaces explicit day/night tokens. */
+#allocationSection .allocTableWrap:has(#allocMatrix){background:#f7fbfa;border-color:#b5cfce;}
+#allocationSection #allocMatrix{color:#223b40;background:#f7fbfa;}
+#allocationSection #allocMatrix thead th:first-child{position:sticky;left:0;z-index:3;background:#dceeea!important;color:#193d3e!important;border-right:1px solid #adcaca;}
+#allocationSection #allocMatrix tbody td:first-child{position:sticky;left:0;z-index:2;background:#e8f3f1!important;color:#234147!important;border-right:1px solid #adcaca;font-weight:750;}
+html[data-theme="dark"] #allocationSection .allocTableWrap:has(#allocMatrix){background:#1c2b33!important;border-color:#405964!important;color:#eaf5f7!important;}
+html[data-theme="dark"] #allocationSection #allocMatrix{background:#1c2b33!important;color:#eaf5f7!important;}
+html[data-theme="dark"] #allocationSection #allocMatrix thead th{background:#304047!important;color:#f2f9fa!important;border-color:#425963!important;}
+html[data-theme="dark"] #allocationSection #allocMatrix thead th:first-child{background:#324c55!important;color:#f5ffff!important;border-right-color:#57717c!important;}
+html[data-theme="dark"] #allocationSection #allocMatrix tbody td{background:#1d3038!important;color:#ecf6f8!important;border-color:#3a535e!important;}
+html[data-theme="dark"] #allocationSection #allocMatrix tbody tr:nth-child(even) td:not(:first-child){background:#22353d!important;}
+html[data-theme="dark"] #allocationSection #allocMatrix tbody td:first-child{background:#263f47!important;color:#f2fafa!important;border-right-color:#57717c!important;}
+html[data-theme="dark"] #allocationSection #allocMatrix tbody tr:nth-child(even) td:first-child{background:#2a454d!important;}
+/* Replace ambiguous × with a clearly named, accessible close action. */
+#prepSection .qcShortPreviewTop #qcPreviewClose{margin-left:auto;min-height:34px;min-width:100px;padding:7px 12px;font:700 12px/1.3 system-ui,sans-serif;border-radius:8px;background:var(--qc-paper);color:var(--qc-text);white-space:nowrap;}
+#prepSection .qcShortPreviewTop #qcPreviewClose:hover{background:var(--qc-wash);border-color:var(--qc-accent);}
+html[data-theme="dark"] #prepSection .qcShortPreviewTop #qcPreviewClose{background:#31464f!important;color:#edf7f7!important;border:1px solid #6b8a94!important;}
+html[data-theme="dark"] #prepSection .qcShortPreviewTop #qcPreviewClose:hover{background:#3a5b66!important;color:#fff!important;}

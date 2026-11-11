@@ -1,0 +1,7 @@
+YOLO REVIEW STUDIO v7.0.7 — SỬA TỔNG THỂ MÀU SÁNG/TỐI
+- Đồng bộ thông báo chờ manifest tại mục 06 và 07; sửa chính xác màu chữ gần trắng trên nền Light.
+- Làm rõ nút nạp manifest theo Light/Dark, cả hover/focus.
+- Sửa các nút chưa có dữ liệu ở mục 01, mục 02 và phần xuất, không để chữ nhạt trên nền trắng khi ở Dark.
+- Tăng tương phản chữ phụ, chú giải và các nút hành động QC, bộ lọc loại sai.
+- Giữ Update tự cuộn từ v5.0, giữ toàn bộ dữ liệu/thuật toán, chỉ thay đổi CSS.
+- Giữ công tắc Sáng/Tối chung, không tạo dark.html.

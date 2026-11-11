@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
-<title>YOLO Review Studio | QC rõ ràng · đối chiếu B–A · v5.0</title>
+<title>YOLO Review Studio | QC rõ ràng · đối chiếu B–A · v7.0.7</title>
 <link rel="stylesheet" href="assets/styles/core-8c3715a44704.css">
 <link rel="stylesheet" href="assets/styles/theme-picker.css">
 <style id="hubPickerCriticalV4182">
@@ -90,13 +90,18 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
     </a>
   </div>
 </nav>
-<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT & KIỂM CHÉO TRAFFIC DATASET <span>·</span> v5.0</div>
+<div class="heroEyebrow">CÔNG CỤ RÀ SOÁT & KIỂM CHÉO TRAFFIC DATASET <span>·</span> v7.0.7</div>
   <h1 id="pageTitle">Rà soát nhãn giao thông.<br><span>Nạp một lần, kiểm tra theo từng bước.</span></h1>
   <p class="intro">Đọc bộ dữ liệu Gxx và ZIP Roboflow, kiểm tra nhãn, đối chiếu box, xác nhận kiểm chéo trong nhóm hoặc giữa nhóm. Dữ liệu chỉ xử lý trong trình duyệt, không thay đổi ảnh gốc.</p>
   <section class="releaseNotes" aria-label="Cập nhật gần đây">
    <div class="releaseNotesViewport" id="releaseNotesViewport" tabindex="0" aria-label="Nhật ký cập nhật. Rê chuột để dừng, cuộn để xem thêm.">
     <div class="releaseNotesTrack">
      <div class="releaseNotesGroup">
+      <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 7.0.7</span><span class="releaseNew">Mới nhất</span></div><h2>Kiểm chéo nội bộ · QC thống nhất · nhật ký tự cuộn.</h2><p>Giữ ba chế độ ở mục 04, đồng bộ nút Sáng/Tối, gộp cảnh báo vào một bảng QC có bộ lọc, khôi phục Xem ảnh và cập nhật lỗi nghiêm trọng cho box cao dưới 12 px. Hướng dẫn 06/07 có thể mở và đóng.</p></article>
+      <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 7.0.6</span></div><h2>Hướng dẫn sử dụng và giải thích dữ liệu xuất.</h2><p>Giải thích thao tác chia việc, kiểm tra chéo và các loại file TXT/CSV/JSON ngay trong trang. Giao diện sáng và tối dùng chung nút Sáng/Tối của ứng dụng.</p></article>
+      <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 7.0.5</span></div><h2>Gọn danh sách nhãn, làm rõ ô chọn thành viên.</h2><p>Thẻ tiến độ không tràn tên ảnh; phần file thiếu có thể mở xem. Ô tick rõ màu và nút giữ phần việc thể hiện trạng thái tương ứng.</p></article>
+      <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 7.0</span></div><h2>Phân công lại review và kiểm tra chéo.</h2><p>Chia ảnh của thành viên vắng, giữ mẫu cấp sẵn khi có, kiểm tỷ lệ random và xuất bản đề xuất để bàn giao.</p></article>
+
       <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 5.0</span><span class="releaseNew">New</span></div><h2>Mục 06: nhập nhãn từng thành viên, theo dõi tiến độ và rà soát QC bộ gộp.</h2><p>Bắt buộc có assignment manifest, nhận diện thành viên theo tên thư mục hoặc ID được giao; chỉ tải bộ gộp khi đủ nhãn. Chuyển bộ gộp sang QC bằng hộp xác nhận thay thế A cũ, lọc cảnh báo theo người.</p></article>
       <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.2.7</span></div><h2>TXT A đúng tên sau xử lý · nút QC có phản hồi rõ.</h2><p>Mục 05 xuất file theo quy tắc đổi tên của bộ A mục 01. Mục 02 báo đang kiểm, kết quả và thời điểm sau khi bấm Kiểm tra lại; nếu QC gặp lỗi sẽ hiện lý do.</p></article>
       <article class="releaseNote"><div class="releaseNoteMeta"><span class="releaseVersion">Update 4.2.5</span></div><h2>Kéo box mượt hơn · nút QC rõ trên nền tối · xử lý theo nhóm.</h2><p>Kéo box bằng SVG cập nhật riêng khung đang sửa; giảm số lượt dựng lại QC, bỏ blur nặng. Thêm tác vụ nhóm có xác nhận; nhãn B chỉ đọc.</p></article>
@@ -150,6 +155,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
   <a href="#mergeSection"><b>06</b><strong>Gộp thành viên</strong><span>Kiểm tiến độ theo phân công, chỉ dùng khi cần.</span></a>
   <a href="#prepSection"><b>02</b><strong>Rà soát QC</strong><span>Kiểm lỗi và điều hướng đến box cần sửa.</span></a>
   <a href="#matchSection"><b>04</b><strong>Đối chiếu B–A</strong><span>Xác nhận thêm, xóa và thay đổi box.</span></a>
+  <a href="#allocationSection"><b>07</b><strong>Chia việc</strong><span>Chia lại ảnh khi thiếu thành viên.</span></a>
   <a href="#reviewExport"><b>✓</b><strong>Xuất kết quả</strong><span>Tải nhãn và nhật ký đã kiểm tra.</span></a>
  </div>
  <details class="workflowGlossary"><summary>Đọc hiểu 8 thuật ngữ dùng trong trang web</summary><div class="workflowGlossaryGrid">
@@ -170,6 +176,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
    <article><h3>04 — Đối chiếu box / nhật ký</h3><p>Chế độ <strong>Batch của nhóm</strong> so B/A, có Zoom, lọc box, nhập hoặc chọn ID, xác nhận ghép B–A / B đã xóa / A mới thêm. Thống kê <code>boxes_added</code>, <code>boxes_removed</code>, <code>boxes_modified</code>, <code>class_changes</code>, <code>geometry_changes</code>; chỉ một box bị sửa được tính một lần dù vừa đổi lớp vừa thay tọa độ. Điền thật <code>reviewer_id</code>, <code>reviewed_at</code>, <code>revision</code> và <code>notes</code>.</p><p>Chế độ <strong>Kiểm giữa nhóm</strong> dùng ảnh thuộc <code>intergroup_assignments.csv</code>, baseline và nhãn <em>đã sửa từ nhóm nguồn</em>. Kết luận <code>agree/disagree</code>, <code>error_type</code>, <code>resolution</code>, <code>checker_id</code> được xuất thành <code>intergroup_results.csv</code>. Không trộn số ảnh này vào manifest chính; chỉ nhóm sở hữu nhãn được sửa bản chính.</p></article>
    <article><h3>05 — Tọa độ pixel / chỉnh nhãn A</h3><p>Mở ảnh theo <code>image_id</code> từ kho ảnh mục 01. B xanh lam nét đứt (chỉ xem); A xanh ngọc nét liền (được kéo, chỉnh cạnh, đổi lớp, xóa có xác nhận). Vùng ngoại lệ màu tím nằm riêng, không tự ghi vào TXT A. Tọa độ luôn theo kích thước ảnh gốc dù zoom.</p><p>Tên lớp, số dòng và tọa độ hiển thị bằng SVG vector nên không nhòe ở zoom lớn. Sau khi sửa A, bấm <strong>Tải TXT A</strong> để lưu file đã cập nhật; tệp trên máy không tự ghi đè. Box vùng ngoại lệ dưới 12 px được cảnh báo và tự loại khỏi vùng tạm; quy tắc này không tự xóa B/A.</p></article>
    <article><h3>06 — Gộp nhãn thành viên</h3><p>Bắt buộc có assignment_manifest.csv đã phân công người. Nạp ZIP hoặc thư mục nhãn từng người bằng hai nút chọn dữ liệu ở mục 01; không dùng lại nhãn A hiện tại để tự gộp. Biểu đồ theo dõi nhãn đủ/thiếu và chặn ghi đè ID trùng. Khi đủ, tải ZIP gộp hoặc nhấn Rà soát QC; việc chuyển bộ gộp sẽ thay nhãn A trong phiên sau khi xác nhận, không sửa file gốc trên máy.</p></article>
+   <article><h3>07 — Chia việc</h3><p>Đọc assignment_manifest.csv tại mục 01 để chia ảnh của người vắng theo tải và difficulty_weight. Không dùng phân công đóng sẵn của bất kỳ bảng Excel nào. Tùy chọn nhận crosscheck_assignments.csv chính thức và review_log.csv bằng hai nút mục 01. Bảo toàn mẫu ngẫu nhiên đã có, hoặc tạo mẫu mới khi chưa được cấp. Xuất phương án trước khi xác nhận áp dụng.</p></article>
    <article><h3>Bàn giao, quyền dữ liệu và giới hạn</h3><p><code>review_log_draft.csv</code> là nhật ký nháp; bản nộp cần đủ <code>images/</code>, <code>labels/</code>, <code>data.yaml</code>, <code>assignment_manifest.csv</code>, <code>review_log.csv</code>, <code>crosscheck_log.csv</code>, <code>qc_report.csv</code>, <code>exceptions.csv</code>, README và báo cáo theo hướng dẫn. Chạy QC trước khi nộp, không coi nhãn PRELABEL hoặc F1 trên tập không độc lập là nghiệm thu.</p><p>Toàn bộ dữ liệu xử lý trong bộ nhớ phiên trình duyệt, không ghi đè file gốc. Sau khi làm việc, tải CSV/ZIP để lưu, không chỉ giữ tab web. Ảnh ngoài ROI vẫn phải rà soát.</p></article>
   </div>
  </details>
@@ -184,6 +191,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
     <a class="jumpLink" href="#matchSection" data-jump="matchSection"><span>04</span>Đối chiếu B–A</a>
     <a class="jumpLink" href="#coordsSection" data-jump="coordsSection"><span>05</span>Tọa độ pixel</a>
     <a class="jumpLink" href="#mergeSection" data-jump="mergeSection"><span>06</span>Gộp nhãn thành viên</a>
+    <a class="jumpLink" href="#allocationSection" data-jump="allocationSection"><span>07</span>Chia việc</a>
   </div>
 </nav>
 <div class="sectionLabel" id="uploadsSection"><span>01 / DỮ LIỆU ĐẦU VÀO</span><h2>Nạp dữ liệu đầu vào</h2><p>Nhãn B, nhãn A, ảnh gốc và tệp bổ sung cùng quản lý tại một nơi.</p></div>
@@ -210,6 +218,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
  <p id="hubExplain" class="small">Nạp ZIP hoặc cả thư mục G11 tại đây. Khi có nhãn TXT, <strong>chọn rõ nhãn B, nhãn A hoặc nhãn thành viên</strong>. Nếu thư mục chứa <code>assignment_manifest.csv</code>, chương trình đọc phân công trước khi kiểm tra nhãn thành viên. Nhãn thành viên được giữ riêng; không ghi đè A/B.</p>
  <p id="hubStatus" class="small" role="status" aria-live="polite">Chưa nạp dữ liệu.</p>
  <div id="hubLoaded" class="hubLoaded" aria-label="Tình trạng dữ liệu đã nạp"></div>
+ <p id="hubManifestSummary" class="hubManifestSummary" role="status" aria-live="polite">Manifest đang dùng: chưa nạp assignment_manifest.csv toàn nhóm</p>
  <p class="igHubStatus" id="igHubStatus">Bộ kiểm giữa nhóm: chưa nạp. Khi có intergroup_assignments.csv, ảnh và baseline sẽ được quản lý tách biệt.</p>
  <details class="hubActions"><summary>Quản lý dữ liệu đã nạp / tải nhãn đổi tên</summary>
    <div class="hubManageGrid">
@@ -274,7 +283,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
   <div id="qcCoverage" class="qcCoverage" role="status" aria-live="polite">Chưa có dữ liệu để đối chiếu độ đầy đủ.</div>
   <div class="qcRuleHeading"><div><h4>Những quy tắc đã kiểm tra</h4><p>Không có cảnh báo nghĩa là chưa phát hiện lỗi theo quy tắc, <em>không</em> đồng nghĩa nhãn đã đúng với vật thể.</p></div></div>
   <div id="qcRules" class="qcRules" aria-label="Trạng thái từng nhóm quy tắc"></div>
-  <div class="qcFindingsTop"><div><h4>Vấn đề cần xem lại</h4><p>Chọn <strong>Chỉnh sửa</strong> để mở ảnh và highlight đúng box A ở mục 05; chọn <strong>Xóa</strong> khi đã xác minh box không cần giữ. Dòng TXT hỏng có nút <strong>Sửa TXT</strong>.</p></div><label class="qcFilterLabel" for="qcSeverityFilter">Hiển thị <select id="qcSeverityFilter"><option value="all">Tất cả</option><option value="ERROR">Lỗi nghiêm trọng</option><option value="WARNING">Cảnh báo</option><option value="INFO">Thông tin</option></select></label><label class="qcFilterLabel" for="qcMemberFilter">Thành viên <select id="qcMemberFilter"><option value="all">Tất cả thành viên</option></select></label></div>
+  <div class="qcFindingsTop"><div><h4>Vấn đề cần xem lại</h4><p>Mọi lỗi và cảnh báo QC nằm trong một bảng. Box A cao dưới 12 px là lỗi nghiêm trọng. Chọn biểu tượng Xem để mở ảnh gốc và phóng to box; Chỉnh sửa để sửa ở mục 05; Xóa cần xác nhận.</p></div><label class="qcFilterLabel" for="qcSeverityFilter">Hiển thị <select id="qcSeverityFilter"><option value="all">Tất cả</option><option value="ERROR">Lỗi nghiêm trọng</option><option value="WARNING">Cảnh báo</option><option value="INFO">Thông tin</option></select></label><div class="qcCodeFilterShell"><span id="qcCodeFilterCaption" class="qcFilterCaption">Loại sai</span><select id="qcCodeFilter" aria-label="Lọc theo loại sai" hidden><option value="all">Tất cả loại sai</option></select><details id="qcCodeFilterMenu" class="qcCodeFilterMenu"><summary aria-labelledby="qcCodeFilterCaption qcCodeFilterSelected" title="Xem các loại lỗi và số lượng"><span id="qcCodeFilterSelected">Tất cả loại sai</span><span aria-hidden="true" class="qcFilterArrow">▾</span></summary><div id="qcCodeFilterItems" class="qcCodeFilterItems" role="group" aria-label="Các loại sai đã phát hiện"><button type="button" data-code="all" aria-pressed="true">Tất cả loại sai</button></div></details></div><label class="qcFilterLabel" for="qcMemberFilter">Thành viên <select id="qcMemberFilter"><option value="all">Tất cả thành viên</option></select></label></div>
   <details class="qcBatchQuick" id="qcBatchQuick">
    <summary><strong>Xử lý nhanh theo nhóm</strong><span>Chỉ lỗi có quy tắc rõ ràng · luôn xác nhận trước khi thay đổi</span></summary>
    <div class="qcBatchActions" role="group" aria-label="Xử lý nhanh nhãn A">
@@ -287,6 +296,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
   </details>
   <div id="qcNoFindings" class="qcEmptyMessage" role="status">Chưa nạp nhãn A để kiểm tra.</div>
   <div id="afterQcTableWrap" class="afterQcTableWrap" hidden><table><thead><tr><th>Mức độ</th><th>image_id</th><th>Box A</th><th>Loại xe</th><th>Mã kiểm tra</th><th>Vấn đề</th><th>Thao tác</th></tr></thead><tbody id="afterQcRows"></tbody></table><p id="afterQcMore" class="small"></p></div>
+  <div id="qcShortPreview" class="qcShortPreview qcUnifiedPreview" hidden><div class="qcShortPreviewTop"><strong id="qcShortPreviewTitle">Xem box trên ảnh gốc</strong><span>Viền đỏ: box đang chọn · ảnh phóng to bên phải</span><button id="qcPreviewClose" class="qcPreviewClose" type="button" aria-label="Đóng phần xem chi tiết box" title="Đóng phần xem chi tiết box">Đóng xem ảnh</button></div><div class="qcShortPreviewGrid"><div><canvas id="qcShortOverviewCanvas" aria-label="Toàn cảnh ảnh có box đang chọn"></canvas><small>Toàn cảnh</small></div><div><canvas id="qcShortCropCanvas" aria-label="Phóng to box và vùng lân cận"></canvas><small>Phóng to vùng box</small></div></div></div>
   <div class="qcFooter"><span>QC kỹ thuật không thay thế việc rà soát ảnh bằng mắt hoặc chấm với Ground Truth.</span><button type="button" data-hub-go="after">Nạp / bổ sung dữ liệu ở mục 01</button></div>
  </section>
 <details id="qcSmallBoxFold" class="qcShortBoxFold" hidden>
@@ -296,7 +306,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
  <div id="vm_shortContent" hidden>
  <div class="shortAOptions"><label><input type="checkbox" id="vm_shortAll"> Chọn tất cả box A vi phạm</label><span id="vm_shortChosen" aria-live="polite">Chưa chọn box nào</span></div>
  <div class="shortATableWrap"><table class="shortATable"><thead><tr><th>Chọn</th><th>Image ID</th><th>Box A (dòng TXT)</th><th>Loại phương tiện</th><th>Chiều cao</th><th>Thao tác</th></tr></thead><tbody id="vm_shortList"></tbody></table></div>
- <div id="qcShortPreview" class="qcShortPreview" hidden><div class="qcShortPreviewTop"><strong id="qcShortPreviewTitle">Xem box trên ảnh gốc</strong><span>Viền đỏ: box đang chọn · ảnh phóng to bên phải</span></div><div class="qcShortPreviewGrid"><div><canvas id="qcShortOverviewCanvas" aria-label="Toàn cảnh ảnh có box đang chọn"></canvas><small>Toàn cảnh</small></div><div><canvas id="qcShortCropCanvas" aria-label="Phóng to box và vùng lân cận"></canvas><small>Phóng to vùng box</small></div></div></div>
+ 
  <div id="qcShortActionMessage" class="qcShortActionMessage" role="status" aria-live="polite"></div>
  <div class="shortAActions"><button id="vm_shortDelete" type="button" class="shortADanger" disabled>Xóa box A đã chọn…</button><button id="vm_shortDownload" type="button">Tải nhãn A đã cập nhật (.zip)</button></div>
  <p class="shortAFoot">Chọn <strong>Chỉnh sửa</strong> để mở đúng ảnh và box A tại mục 05. Box nhỏ có thể là phương tiện ở xa và <strong>không mặc nhiên là nhãn sai</strong>. Xem ảnh trước khi quyết định. Công cụ không sửa hoặc xóa nhãn B. Box chỉ bị loại sau khi bạn xác nhận. Ảnh trên ổ đĩa và TXT gốc không bị ghi đè; tải bộ nhãn A mới để lưu thay đổi.</p>
@@ -327,6 +337,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 <section id="matchSection" class="panel" style="margin:24px 0"><div class="hubNeed" id="hubNeedMatch" role="status"></div><div class="sectionHead"><div><span class="stepTag">04 / RÀ SOÁT THỦ CÔNG</span><h2>Đối chiếu box trước / sau</h2><p>Kiểm tra khung xe và xác nhận các cặp ghép theo đúng đối tượng.</p></div></div>
 <div id="matchScopeSwitch" class="matchScopeSwitch" role="group" aria-label="Chọn phạm vi đối chiếu">
  <button type="button" id="matchScopeMain" class="scopeBtn" aria-pressed="true"><span class="scopeIcon">A/B</span><span><b>Batch của nhóm</b><small>Nhãn B ban đầu ↔ Nhãn A sau sửa</small></span></button>
+ <button type="button" id="matchScopeInternal" class="scopeBtn" aria-pressed="false"><span class="scopeIcon">10%</span><span><b>Kiểm tra nội bộ</b><small>Checker cùng nhóm, khác reviewer · random / targeted</small></span></button>
  <button type="button" id="matchScopeInter" class="scopeBtn" aria-pressed="false"><span class="scopeIcon">↔</span><span><b>Kiểm giữa nhóm</b><small>Ảnh được giao kiểm ↔ nhãn nhóm nguồn</small></span></button>
 </div>
 <div id="mainMatchWorkspace">
@@ -355,6 +366,36 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 <div class="row resultsFilterBar"><label class="small" for="search">Tìm ảnh</label><input id="search" type="search" placeholder="Nhập một phần image_id"><label class="check" for="onlyWarnings"><input id="onlyWarnings" type="checkbox">Chỉ ảnh cần kiểm tra</label><span id="visibleCount" class="small"></span></div>
 <div class="tablewrap"><table><thead><tr><th>Ảnh / chi tiết</th><th>Thêm (đề xuất)</th><th>Xóa (đề xuất)</th><th>Sửa</th><th>Đổi lớp</th><th>Hình học</th><th>Trạng thái</th><th>Thời gian / revision</th><th>Notes</th></tr></thead><tbody id="tbody"></tbody></table></div>
 </section>
+</div>
+<div id="internalCrosscheckWorkspace" class="internalCrosscheckWorkspace" hidden>
+ <div class="icHead"><span class="stepTag">KIỂM CHÉO NỘI BỘ / CHECK_TYPE = RANDOM HOẶC TARGETED</span><h3>Rà soát ảnh giữa các thành viên cùng nhóm</h3>
+ <p>Nguồn: <code>crosscheck_assignments.csv</code>, <code>assignment_manifest.csv</code>, nhãn A sau sửa và ảnh gốc của nhóm. <strong>Người kiểm (checker) khác reviewer gốc.</strong> Các kết luận chỉ lưu trong phiên kiểm nội bộ; không thay nhãn A/B và không trộn với dữ liệu liên nhóm.</p></div>
+ <details class="helpDetails icHelp"><summary><span class="helpSymbol">?</span> Hướng dẫn kiểm chéo nội bộ · file xuất và điều kiện lưu</summary><div class="helpBody">
+ <ol><li>Nạp <code>assignment_manifest.csv</code> và <code>crosscheck_assignments.csv</code> tại mục 01, cùng ảnh gốc và nhãn A của nhóm.</li><li>Chọn checker, kiểm từng ảnh trên toàn khung, xem box A (xanh ngọc) và tùy chọn box B (xanh dương). Không bỏ qua ảnh ngoài ROI.</li><li>Ghi <code>agree</code> khi đồng ý hoặc <code>disagree</code> kèm <code>error_type</code> và <code>resolution</code> khi có lỗi. Dữ liệu phải khớp reviewer/checker trong manifest, không self-check.</li><li>Xuất <code>crosscheck_log.csv</code> cho báo cáo kiểm chéo nội bộ, đếm riêng ảnh random và targeted; file này không phải biên bản liên nhóm. Kết luận chưa đủ ảnh là bản nháp.</li></ol>
+ <p><strong>Không dùng chung:</strong> liên nhóm sử dụng <code>intergroup_assignments.csv</code> và xuất <code>crosscheck_log_intergroup_draft.csv</code>. Hai bộ dữ liệu và hai nút xóa độc lập.</p>
+ </div></details>
+ <div id="icNotice" class="icNotice" role="status" aria-live="polite">Nạp crosscheck_assignments.csv tại mục 01 để bắt đầu kiểm chéo nội bộ.</div>
+ <div id="icOverview" class="icOverview"></div>
+ <div class="icMainGrid"><div class="icMemberPanel">
+ <h4>Phân công & tiến độ</h4>
+ <div class="icToolbar"><label>Người kiểm<select id="icCheckerFilter"><option value="">Tất cả thành viên</option></select></label><label>Trạng thái<select id="icStatusFilter"><option value="all">Tất cả ảnh</option><option value="pending">Chưa kiểm</option><option value="done">Đã kiểm</option><option value="disagree">Có bất đồng</option></select></label></div>
+ <div id="icMemberProgress" class="icMemberProgress"></div>
+ <details class="icManage"><summary>Quản lý dữ liệu nội bộ</summary><div><button id="icClearResults" type="button">Xóa kết luận nội bộ</button><button id="icClearAssignments" type="button">Xóa phân công nội bộ</button><span>Không ảnh hưởng kết quả liên nhóm.</span></div></details>
+ </div><div class="icReviewPanel">
+ <h4>Kiểm tra theo ảnh</h4>
+ <div class="icSelectRow"><label>Tìm image_id<input id="icSearch" type="search" placeholder="Dán mã ảnh cần kiểm" autocomplete="off" spellcheck="false"></label><label>Danh sách ảnh<select id="icImageSelect"><option value="">Chưa có ảnh kiểm nội bộ</option></select></label></div>
+ <div class="icNav"><button id="icOpen" type="button">Mở ảnh</button><button id="icPrevious" type="button">← Trước</button><button id="icNext" type="button">Tiếp →</button><button id="icFit" type="button">Vừa khung</button></div>
+ <div class="icImageToolbar"><strong id="icImageMeta">Chưa chọn ảnh</strong><label><input id="icShowBefore" type="checkbox"> Hiện thêm nhãn B</label></div>
+ <canvas id="icCanvas" role="img" aria-label="Ảnh kiểm chéo nội bộ với nhãn A và tùy chọn nhãn B" width="800" height="450"></canvas>
+ <p class="icLegend"><span class="icDotA"></span> Nhãn A sau sửa · <span class="icDotB"></span> Nhãn B cũ. Cuộn để zoom, kéo ảnh khi đang zoom.</p>
+ <div class="icReviewForm"><h4>Kết luận của checker</h4>
+ <div class="icReviewGrid"><label>Checker ID<input id="icCheckerId" readonly></label><label>Reviewer gốc<input id="icOriginalId" readonly></label><label>Loại mẫu<input id="icCheckType" readonly></label><label>Revision đã kiểm<input id="icRevision" placeholder="v1 hoặc thời điểm chỉnh sửa"></label>
+ <label>Kết quả<select id="icResult"><option value="">Chưa kết luận</option><option value="agree">agree — đồng ý</option><option value="disagree">disagree — có lỗi</option></select></label>
+ <label>Loại lỗi<select id="icError"><option value="">Không có / chưa chọn</option><option value="missing">missing — thiếu xe</option><option value="extra">extra — box thừa</option><option value="duplicate">duplicate — box trùng</option><option value="class">class — sai lớp</option><option value="geometry">geometry — sai khung</option><option value="roi">roi — ROI</option><option value="metadata">metadata — metadata</option></select></label></div>
+ <label>Phương án xử lý (bắt buộc nếu disagree)<textarea id="icResolution" rows="2" placeholder="Ghi rõ xe/box, vị trí và hướng khắc phục"></textarea></label>
+ <div class="icBottom"><label><input id="icAutoNext" type="checkbox" checked> Tự chuyển sang ảnh chưa kiểm</label><button class="primary" id="icSave" type="button">Lưu kết luận nội bộ</button><button id="icDownload" type="button">Tải crosscheck_log.csv</button></div>
+ <p id="icMessage" class="icMessage" role="status" aria-live="polite">Chọn ảnh kiểm nội bộ để xem và ghi kết luận.</p></div>
+ </div></div>
 </div>
 <div id="intergroupWorkspace" class="intergroupWorkspace" hidden>
  <div class="igLead"><span class="stepTag">KIỂM TRA GIỮA NHÓM / CHECK_TYPE = INTERGROUP</span><h3>Kiểm 30 ảnh được phân công từ nhóm kế tiếp</h3>
@@ -512,17 +553,91 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 <link rel="stylesheet" href="assets/styles/studioRedesignStyles.css?v=feedback">
 <section id="mergeSection" class="panel mergeWorkspace" aria-labelledby="mergeTitle">
  <div class="sectionHead"><div><span class="stepTag">06 / TỔNG HỢP NHÃN</span><h2 id="mergeTitle">Gộp nhãn theo thành viên</h2><p>Nạp ZIP/thư mục nhãn qua hai nút ở <a href="#uploadHub">mục 01</a>; mục 06 tự nhận thành viên theo manifest, theo dõi tiến độ và gộp. Bộ nhãn thành viên vẫn độc lập với A cho tới khi xác nhận chuyển sang QC.</p></div></div>
+ <details class="helpDetails workflowHelp mergeGuide" id="mergeGuide"><summary><span class="helpSymbol">?</span> Hướng dẫn mục 06 · Gộp nhãn và ý nghĩa tệp xuất</summary>
+  <div class="helpBody workflowHelpBody"><div class="guideColumns"><div><h4>Mục này để làm gì?</h4><p>Gộp các tệp nhãn YOLO <code>.txt</code> của từng thành viên theo <code>assignment_manifest.csv</code>, kiểm đủ–thiếu–trùng theo <code>image_id</code>. Không tự ghép trực tiếp vào bộ A đang rà soát.</p><h4>Thao tác theo thứ tự</h4><ol><li>Nạp manifest cả nhóm tại <a href="#uploadHub">mục 01</a>.</li><li>Nạp từng ZIP hoặc thư mục nhãn của thành viên, giữ mã <code>G11_SVxx</code> để nhận diện đúng người.</li><li>Mở "Xem tệp thiếu" trên thẻ thành viên, bổ sung cho đủ; kiểm cảnh báo trùng hoặc sai phân công.</li><li>Khi đủ và không có lỗi, bấm <strong>Tải nhãn đã gộp</strong> để lưu. Nếu muốn kiểm chất lượng, bấm <strong>Rà soát QC tại mục 02</strong> và xác nhận thay bộ A trong phiên.</li></ol></div><div><h4>File ZIP gộp chứa gì?</h4><p><code>labels/*.txt</code> — nhãn YOLO được chuẩn hóa theo tên <code>image_id</code>, dùng làm bộ A để kiểm QC hoặc đưa vào quy trình dữ liệu.</p><p><code>assignment_manifest.csv</code> — bản phân công đối chiếu nguồn; <code>merge_map.csv</code> — truy xuất tệp nhãn đến từ thành viên/đường dẫn nào; <code>README_merge.txt</code> — cách đọc gói và giới hạn kiểm tra.</p><p><strong>Lưu ý:</strong> ZIP này là bản chụp lúc tải. Sửa box tại mục 02/05 không tự ghi lại vào ZIP gộp; sau khi sửa cần tải bộ nhãn A mới từ chức năng QC.</p></div></div></div>
+ </details>
  <div id="mergeLock" class="mergeLock" role="status"><div class="mergeLockCopy"><strong>Chưa có assignment_manifest.csv hợp lệ</strong><span>Cần manifest với cột <code>image_id</code> và <code>assigned_reviewer_id</code> để gộp đúng người, tránh ghi đè nhãn.</span></div><button type="button" id="mergeGoManifest">Nạp manifest ở mục 01</button></div>
  <fieldset id="mergeControls" class="mergeControls" disabled>
   <div id="mergeStatus" class="mergeStatus" role="status" aria-live="polite">Chưa nạp dữ liệu.</div>
   <div class="mergeTotals" id="mergeTotals" aria-label="Tổng hợp tiến độ bộ nhãn gộp"></div>
-  <div class="mergeProgressHeading"><h3>Tiến độ theo thành viên</h3><p>Màu xanh: số nhãn đã nạp và hợp lệ về cấu trúc; màu nhạt: nhãn còn thiếu so với manifest.</p></div>
+  <div class="mergeProgressHeading"><h3>Tiến độ theo thành viên</h3><p>Chọn một thành viên để xem danh sách tệp thiếu; tiến độ cập nhật khi nạp nhãn.</p></div>
   <div id="mergeMemberRows" class="mergeMemberRows" role="list"></div>
   <div class="mergeFooter"><div class="mergeFootInfo" id="mergeFootInfo">Chỉ cho tải bộ gộp khi tất cả thành viên đủ nhãn, không có file trùng hoặc sai phân công.</div><div class="mergeActions"><button id="mergeClearAll" type="button">Xóa dữ liệu mục 06</button><button id="mergeSendQC" type="button" disabled>Rà soát QC tại mục 02</button><button id="mergeDownload" type="button" class="primary" disabled>Tải nhãn đã gộp (.zip)</button></div></div>
  </fieldset>
 </section>
 <div id="mergeConfirmModal" class="mergeConfirmModal" hidden role="presentation"><div class="mergeConfirmCard" role="dialog" aria-modal="true" aria-labelledby="mergeConfirmTitle" aria-describedby="mergeConfirmText"><span class="stepTag">XÁC NHẬN THAY THẾ NHÃN A</span><h2 id="mergeConfirmTitle">Đưa bộ nhãn gộp vào QC?</h2><p id="mergeConfirmText">Bạn sẽ xóa toàn bộ bộ nhãn A trước đó trong phiên để kiểm định bộ nhãn gộp này. Không thể hoàn tác nếu chưa tải A cũ về máy.</p><div class="mergeConfirmActions"><button type="button" id="mergeConfirmCancel">Hủy, giữ nhãn A cũ</button><button type="button" id="mergeConfirmAccept" class="primary">Xác nhận thay thế nhãn A</button></div></div></div>
 
+
+<section id="allocationSection" class="panel allocationWorkspace" aria-labelledby="allocationTitle">
+ <div class="sectionHead allocHeader"><div><span class="stepTag">07 / PHÂN CHIA CÔNG VIỆC</span><h2 id="allocationTitle">Chia việc</h2><p>Chia lại ảnh cho nhóm thiếu thành viên và phân công kiểm tra chéo. Sử dụng dữ liệu đã nạp ở <a href="#uploadHub">mục 01</a>; không cần tải lên lần nữa.</p></div></div>
+ <details class="helpDetails workflowHelp allocOverviewHelp" id="allocOverviewHelp"><summary><span class="helpSymbol">?</span> Hướng dẫn mục 07 · Quy trình chia việc và các file sẽ xuất</summary>
+  <div class="helpBody workflowHelpBody"><div class="guideColumns"><div><h4>Mục 07 dùng để làm gì?</h4><p>Chia lại ảnh review khi có thành viên vắng, phân checker khác reviewer, giữ hoặc tạo mẫu kiểm chéo và kiểm tỷ lệ random tối thiểu. Tất cả chạy cục bộ trên trình duyệt; <strong>không sửa file gốc trên máy</strong>.</p><h4>Thứ tự thực hiện</h4><ol><li>Nạp <code>assignment_manifest.csv</code> của cả nhóm tại <a href="#uploadHub">mục 01</a>. Có thể nạp thêm mẫu cấp sẵn và nhật ký review nếu có.</li><li>Ở bước 02, bỏ tick người vắng, có thể khóa phần việc người cần giữ nguyên.</li><li>Chọn giữ phân công cũ hoặc chia lại toàn bộ ở bước 03; thiết lập checker ở bước 04.</li><li>Đặt seed và số ảnh targeted ở bước 05; bấm <strong>Tính phân công · kiểm tra</strong> ở bước 06.</li><li>Đọc lỗi/cảnh báo, ma trận phân công và nhật ký thay đổi rồi mới xuất ở bước 07.</li></ol></div><div><h4>Phân biệt dữ liệu đầu vào</h4><p><code>assignment_manifest.csv</code> là nguồn xác định ai đang sở hữu ảnh; <code>crosscheck_assignments.csv</code> (tùy chọn) là mẫu checker đã cấp cần giữ ID; <code>review_log.csv</code> (tùy chọn) dùng xác định ảnh đã làm để tránh chuyển nhầm.</p><p><strong>Quy tắc an toàn:</strong> ít nhất hai người còn tham gia; một ảnh chỉ có một reviewer; checker không được tự kiểm ảnh mình. Mẫu targeted không được cộng thay random 10%.</p><p><strong>ZIP chỉ xuất danh sách CSV/TXT và metadata; không đóng gói ảnh JPG/PNG gốc.</strong></p><h4>Bạn nên tải gì?</h4><p>Muốn bàn giao trọn bộ: chọn <strong>Tải toàn bộ ZIP</strong>. Chỉ cần một bảng: chọn đúng file tại <strong>Xuất riêng file</strong>. Muốn tiếp tục chỉnh sau: <strong>Lưu phiên (.json)</strong>.</p></div></div>
+ <h4 class="guideFilesTitle">Các file đầu ra và nơi sử dụng</h4><div class="guideTableWrap"><table class="guideFiles"><thead><tr><th>File</th><th>Dùng để làm gì?</th></tr></thead><tbody>
+ <tr><td><code>assignment_manifest_proposed.csv</code></td><td><strong>Manifest đề xuất mới</strong> chứa reviewer theo cách chia mới và metadata gốc. Cần được duyệt trước khi thay bản chính thức; có thể áp dụng vào phiên bằng nút xác nhận.</td></tr>
+ <tr><td><code>review_assignments_Nmembers.csv</code></td><td>Danh sách ngắn <code>image_id → reviewer_id</code> để giao ảnh review; <code>N</code> là số thành viên còn làm.</td></tr>
+ <tr><td><code>crosscheck_assignments.csv</code></td><td>Danh sách ảnh được chỉ định kiểm chéo, checker, reviewer gốc và loại mẫu <code>random/targeted</code>. Dùng giao cho người đi kiểm.</td></tr>
+ <tr><td><code>crosscheck_log_template.csv</code></td><td>Mẫu nhật ký để checker ghi kết quả, lỗi, hướng xử lý, thời điểm và phiên bản đã kiểm. Các cột kết quả để trống, <strong>không phải kết quả đã kiểm</strong>.</td></tr>
+ <tr><td><code>crosscheck_changes.csv</code></td><td>Nhật ký đối chiếu reviewer/checker trước–sau và lý do thay; dùng truy vết khi báo cáo.</td></tr>
+ <tr><td><code>review_transfers.csv</code></td><td>Danh sách ảnh thực sự chuyển từ reviewer cũ sang reviewer mới; dùng thông báo người nhận thêm việc.</td></tr>
+ <tr><td><code>members_summary.csv</code></td><td>Tổng hợp tải công việc, ảnh nhận thêm, số random/targeted, khối lượng checker và tình trạng đạt ngưỡng theo người.</td></tr>
+ <tr><td><code>crosscheck_sampling_report.csv</code></td><td>Thống kê phân bố lấy mẫu theo metadata: camera, session, độ dày box, lớp hiếm... Dùng đánh giá mức phủ mẫu, không thay việc xem ảnh.</td></tr>
+ <tr><td><code>members/&lt;SV&gt;/*_CUA_&lt;SV&gt;.csv</code></td><td>Bảng riêng cho mỗi thành viên nhận ảnh từ người vắng, giữ metadata nguồn để giao việc chính xác.</td></tr>
+ <tr><td><code>README_crosscheck.txt</code></td><td>Tóm tắt cấu hình, seed, nguồn dữ liệu, số lượng và cảnh báo để người nhận ZIP đọc trước khi triển khai.</td></tr>
+ <tr><td><code>chia_viec_phien_*.json</code></td><td>Lưu trạng thái phiên chia việc và các lựa chọn để nhập lại sau qua mục 01. <strong>Không phải CSV phân công chính thức.</strong></td></tr>
+ </tbody></table></div></div>
+ </details>
+ <div id="allocLock" class="mergeLock allocLock" role="status" aria-live="polite"><div class="mergeLockCopy"><strong>Chưa có assignment_manifest.csv hợp lệ</strong><span id="allocLockMessage">Cần manifest có cột <code>image_id</code> và <code>assigned_reviewer_id</code> để chia đúng ảnh và đúng người.</span></div><button type="button" id="allocGoManifest">Nạp manifest ở mục 01</button></div>
+ <fieldset id="allocControls" class="allocControls" hidden disabled aria-hidden="true">
+ <div id="allocNotice" class="allocNotice" role="status" aria-live="polite" hidden></div>
+ <div class="allocBody">
+  <article class="allocStep"><div class="allocStepTop"><b>01</b><div><h3>Dữ liệu đang có</h3><p id="allocManifestSource">Nguồn: Chưa có manifest của cả nhóm.</p></div></div>
+   <details class="helpDetails workflowHelp allocStepHelp"><summary><span class="helpSymbol">?</span> Nguồn dữ liệu: vì sao cần manifest?</summary><div class="helpBody workflowHelpBody"><p><strong>Dùng để:</strong> nhận diện danh sách ảnh và reviewer gốc của cả nhóm. Không được dùng riêng danh sách 120 ảnh kiểm chéo làm manifest.</p><p><strong>Cách làm:</strong> tại mục 01, nạp <code>assignment_manifest.csv</code> có ít nhất <code>image_id</code> và <code>assigned_reviewer_id</code>. Nếu có <code>crosscheck_assignments.csv</code> và <code>review_log.csv</code> thì nạp cùng để bảo toàn mẫu cấp và nhận diện tiến độ.</p><p><strong>Kết quả:</strong> hiển thị số ảnh, số thành viên, nguồn và tên file tùy chọn. Chưa xuất file tại bước này.</p></div></details>
+   <div id="allocManifestOverview" class="allocKpiGrid"></div>
+   <div class="allocSourceList">
+    <div><strong>Mẫu kiểm tra chéo chính thức (nếu có)</strong><span id="allocOfficialName">Chưa có — công cụ sẽ tạo mẫu mới, có đánh dấu nguồn.</span></div>
+    <div><strong>Nhật ký review đã hoàn tất (nếu có)</strong><span id="allocLogName">Dùng trạng thái có sẵn trong manifest.</span></div>
+   </div><p class="allocAside">Hai tệp tùy chọn <code>crosscheck_assignments.csv</code> và <code>review_log.csv</code> được nhận diện tại <a href="#uploadHub">mục 01</a> nếu bạn nạp. Không cần có chúng để chia ảnh review; danh sách 120 ảnh chỉ nhằm giữ mẫu kiểm chéo đã cấp.</p>
+  </article>
+  <article class="allocStep"><div class="allocStepTop"><b>02</b><div><h3>Ai đang tham gia?</h3><p>Tích chọn đúng người còn làm. Không đổi mã SV và không mặc định SV10 vắng.</p></div></div>
+   <details class="helpDetails workflowHelp allocStepHelp"><summary><span class="helpSymbol">?</span> Cách tick và giữ nguyên phần việc</summary><div class="helpBody workflowHelpBody"><p><strong>Ô tick:</strong> có dấu ✓ nghĩa là thành viên vẫn tham gia; bỏ tick khi thành viên vắng. Nút <strong>Giữ nguyên cả phần việc</strong> khóa reviewer đó để tránh chuyển ảnh của người còn làm khi tính lại; bấm lần nữa để bỏ khóa.</p><p><strong>Lưu ý:</strong> không sửa mã SV. Nếu khóa quá nhiều hoặc chỉ còn một người, bước 06 có thể báo lỗi vì không thể chia/kiểm chéo hợp lệ.</p><p><strong>Kết quả:</strong> danh sách người hoạt động, người vắng và các khóa công việc đưa vào phương án; chưa ghi gì xuống file nguồn.</p></div></details>
+   <div class="allocMemberHead"><strong id="allocMemberCaption">Chưa có danh sách</strong><button type="button" id="allocAllMembers">Chọn tất cả</button></div>
+   <p class="allocMemberHint">Ô xanh có dấu ✓ = đang tham gia; bỏ tích = thành viên vắng. Nút xanh dương dùng để giữ nguyên phần việc, chuyển sang màu vàng khi đã khóa.</p>
+   <div id="allocMembers" class="allocMemberGrid"></div>
+  </article>
+  <article class="allocStep"><div class="allocStepTop"><b>03</b><div><h3>Chia lại ảnh review</h3><p>Mặc định chỉ phân ảnh của người vắng. Mỗi ảnh có đúng một người review hiện hành.</p></div></div>
+   <details class="helpDetails workflowHelp allocStepHelp"><summary><span class="helpSymbol">?</span> Chọn mức độ chia lại review</summary><div class="helpBody workflowHelpBody"><p><strong>Giữ phân công cũ:</strong> chủ yếu chuyển phần ảnh của người vắng; phù hợp khi muốn giữ tiến độ và lịch sử.</p><p><strong>Chia lại toàn bộ:</strong> tính lại phân bổ rộng hơn để cân bằng, có thể đổi cả ảnh người còn tham gia; chỉ chọn khi nhóm chấp nhận thay đổi lớn.</p><p>Nếu có ảnh đã review xong thuộc người vắng, hộp xác nhận riêng sẽ hiện. Cần kiểm và đồng ý chuyển trước khi tính.</p><p><strong>Đầu ra liên quan:</strong> <code>review_transfers.csv</code>, <code>review_assignments_Nmembers.csv</code>.</p></div></details>
+   <div class="allocOptions"><label><input type="radio" name="allocReviewMode" value="preserve" checked> <span><strong>Giữ phân công cũ</strong><small>Chỉ chia ảnh người vắng; ưu tiên cân bằng tải.</small></span></label><label><input type="radio" name="allocReviewMode" value="rebalance"> <span><strong>Chia lại toàn bộ</strong><small>Chỉ khi thực sự muốn đổi chủ sở hữu nhiều ảnh.</small></span></label></div>
+   <div id="allocCompletedWarning" class="allocCompletedWarning" hidden role="group" aria-labelledby="allocCompletedTitle"><strong id="allocCompletedTitle">Có ảnh đã review xong thuộc thành viên vắng</strong><p>Những ảnh này đã được ghi nhận hoàn tất. Nếu giao lại, hãy kiểm tra tiến độ để tránh làm lại hoặc mất lịch sử.</p><label class="allocToggle"><input id="allocAllowCompleted" type="checkbox"> Tôi đồng ý chuyển các ảnh đã hoàn tất này cho người khác.</label></div>
+  </article>
+  <article class="allocStep"><div class="allocStepTop"><b>04</b><div><h3>Ai kiểm ảnh của ai?</h3><p>Mũi tên <strong>reviewer → checker</strong>. Checker luôn khác reviewer.</p></div></div>
+   <details class="helpDetails workflowHelp allocStepHelp"><summary><span class="helpSymbol">?</span> Các cách phân công checker</summary><div class="helpBody workflowHelpBody"><p><strong>Giữ checker hợp lệ:</strong> cố giữ người kiểm từ dữ liệu có sẵn khi không tự kiểm và vẫn còn tham gia. <strong>Theo vòng:</strong> chuyển người kiểm sang SV kế tiếp hoặc trước theo chiều vòng. <strong>Cân bằng:</strong> phân lại để giảm chênh khối lượng kiểm.</p><p><strong>Cách xem:</strong> chọn quy tắc, đọc sơ đồ reviewer → checker bên dưới; mũi tên không có nghĩa là chuyển chủ sở hữu ảnh.</p><p><strong>Đầu ra liên quan:</strong> <code>crosscheck_assignments.csv</code>, ma trận reviewer/checker và <code>crosscheck_changes.csv</code>.</p></div></details>
+   <div class="allocControlGrid"><label>Quy tắc người kiểm<select id="allocCheckerMode"><option value="preserve">Giữ checker hợp lệ từ nguồn</option><option value="ring">Theo vòng thành viên</option><option value="balanced">Cân bằng số ảnh phải kiểm</option></select></label><label>Chiều vòng <select id="allocRingDirection"><option value="1">SV01 → SV02 → ...</option><option value="-1">SV02 → SV01 → ...</option></select></label></div>
+   <div id="allocRingPreview" class="allocRingPreview">Chọn thành viên để xem chu trình.</div>
+  </article>
+  <article class="allocStep"><div class="allocStepTop"><b>05</b><div><h3>Mẫu kiểm tra chéo và phần thiếu</h3><p>Giữ mẫu gốc được cấp nếu có; nếu chưa có, tạo mẫu ngẫu nhiên mới từ manifest. Bổ sung random theo ngưỡng toàn nhóm và từng người.</p></div></div>
+   <details class="helpDetails workflowHelp allocStepHelp"><summary><span class="helpSymbol">?</span> Seed, random và targeted khác nhau thế nào?</summary><div class="helpBody workflowHelpBody"><p><strong>Seed</strong> là số đầu vào cho phép chạy lại cùng cấu hình và dữ liệu để nhận mẫu ngẫu nhiên nhất quán. <strong>Targeted thêm</strong> là số ảnh kiểm có chủ đích (ví dụ ảnh khó hoặc lớp hiếm).</p><p>Random phải đủ tối thiểu theo yêu cầu toàn nhóm và từng reviewer; <strong>targeted không thay thế chỉ tiêu random 10%</strong>. Nếu đã nạp mẫu chính thức, công cụ cố giữ ID mẫu gốc rồi bổ sung phần thiếu.</p><p><strong>Đầu ra liên quan:</strong> <code>crosscheck_assignments.csv</code> và <code>crosscheck_sampling_report.csv</code>. Báo cáo phân bố là số liệu mô tả, không tự chứng minh mẫu đã tốt về nội dung ảnh.</p></div></details>
+   <div class="allocControlGrid"><label>Seed để tái lập<input id="allocSeed" type="number" min="0" max="4294967295" step="1" value="2026"></label><label>Số ảnh targeted thêm <input id="allocTargeted" type="number" min="0" value="0" step="1"></label></div>
+   <p class="allocAside">Mẫu targeted là kiểm thêm có chủ đích; <strong>không tính vào chỉ tiêu random 10%</strong>. Seed không chứng minh mẫu đã phân tầng đầy đủ.</p>
+  </article>
+  <article class="allocStep"><div class="allocStepTop"><b>06</b><div><h3>Kiểm tra và xem trước</h3><p>Chỉ xuất khi không có self-check, mất ID hoặc thiếu tỷ lệ bắt buộc.</p></div></div>
+   <details class="helpDetails workflowHelp allocStepHelp"><summary><span class="helpSymbol">?</span> Đọc bảng kết quả và điều kiện được xuất</summary><div class="helpBody workflowHelpBody"><p>Nhấn <strong>Tính phân công · kiểm tra</strong>. Công cụ kiểm reviewer duy nhất, không tự kiểm, tỷ lệ random, nguồn mẫu cấp sẵn và những trường hợp không hợp lệ. Nếu có lỗi chặn, các nút xuất vẫn bị khóa.</p><p><strong>Bảng cân bằng:</strong> so review cũ, số ảnh nhận thêm, trọng số, random cần/đã có và số ảnh phải đi kiểm. <strong>Ma trận:</strong> ô hàng reviewer, cột checker là số ảnh giao người đó kiểm. <strong>Nhật ký đổi:</strong> xem ID và lý do thay đổi.</p><p><strong>Kết quả:</strong> bản xem trước để rà lại trước khi xuất, chưa ghi đè manifest nguồn.</p></div></details>
+   <div class="allocActionBar"><button type="button" id="allocPreview" class="primary">Tính phân công · kiểm tra</button><span id="allocPreviewStatus">Chưa tính kết quả</span></div>
+   <div id="allocResults" hidden><div id="allocResultsKpis" class="allocKpiGrid"></div><div id="allocChecks" class="allocChecks"></div>
+    <h4>Cân bằng review · random kiểm chéo theo từng người</h4><div class="allocTableWrap"><table class="allocTable"><thead><tr><th>Thành viên</th><th>Review cũ</th><th>Nhận thêm</th><th>Review mới</th><th>Trọng số</th><th>Random / cần</th><th>Phải đi kiểm</th><th>Đạt</th></tr></thead><tbody id="allocStatsRows"></tbody></table></div>
+    <h4>Ma trận reviewer ↓ / checker →</h4><div class="allocTableWrap"><table class="allocTable" id="allocMatrix"></table></div>
+    <h4>Nhật ký đổi phân công <span id="allocChangedCount"></span></h4><div class="allocTableWrap allocLogTable"><table class="allocTable"><thead><tr><th>image_id</th><th>Reviewer cũ → mới</th><th>Checker cũ → mới</th><th>Lý do</th></tr></thead><tbody id="allocChangesRows"></tbody></table></div>
+    <div id="allocWarnings" class="allocWarnings"></div>
+   </div>
+  </article>
+  <article class="allocStep allocExportStep"><div class="allocStepTop"><b>07</b><div><h3>Xuất danh sách bàn giao</h3><p>Xuất CSV đúng schema hoặc ZIP gồm manifest đề xuất, CSV kiểm chéo, lịch sử, phân bố và bảng CSV ảnh nhận thêm theo từng thành viên.</p></div></div>
+   <details class="helpDetails workflowHelp allocStepHelp"><summary><span class="helpSymbol">?</span> Chọn file xuất và cách bàn giao an toàn</summary><div class="helpBody workflowHelpBody"><p><strong>Tải toàn bộ ZIP:</strong> nên dùng khi bàn giao cho nhóm vì có manifest đề xuất, các CSV, file nhận thêm riêng theo người và README. <strong>Xuất riêng file:</strong> chọn đúng tên ở danh sách nếu chỉ muốn một bảng.</p><p><strong>Lưu phiên JSON:</strong> lưu cấu hình để nạp lại ở mục 01, không thay thế manifest. <strong>Áp dụng manifest vào phiên:</strong> chỉ thay dữ liệu đang đọc trong trang, có xác nhận; không tự cập nhật file trên máy.</p><p><strong>Trước khi giao:</strong> xem kỹ <code>assignment_manifest_proposed.csv</code> và <code>crosscheck_assignments.csv</code>; gửi file nhận thêm cho đúng thành viên. Nhật ký mẫu để trống phải được checker điền sau khi kiểm thật.</p></div></details>
+   <div class="allocExportRow"><button id="allocZip" type="button" class="primary" disabled>Tải toàn bộ ZIP</button><label>Xuất riêng file<select id="allocExportChoice" disabled><option>Chạy kiểm tra trước</option></select></label><button id="allocExportSingle" type="button" disabled>Tải CSV / TXT</button></div>
+   <div class="allocExportRow"><button id="allocSessionSave" type="button" disabled>Lưu phiên (.json)</button><span class="allocAside">Muốn mở phiên JSON đã lưu: dùng hai nút nạp ở mục 01.</span><button id="allocApply" type="button" disabled>Áp dụng manifest vào phiên (xác nhận)</button></div>
+   <p class="allocAside">Bản chính thức trên máy không bị sửa. Nếu áp dụng vào phiên, mục 04/06 sẽ đọc manifest mới và có thể cần kiểm lại nhật ký. Không gộp kết quả kiểm chéo liên nhóm vào đây.</p>
+  </article>
+ </div>
+ </fieldset>
+</section>
 
 </main>
 <div class="zipFooterRegion"><div class="zipFooterInner">
@@ -652,7 +767,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 </div></div>
 
 <script src="assets/scripts/core-a67fe933b7b3.js"></script>
-<script src="assets/scripts/core-a7504b369507.js?v=500-manifest-guard1"></script>
+<script src="assets/scripts/core-a7504b369507.js?v=704-csv-source-guard"></script>
 <script src="assets/scripts/core-3d9ebc9d3147.js?v=423-crisp-a-only"></script>
 
 <script src="assets/scripts/core-fbdd1da5a5fb.js?v=422"></script>
@@ -720,6 +835,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 
 
 
+
 <link rel="stylesheet" href="assets/styles/coordDockViewportAndFrostFix.css">
 
 
@@ -748,15 +864,25 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 
 
 <link rel="stylesheet" href="assets/styles/v419WorkflowAndIntergroup.css?v=419">
+<link rel="stylesheet" href="assets/styles/v500InternalCrosscheck.css?v=707-internal-restore">
 <script src="assets/scripts/v419IntergroupReview.js?v=422"></script>
-<script src="assets/scripts/v417UnifiedUploadQC.js?v=500-manifest-guard1"></script>
+<script src="assets/scripts/v417UnifiedUploadQC.js?v=707-internal-restore"></script>
+<script src="assets/scripts/v500InternalCrosscheck.js?v=707-internal-restore"></script>
 <link rel="stylesheet" href="assets/styles/v420QcClarity.css">
 <link rel="stylesheet" href="assets/styles/v425PerformanceAndContrast.css">
 <link rel="stylesheet" href="assets/styles/v428MemberReady.css">
 <link rel="stylesheet" href="assets/styles/v500Merge.css?v=500-layout2">
 <link rel="stylesheet" href="assets/styles/v500UiRefine.css">
 <script src="assets/scripts/v428MemberReady.js?v=500"></script>
-<script src="assets/scripts/v500MergeWorkspace.js?v=500-upload-fix"></script>
+<script src="assets/scripts/v500MergeWorkspace.js?v=705-card-layout"></script>
+<link rel="stylesheet" href="assets/styles/v700Assignment.css?v=704-csv-source-guard">
+<script src="assets/scripts/v700AssignmentEngine.js?v=701"></script>
+<script src="assets/scripts/v700AssignmentUI.js?v=705-card-layout"></script>
 <link rel="stylesheet" href="assets/styles/v500ResponsiveNavFix.css">
+<link rel="stylesheet" href="assets/styles/v705MemberCards.css?v=707">
+<link rel="stylesheet" href="assets/styles/v707GuidesAndUpdates.css?v=707">
+<link rel="stylesheet" href="assets/styles/v707UnifiedQcAndDark.css">
+<link rel="stylesheet" href="assets/styles/v707CoordinateLegendHighlight.css">
+<link rel="stylesheet" href="assets/styles/v707ThemeFullAudit.css">
 </body>
 </html>

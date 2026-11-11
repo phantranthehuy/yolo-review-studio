@@ -1,0 +1,38 @@
+/* v7.0.7 — Same helpDetails disclosure component as sections 01–05. */
+#mergeSection .workflowHelp,#allocationSection .workflowHelp{margin:0 0 15px;border:1px solid #c6dfe2;border-radius:12px;background:#f5fbfa;min-width:0;overflow:hidden}
+#mergeSection .workflowHelp>summary,#allocationSection .workflowHelp>summary{color:#115b65;background:transparent;font-size:13px;line-height:1.4;font-weight:800;min-height:50px;padding:10px 41px 10px 13px!important;gap:10px;cursor:pointer}
+#mergeSection .workflowHelp>summary:hover,#allocationSection .workflowHelp>summary:hover{background:#eaf7f5}
+#mergeSection .workflowHelp[open]>summary,#allocationSection .workflowHelp[open]>summary{background:#e7f5f2}
+#mergeSection .workflowHelp .helpSymbol,#allocationSection .workflowHelp .helpSymbol{background:#d2f2e9;color:#087867;border-color:#82cbba}
+#mergeSection .workflowHelp .helpBody,#allocationSection .workflowHelp .helpBody{border-top:1px solid #cde4e3;padding:15px 17px 16px;background:#f8fcfc;min-width:0}
+#mergeSection .workflowHelpBody h4,#allocationSection .workflowHelpBody h4{margin:3px 0 7px;font-size:13px;color:#144e57;font-weight:850}
+#mergeSection .workflowHelpBody p,#allocationSection .workflowHelpBody p{font-size:12.5px;line-height:1.7;color:#415e66;margin:0 0 10px}
+#mergeSection .workflowHelpBody p:last-child,#allocationSection .workflowHelpBody p:last-child{margin-bottom:0}
+#mergeSection .workflowHelpBody ol,#allocationSection .workflowHelpBody ol{margin:0 0 10px 0;padding-left:21px;color:#415e66;font-size:12.5px;line-height:1.75}
+#mergeSection .workflowHelpBody li,#allocationSection .workflowHelpBody li{padding-left:3px;margin:0 0 4px}
+#mergeSection .workflowHelpBody code,#allocationSection .workflowHelpBody code{padding:2px 4px;background:#e6f2f0;border-radius:4px;color:#145466;font-size:.95em;overflow-wrap:anywhere}
+#mergeSection .workflowHelpBody a,#allocationSection .workflowHelpBody a{color:#087e80;font-weight:700}
+.guideColumns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:21px}
+#allocationSection .guideFilesTitle{margin-top:16px;border-top:1px solid #d5e7e6;padding-top:15px}
+.guideTableWrap{max-width:100%;overflow-x:auto;border:1px solid #d2e5e4;border-radius:9px}
+.guideFiles{width:100%;min-width:650px;border-collapse:collapse;font-size:12px;line-height:1.55}
+.guideFiles th{text-align:left;background:#e4f3f0;color:#174e55;font-size:11.5px}
+.guideFiles td,.guideFiles th{padding:9px 11px;vertical-align:top;border-bottom:1px solid #d9e8e8}
+.guideFiles tr:last-child td{border-bottom:0}
+.guideFiles td:first-child{width:39%;font-weight:700}
+#allocationSection .allocStepHelp{margin:0 0 16px;background:#f8fbfa;border-color:#d4e7e4}
+#allocationSection .allocStepHelp>summary{font-size:12.5px;min-height:42px;color:#106674}
+#allocationSection .allocStepHelp .helpBody{padding:12px 15px}
+html[data-theme="dark"] #mergeSection .workflowHelp,html[data-theme="dark"] #allocationSection .workflowHelp{background:#203942;border-color:#47636b}
+html[data-theme="dark"] #mergeSection .workflowHelp>summary,html[data-theme="dark"] #allocationSection .workflowHelp>summary{color:#b5f5ef;background:transparent}
+html[data-theme="dark"] #mergeSection .workflowHelp>summary:hover,html[data-theme="dark"] #allocationSection .workflowHelp>summary:hover,html[data-theme="dark"] #mergeSection .workflowHelp[open]>summary,html[data-theme="dark"] #allocationSection .workflowHelp[open]>summary{background:#294d52}
+html[data-theme="dark"] #mergeSection .workflowHelp .helpBody,html[data-theme="dark"] #allocationSection .workflowHelp .helpBody{background:#21343d;border-color:#43636a}
+html[data-theme="dark"] #mergeSection .workflowHelpBody h4,html[data-theme="dark"] #allocationSection .workflowHelpBody h4{color:#c4fff4}
+html[data-theme="dark"] #mergeSection .workflowHelpBody p,html[data-theme="dark"] #allocationSection .workflowHelpBody p,html[data-theme="dark"] #mergeSection .workflowHelpBody ol,html[data-theme="dark"] #allocationSection .workflowHelpBody ol{color:#c5d8dd}
+html[data-theme="dark"] #mergeSection .workflowHelpBody code,html[data-theme="dark"] #allocationSection .workflowHelpBody code{background:#324c55;color:#d4fafa}
+html[data-theme="dark"] #mergeSection .workflowHelpBody a,html[data-theme="dark"] #allocationSection .workflowHelpBody a{color:#91deda}
+html[data-theme="dark"] .guideFiles th{background:#304b53;color:#e1ffff}
+html[data-theme="dark"] .guideFiles td{color:#cbdce0;border-color:#3c5860}
+html[data-theme="dark"] .guideTableWrap{border-color:#46646c}
+@media(max-width:760px){.guideColumns{grid-template-columns:1fr;gap:6px}.guideFiles{min-width:580px}#allocationSection .allocStepHelp>summary{font-size:12px}}
+@media(prefers-reduced-motion:reduce){#mergeSection .workflowHelp>summary,#allocationSection .workflowHelp>summary{scroll-behavior:auto}}

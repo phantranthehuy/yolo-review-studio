@@ -157,3 +157,6 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 .hubFileNameList>div{padding:3px 0;overflow-wrap:anywhere}
 .hubFileNameList>div+div{border-top:1px solid var(--line,#455760)}
 @media(max-width:440px){.hubManageGroup .hubButtons{grid-template-columns:1fr}.hubManageGroup .hubManagedAction>button{min-height:39px}.hubFileNameList{max-height:144px}}
+
+/* v7.0.4 · read-only evidence of authoritative manifest */
+.hubManifestSummary{margin:8px 0 0;font-size:12px;line-height:1.5;opacity:.88;overflow-wrap:anywhere}.hubManifestSummary[data-ready=true]{color:var(--ok, #218f91);font-weight:650}

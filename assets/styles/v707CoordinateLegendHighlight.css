@@ -1,0 +1,79 @@
+/* v7.0.7 targeted UI contrast: legend B/A/temp and current A-label status.
+   No changes to annotation data, coordinate behavior or review flows. */
+#coordsSection .coordLabelSourceBar .coordKey{
+  display:flex;flex:1 1 100%;width:100%;align-items:stretch;
+  justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-right:0;
+}
+#coordsSection .coordLabelSourceBar .coordKeyItem{
+  box-sizing:border-box;display:inline-flex;align-items:center;gap:8px;
+  flex:0 1 auto;min-width:0;min-height:42px;
+  padding:9px 12px;border-radius:10px;border:1px solid transparent;
+  font:750 12.5px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  letter-spacing:0;white-space:normal;opacity:1;
+}
+#coordsSection .coordLabelSourceBar .coordKeyItem small{
+  display:inline!important;margin-left:2px;
+  font-size:11px;font-weight:600;line-height:1.35;
+  white-space:nowrap;opacity:1;
+}
+#coordsSection .coordLabelSourceBar .coordKeyMark{
+  display:inline-block;flex:0 0 17px;width:17px;height:14px;
+  border-radius:3px;border-width:2.25px;box-sizing:border-box;
+}
+/* Light palette: readable and cohesive with the main application. */
+html:not([data-theme="dark"]) #coordsSection .coordKeyItem:nth-child(1){
+  color:#1c4c96;background:#e9f1ff;border-color:#a7bde2;
+}
+html:not([data-theme="dark"]) #coordsSection .coordKeyItem:nth-child(2){
+  color:#075f54;background:#e0f5ee;border-color:#91d3bd;
+}
+html:not([data-theme="dark"]) #coordsSection .coordKeyItem:nth-child(3){
+  color:#683b9b;background:#f1e9ff;border-color:#cbb1e8;
+}
+html:not([data-theme="dark"]) #coordsSection .coordKeyItem small{color:#435965}
+html:not([data-theme="dark"]) #coordsSection .coordKeyB{border:2px dashed #3564cc;background:#d5e4ff}
+html:not([data-theme="dark"]) #coordsSection .coordKeyA{border:2px solid #008f7a;background:#cbf0e3}
+html:not([data-theme="dark"]) #coordsSection .coordKeyTemp{border:2px solid #8655c6;background:#e8d7ff}
+/* Dark palette: bright outlines and text, restrained fills. */
+html[data-theme="dark"] #coordsSection .coordKeyItem:nth-child(1){
+  color:#b8d2ff;background:#21374c;border-color:#5878a6;
+}
+html[data-theme="dark"] #coordsSection .coordKeyItem:nth-child(2){
+  color:#99efdb;background:#1b403e;border-color:#3b9387;
+}
+html[data-theme="dark"] #coordsSection .coordKeyItem:nth-child(3){
+  color:#e0c5ff;background:#382c4b;border-color:#8266a9;
+}
+html[data-theme="dark"] #coordsSection .coordKeyItem small{color:#d0dbe3}
+html[data-theme="dark"] #coordsSection .coordKeyB{border:2px dashed #8bb3ff;background:#345578}
+html[data-theme="dark"] #coordsSection .coordKeyA{border:2px solid #64e2ca;background:#25655d}
+html[data-theme="dark"] #coordsSection .coordKeyTemp{border:2px solid #d3a7ff;background:#574375}
+/* Status remains informative, not an error; it also hosts loaded-file text. */
+#coordsSection .coordLabelSourceBar #coord_labelMeta{
+  box-sizing:border-box;display:flex;align-items:center;gap:10px;
+  flex:1 1 100%;min-height:43px;margin:2px 0 0;
+  padding:10px 13px;border-radius:9px;border:1px solid #a7d5d5;
+  border-left:3px solid #147e86;background:#ecf8f7;
+  color:#174c54!important;font-size:13px;font-weight:700;line-height:1.45;
+  overflow-wrap:anywhere;opacity:1;
+}
+#coordsSection .coordLabelSourceBar #coord_labelMeta::before{
+  content:'i';display:inline-flex;align-items:center;justify-content:center;
+  flex:0 0 19px;width:19px;height:19px;border-radius:50%;
+  background:#147e86;color:#fff;font:800 12px/1 system-ui,sans-serif;
+}
+html:not([data-theme="dark"]) #coordsSection .coordLabelSourceBar #coord_labelMeta{
+  color:#174c54!important;
+}
+html[data-theme="dark"] #coordsSection .coordLabelSourceBar #coord_labelMeta{
+  background:#1f3a42;border-color:#476c73;border-left-color:#55bfb6;
+  color:#edf9f9!important;
+}
+html[data-theme="dark"] #coordsSection .coordLabelSourceBar #coord_labelMeta::before{
+  background:#4dc1b4;color:#123036;
+}
+@media(max-width:560px){
+  #coordsSection .coordLabelSourceBar .coordKeyItem{padding:8px 10px;min-height:39px;font-size:12px}
+  #coordsSection .coordLabelSourceBar .coordKeyItem small{font-size:10.5px}
+  #coordsSection .coordLabelSourceBar #coord_labelMeta{padding:10px 11px;font-size:12.5px}
+}

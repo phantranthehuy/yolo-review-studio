@@ -150,8 +150,20 @@ function clearRole(role){
  message(`Đã xóa ${removed} ${labels[role]}.`+(invalidated?` Đã hủy ${invalidated} kết luận phụ thuộc dữ liệu cũ.`:''));
  return {removed,invalidated};
 }
-function setScope(scope){IG.scope=scope;const inter=scope==='intergroup';$('mainMatchWorkspace').hidden=inter;$('intergroupWorkspace').hidden=!inter;const note=$('hubNeedMatch');if(note)note.hidden=inter;document.body.classList.toggle('intergroupMode',inter);
- $('matchScopeMain').setAttribute('aria-pressed',String(!inter));$('matchScopeInter').setAttribute('aria-pressed',String(inter));if(inter)render();}
+function setScope(scope){
+ if(!['main','internal','intergroup'].includes(scope))scope='main';
+ IG.scope=scope;
+ for(const [name,workspace,button] of [['main','mainMatchWorkspace','matchScopeMain'],['internal','internalCrosscheckWorkspace','matchScopeInternal'],['intergroup','intergroupWorkspace','matchScopeInter']]){
+  const active=name===scope;
+  const panel=$(workspace),control=$(button);
+  if(panel)panel.hidden=!active;
+  if(control)control.setAttribute('aria-pressed',String(active));
+ }
+ const note=$('hubNeedMatch');if(note)note.hidden=scope!=='main';
+ document.body.classList.toggle('intergroupMode',scope==='intergroup');
+ const exportPanel=$('reviewExport');if(exportPanel)exportPanel.hidden=scope!=='main'||!state.valid;
+ if(scope==='intergroup')render();
+}
 async function readBoxes(file){if(!file)return null;const text=await file.text();return parseIntergroupLabels(file.name,text);}
 function corners(b){const [x,y,w,h]=b.g;return[x-w/2,y-h/2,x+w/2,y+h/2];}
 function drawnBox(ctx,b,W,H,color,dashed,selected=false){const [x1,y1,x2,y2]=corners(b);ctx.save();ctx.strokeStyle=color;ctx.lineWidth=selected?3:1.8;ctx.setLineDash(dashed?[6,4]:[]);ctx.strokeRect(x1*W,y1*H,(x2-x1)*W,(y2-y1)*H);ctx.setLineDash([]);const caption=(dashed?'S':'BL')+b.line;ctx.font='bold 12px system-ui';const tw=ctx.measureText(caption).width+10;const px=Math.max(1,Math.min(W-tw,x1*W)),py=Math.max(15,y1*H);ctx.fillStyle=color;ctx.fillRect(px,py-15,tw,17);ctx.fillStyle='#fff';ctx.fillText(caption,px+5,py-3);ctx.restore();}

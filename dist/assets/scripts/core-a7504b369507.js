@@ -253,14 +253,56 @@ function renderManifestMembers(){
  status.textContent=state.manifestScope==='member'?`Đang lọc ${state.selectedMember}: ${selected} ảnh.`:'Đang dùng tất cả ảnh; nhấn một thành viên để lọc theo phân công.';
 }
 $('reviewer').addEventListener('change',()=>{if(state.manifest?.fields?.includes('assigned_reviewer_id')&&state.manifestScope==='member'){state.selectedMember=$('reviewer').value.trim();renderManifestMembers();window.dispatchEvent(new Event('yolo:manifest-updated'));}});
-for(const [input,key,label] of [['manifestFile','manifest','manifestName'],['schemaFile','schema','schemaName']])$(input).onchange=async e=>{invalidate();const file=e.target.files[0];if(!file)return;state.busy++;updateCounts();try{const value=parseCSV(await file.text());if(!value.fields.includes('image_id'))throw Error('CSV thiếu image_id.');if(key==='schema'&&FIELDS.some(f=>!value.fields.includes(f)))throw Error('Mẫu log thiếu một trong 11 cột đã biết.');state[key]=key==='schema'?value.fields:value;state.fileOrigins[key]=file._hubPath||file.webkitRelativePath||file.name;$(label).textContent=file.name+(key==='manifest'?' | '+value.rows.length+' ảnh':' | '+value.fields.length+' cột');if(key==='manifest'){const names=[...new Set(value.rows.map(r=>(r.assigned_reviewer_id||'').trim()).filter(Boolean))];const current=$('reviewer').value.trim();state.manifestScope=names.includes(current)?'member':names.length?'all':'manifest';state.selectedMember=names.includes(current)?current:'';renderManifestMembers();}hideMessage();}catch(err){state[key]=null;state.fileOrigins[key]='';$(label).textContent='Chưa chọn CSV hợp lệ';if(key==='manifest'){state.manifestScope='all';state.selectedMember='';renderManifestMembers();}tell(err.message,true);}finally{state.busy--;updateCounts();if(key==='manifest')window.dispatchEvent(new Event('yolo:manifest-updated'));}};
+// Manifest is an authoritative GROUP file, not a CSV merely containing image_id or an owner column.
+function isAssignmentManifestFilename(name){return /^assignment_manifest(?:\s*\(\d+\))?\.csv$/i.test(String(name||'').trim());}
+function validateAssignmentManifest(value){
+ for(const key of ['image_id','assigned_reviewer_id'])if(!value.fields.includes(key))throw Error(`assignment_manifest.csv thiếu cột ${key}.`);
+ if(!value.rows.length)throw Error('assignment_manifest.csv không có ảnh nào.');
+ const owners=new Set(value.rows.map(row=>String(row.assigned_reviewer_id||'').trim()).filter(Boolean));
+ if(owners.size<2)throw Error(`CSV chỉ có ${owners.size} thành viên; có thể bạn đang nạp CSV của một SV thay vì assignment_manifest.csv toàn nhóm. Không thay đổi manifest hiện tại.`);
+ const seen=new Set();
+ for(const [i,row] of value.rows.entries()){
+  const id=String(row.image_id||'').trim(),owner=String(row.assigned_reviewer_id||'').trim();
+  if(!id)throw Error(`Manifest dòng ${i+2}: image_id bị trống.`);
+  if(!/^G\d+_SV\d+$/i.test(owner))throw Error(`Manifest dòng ${i+2}: assigned_reviewer_id không hợp lệ (${owner||'trống'}).`);
+  const key=id.toLowerCase();if(seen.has(key))throw Error(`Manifest dòng ${i+2}: image_id bị trùng (${id}).`);
+  seen.add(key);
+ }
+}
+for(const [input,key,label] of [['manifestFile','manifest','manifestName'],['schemaFile','schema','schemaName']])$(input).onchange=async e=>{
+ const file=e.target.files[0];if(!file)return;
+ // Parse and validate before committing: an invalid CSV must NEVER erase a valid manifest already loaded.
+ state.busy++;updateCounts();let committed=false;
+ try{
+  if(key==='manifest'&&!isAssignmentManifestFilename(file.name))throw Error(`${file.name} không phải assignment_manifest.csv. Không dùng CSV thành viên thay thế phân công toàn nhóm.`);
+  const value=parseCSV(await file.text());
+  if(!value.fields.includes('image_id'))throw Error('CSV thiếu image_id.');
+  if(key==='manifest')validateAssignmentManifest(value);
+  if(key==='schema'&&FIELDS.some(f=>!value.fields.includes(f)))throw Error('Mẫu log thiếu một trong 11 cột đã biết.');
+  invalidate();state[key]=key==='schema'?value.fields:value;
+  state.fileOrigins[key]=file._hubPath||file.webkitRelativePath||file.name;
+  if(key==='manifest'){state.manifestEvidence={fileName:file.name,source:state.fileOrigins.manifest,rowCount:value.rows.length,owners:[...new Set(value.rows.map(r=>r.assigned_reviewer_id))].sort()};}
+  $(label).textContent=file.name+(key==='manifest'?' | '+value.rows.length+' ảnh':' | '+value.fields.length+' cột');
+  if(key==='manifest'){
+   const names=[...new Set(value.rows.map(r=>(r.assigned_reviewer_id||'').trim()).filter(Boolean))];
+   const current=$('reviewer').value.trim();state.manifestScope=names.includes(current)?'member':'all';
+   state.selectedMember=names.includes(current)?current:'';renderManifestMembers();
+  }
+  committed=true;hideMessage();
+ }catch(err){
+  // Keep the previously validated manifest, owner list and all progress/status in section 06/07.
+  tell('Không nạp '+file.name+': '+err.message,true);
+ }finally{
+  state.busy--;updateCounts();if(committed&&key==='manifest')window.dispatchEvent(new Event('yolo:manifest-updated'));
+ }
+};
 
 $('classesFile').onchange=async e=>{invalidate();const file=e.target.files[0];if(!file)return;state.busy++;updateCounts();try{const names=parseClassNames(await file.text());names.forEach((name,i)=>$('class'+i).value=name);state.classes=names;$('classesName').textContent=file.name+' | Đã đọc đủ 4 tên lớp. Kiểm tra thứ tự trước khi so sánh.';hideMessage();}catch(err){state.classes=null;for(let i=0;i<4;i++)$('class'+i).value='';$('classesName').textContent='Không đọc được file. Bạn có thể nhập đủ 4 tên lớp bên dưới.';tell(err.message,true);}finally{state.busy--;updateCounts();}};
 $('clearClasses').onclick=()=>{state.classes=null;$('classesFile').value='';for(let i=0;i<4;i++)$('class'+i).value='';$('classesName').textContent='Chưa có tên lớp; dùng class ID.';invalidate();};
 for(let i=0;i<4;i++)$('class'+i).addEventListener('input',()=>{invalidate();$('classesName').textContent='Ánh xạ tên lớp nhập tay. Cần điền đủ 4 ID hoặc để trống cả bốn.';});
 
 $('clearManifest').onclick=()=>{state.manifestScope='all';state.selectedMember='';invalidate();renderManifestMembers();window.dispatchEvent(new Event('yolo:manifest-updated'));};$('clearSchema').onclick=()=>{state.fileOrigins.schema='';state.schema=null;$('schemaFile').value='';$('schemaName').textContent='Đang dùng 11 cột nhật ký mặc định.';invalidate();};$('compare').onclick=compare;$('downloadCsv').onclick=()=>exportReport(false);$('downloadAll').onclick=()=>exportReport(true);$('search').oninput=render;$('onlyWarnings').onchange=render;
-$('demo').onclick=()=>{if(state.busy)return;state.before=[{name:'demo_a.txt',path:'demo_a.txt',text:'0 0.3 0.3 0.2 0.2\n2 0.8 0.5 0.2 0.2\n0 0.95 0.8 0.10002 0.1'},{name:'demo_b.txt',path:'demo_b.txt',text:'1 0.5 0.5 0.2 0.2'}];state.after=[{name:'demo_a_png.rf.ab123.txt',path:'demo_a_png.rf.ab123.txt',text:'1 0.8 0.5 0.2 0.2\n0 0.3 0.3 0.2 0.2\n0 0.949995 0.8 0.10001 0.1\n3 0.1 0.8 0.1 0.1'},{name:'demo_b_png.rf.cd456.txt',path:'demo_b_png.rf.cd456.txt',text:'1 0.5 0.5 0.2 0.2'}];state.manifest=null;state.fileOrigins.manifest='';state.fileOrigins.evalIds='';state.fileOrigins.schema='';state.manifestScope='all';state.selectedMember='';renderManifestMembers();state.schema=null;state.classes=null;for(let i=0;i<4;i++)$('class'+i).value='';$('classesFile').value='';$('classesName').textContent='Dữ liệu minh họa dùng class ID; tải YAML của bạn để xem tên lớp.';$('manifestFile').value='';$('schemaFile').value='';$('manifestName').textContent='Dữ liệu minh họa, không dùng nộp bài';$('schemaName').textContent='Đang dùng 11 cột nhật ký mặc định.';$('normalize').checked=true;$('confirmed').checked=false;$('reviewedAt').value='';$('revision').value='';updateCounts();window.dispatchEvent(new CustomEvent('yolo:labels-updated',{detail:{side:'demo'}}));compare();};
+$('demo').onclick=()=>{if(state.busy)return;state.before=[{name:'demo_a.txt',path:'demo_a.txt',text:'0 0.3 0.3 0.2 0.2\n2 0.8 0.5 0.2 0.2\n0 0.95 0.8 0.10002 0.1'},{name:'demo_b.txt',path:'demo_b.txt',text:'1 0.5 0.5 0.2 0.2'}];state.after=[{name:'demo_a_png.rf.ab123.txt',path:'demo_a_png.rf.ab123.txt',text:'1 0.8 0.5 0.2 0.2\n0 0.3 0.3 0.2 0.2\n0 0.949995 0.8 0.10001 0.1\n3 0.1 0.8 0.1 0.1'},{name:'demo_b_png.rf.cd456.txt',path:'demo_b_png.rf.cd456.txt',text:'1 0.5 0.5 0.2 0.2'}];state.manifest=null;state.manifestEvidence=null;state.fileOrigins.manifest='';state.fileOrigins.evalIds='';state.fileOrigins.schema='';state.manifestScope='all';state.selectedMember='';renderManifestMembers();state.schema=null;state.classes=null;for(let i=0;i<4;i++)$('class'+i).value='';$('classesFile').value='';$('classesName').textContent='Dữ liệu minh họa dùng class ID; tải YAML của bạn để xem tên lớp.';$('manifestFile').value='';$('schemaFile').value='';$('manifestName').textContent='Dữ liệu minh họa, không dùng nộp bài';$('schemaName').textContent='Đang dùng 11 cột nhật ký mặc định.';$('normalize').checked=true;$('confirmed').checked=false;$('reviewedAt').value='';$('revision').value='';updateCounts();window.dispatchEvent(new CustomEvent('yolo:labels-updated',{detail:{side:'demo'}}));compare();};
 // Pure functions exposed only for offline automated verification.
 CANONICAL.forEach((name,i)=>$('class'+i).value=name);$('classesName').textContent='Chuẩn từ qc_dataset.py: 0 = 2-wheel vehicles, 1 = bus, 2 = car, 3 = truck.';
 window.YoloDiff={parseClassNames,classLabel,enrichEvents,describeClasses,cleanId,scopeId,parseCSV,csv,parseLabels,diff,hungarian,zip,validTime};

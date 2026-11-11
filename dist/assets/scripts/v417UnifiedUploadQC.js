@@ -79,7 +79,7 @@ for(const [id,kind,label] of [['hubClearImages','original','ảnh gốc'],['hubC
   'Chỉ xóa ảnh thuộc bộ đã chọn. Các nhãn và ảnh kiểm giữa nhóm không thay đổi.',()=>window.MatchReview.clearLoadedImages(kind));
 }
 $('hubClearManifestData').onclick=()=>confirmClear('manifest',state.manifest?.rows?.length||0,'Phạm vi đối chiếu sẽ quay về toàn bộ dữ liệu A/B; kết quả đối chiếu cũ không còn hợp lệ.',()=>{
- state.manifest=null;state.fileOrigins.manifest='';state.manifestScope='all';state.selectedMember='';$('manifestFile').value='';$('manifestName').textContent='Chưa có assignment_manifest.csv. Đang dùng ảnh của hai bộ nhãn.';
+state.manifest=null;state.manifestEvidence=null;state.fileOrigins.manifest='';state.manifestScope='all';state.selectedMember='';$('manifestFile').value='';$('manifestName').textContent='Chưa có assignment_manifest.csv. Đang dùng ảnh của hai bộ nhãn.';
  invalidate();renderManifestMembers();window.dispatchEvent(new Event('yolo:manifest-updated'));
 });
 $('hubClearEvalIdsData').onclick=()=>confirmClear('danh sách ảnh chấm',state.evalIds?.rows?.length||0,'Lần chấm tiếp theo sẽ sử dụng toàn bộ nhãn A sau sửa.',()=>$('clearEvalIds').click());
@@ -159,6 +159,15 @@ function refresh(){
  for(const [id,key] of [['hubClearSource','sourceTotal'],['hubClearIgBaseline','baselineTotal'],['hubClearIgImages','imageTotal'],['hubClearIgAssignment','assignmentTotal'],['hubClearIgReviews','reviewTotal']])$(id).disabled=!(igSummary?.[key]>0);
  for(const [id,qty] of [['hubClearBefore',state.before.length],['hubClearAfter',state.after.length],['hubClearGold',state.gold.length],['hubClearImages',getImages().length],['hubClearAfterImages',getAfterImages().length],['hubClearManifestData',state.manifest?.rows?.length||0],['hubClearEvalIdsData',state.evalIds?.rows?.length||0],['hubClearSchemaData',state.schema?.length||0]])$(id).disabled=!qty;
  updateManagedCaptions();
+ const manifestSummary=$('hubManifestSummary');
+ if(manifestSummary){
+  const source=state.fileOrigins.manifest||'';
+  const count=state.manifest?.rows?.length||0;
+  const owners=count?new Set(state.manifest.rows.map(row=>String(row.assigned_reviewer_id||'').trim()).filter(Boolean)).size:0;
+  manifestSummary.textContent=count?`Manifest đang dùng: ${source||'Không rõ nguồn'} · ${count.toLocaleString('vi-VN')} ảnh · ${owners} thành viên`: 'Manifest đang dùng: chưa nạp assignment_manifest.csv toàn nhóm';
+  manifestSummary.dataset.ready=count&&owners>=2?'true':'false';
+ }
+
  const ig=window.YoloIntergroup?.getSummary?.();if(ig&&$('igHubStatus'))$('igHubStatus').textContent=`Kiểm giữa nhóm (tách biệt): ${ig.ids.length} ID được giao · ${ig.images} ảnh · ${ig.base} baseline · ${ig.source} nhãn nhóm nguồn · ${ig.checked} ảnh đã kiểm.`;
  const b=!!state.before.length,a=!!state.after.length,img=!!getImages().length,gold=!!state.gold.length;
  note('hubNeedPrep',a?`Đã nạp ${state.after.length} tệp nhãn A. Xem QC bên dưới.`:'Thiếu nhãn A sau sửa. Hãy thả thư mục hoặc ZIP vào ô nạp dữ liệu ở mục 01.',!a);
@@ -260,20 +269,50 @@ function roleModal(groups){const modal=$('hubRoleOverlay'),rows=$('hubRoleRows')
   };
  });
 }
+function isAssignmentManifestFilename(name){return /^assignment_manifest(?:\s*\(\d+\))?\.csv$/i.test(String(name||'').trim());}
+function routeAllocationInput(kind,file){window.dispatchEvent(new CustomEvent('yolo:allocation-input',{detail:{kind,file}}));}
 async function autoRouteMetadata(file,notices){const name=file.name.toLowerCase();
  try{
  if(/\.ya?ml$/i.test(name)){setInputFiles('classesFile',[file]);notices.push(`YAML: ${file.name}`);return;}
  if(/\.csv$/i.test(name)){
   const header=(await file.text()).replace(/^\ufeff/,'').split(/\r?\n/,1)[0].split(',').map(c=>c.trim().replace(/^"|"$/g,'').toLowerCase());
   const all=arr=>arr.every(c=>header.includes(c));
+  // Reuse section-01 upload, without introducing an extra picker in section 07.
+  if((all(['image_id','original_reviewer_id','checker_id','check_type'])&&!header.includes('result'))||/^(?:crosscheck[_-]?assignments)(?:\s*\(\d+\))?\.csv$/.test(name)){
+   if(!window.YoloInternalCrosscheck?.ingestAssignments)throw Error('Bộ kiểm tra nội bộ chưa được nạp.');
+   const message=await window.YoloInternalCrosscheck.ingestAssignments(file);
+   routeAllocationInput('official',file);notices.push(`${message} · đã chuyển mẫu sang mục 07`);return;
+  }
+  if((all(['image_id','reviewer_id','reviewed_at'])&&!header.includes('checker_id'))||/^review_log(?:\s*\(\d+\))?\.csv$/.test(name)){
+   routeAllocationInput('log',file);notices.push(`Nhật ký review: ${file.name} → mục 07`);
+   // Continue original schema routing if it has the complete legacy log fields.
+   if(!all(['image_id','reviewer_id','review_status','boxes_added','boxes_removed','boxes_modified','reviewed_at','notes','revision','class_changes','geometry_changes']))return;
+  }
   let id=null;
   if(all(['image_id','reviewer_id','review_status','boxes_added','boxes_removed','boxes_modified','reviewed_at','notes','revision','class_changes','geometry_changes']))id='schemaFile';
-  else if(header.includes('image_id')&&(header.includes('assigned_reviewer_id')||header.includes('filename')||header.includes('difficulty_weight')||/manifest|assigned|phan_cong/i.test(name)))id='manifestFile';
+  else if(isAssignmentManifestFilename(file.name)){
+   if(!all(['image_id','assigned_reviewer_id']))throw Error('assignment_manifest.csv cần đủ hai cột image_id và assigned_reviewer_id.');
+   id='manifestFile';
+  }
+  else if(/^g\d+_sv\d+.*\.csv$/i.test(name)&&header.includes('image_id')){
+   notices.push(`CSV thành viên ${file.name}: không dùng thay assignment_manifest.csv; giữ nguyên phân công toàn nhóm`);
+   return;
+  }
   else if(header.includes('image_id')&&(header.length<=2||/eval|ids|danh_sach/i.test(name)))id='evalIdsFile';
-  if(id){setInputFiles(id,[file]);notices.push(`CSV: ${file.name}`);}else notices.push(`CSV ${file.name}: chưa xác định được mục đích, đã bỏ qua để tránh nhập nhầm.`);
+  if(id==='manifestFile'){
+   const previousManifest=state.manifest;
+   setInputFiles(id,[file]);await waitForNative();
+   if(!state.manifest||state.manifest===previousManifest)throw Error(`${file.name} không đạt kiểm tra; manifest đã nạp trước đó vẫn được giữ nguyên.`);
+   notices.push(`Manifest: ${file.name} (${state.manifest.rows.length} ảnh)`);
+  }else if(id){setInputFiles(id,[file]);notices.push(`CSV: ${file.name}`);}
+  else notices.push(`CSV ${file.name}: chưa xác định được mục đích, đã bỏ qua để tránh nhập nhầm`);
   return;
  }
- }catch(error){notices.push(`Không đọc được ${file.name}: ${error.message}`);}
+ }catch(error){
+  // Never describe a previous valid manifest as if the new invalid file was accepted.
+  if(isAssignmentManifestFilename(file.name))throw error;
+  notices.push(`Không đọc được ${file.name}: ${error.message}`);
+ }
 }
 // Serialize uploads instead of rejecting a second batch while a B/A confirmation dialog is open.
 // Each completed/cancelled/error batch releases the slot and the next one is processed.
@@ -283,10 +322,13 @@ const inFlightBatches=new Set();
 function batchFingerprint(files){return files.map(f=>`${pathOf(f)}:${f.size}:${f.lastModified}`).sort().join('\n');}
 function ingest(raw,options={}){
  const incoming=Array.from(raw||[]);
- const skippedJson=incoming.filter(file=>/\.json$/i.test(file.name)).length;
+ const sessionFiles=incoming.filter(file=>/\.json$/i.test(file.name)&&/^chia_viec_phien_/i.test(file.name));
+ for(const file of sessionFiles)routeAllocationInput('session',file);
+ const skippedJson=incoming.filter(file=>/\.json$/i.test(file.name)&&!sessionFiles.includes(file)).length;
  const files=incoming.filter(file=>!/\.json$/i.test(file.name));
  if(!files.length){
-  if(skippedJson)status(`Đã bỏ qua ${skippedJson} tệp JSON. JSON không được nạp vào dữ liệu chung.`,false);
+  if(sessionFiles.length)status(`Đã chuyển ${sessionFiles.length} phiên Chia việc JSON sang mục 07.`,false);
+  else if(skippedJson)status(`Đã bỏ qua ${skippedJson} tệp JSON. JSON không được nạp vào dữ liệu chung.`,false);
   return Promise.resolve();
  }
  const key=batchFingerprint(files);
@@ -321,12 +363,13 @@ async function processUploadBatch(raw,initialSkippedJson=0,folderMode=false){
   const skippedJson=initialSkippedJson+expanded.skippedJson.length;const skippedExportImages=expanded.skippedExportImages?.length||0;
   // Read a nested assignment_manifest.csv BEFORE the role picker and member-label validation.
   // This allows one upload of G11/ (manifest + labels of all reviewers) without a separate step.
-  const allManifests=files.filter(f=>/assignment[_-]?manifest\.csv$/i.test(f.name));
-  if(allManifests.length>1)throw Error(`Có ${allManifests.length} assignment_manifest.csv trong một lượt nạp. Hãy giữ một bản chuẩn để tránh phân công xung đột.`);
+  const allManifests=files.filter(f=>isAssignmentManifestFilename(f.name));
+  if(allManifests.length>1)throw Error(`Có ${allManifests.length} tệp assignment_manifest.csv trong một lượt nạp. Hãy giữ một bản chuẩn để tránh phân công xung đột.`);
   if(allManifests.length){
    status('Đang đọc assignment_manifest.csv trong thư mục/ZIP trước khi phân loại nhãn…');
+   const previousManifest=state.manifest;
    setInputFiles('manifestFile',[allManifests[0]]);await waitForNative();
-   if(!state.manifest)throw Error('assignment_manifest.csv có trong thư mục nhưng không đọc được. Kiểm tra cột image_id và assigned_reviewer_id, hoặc định dạng CSV.');
+   if(!state.manifest||state.manifest===previousManifest)throw Error('assignment_manifest.csv có trong thư mục nhưng không đọc được. Kiểm tra cột image_id và assigned_reviewer_id, hoặc định dạng CSV; manifest cũ được giữ nguyên.');
    messages.push(`Phân công: ${state.manifest.rows.length} ảnh`);
   }
   const inter=window.YoloIntergroup?.classify(files)||{main:files,data:null};const mainFiles=inter.main;const groups=buildGroups(mainFiles),images=mainFiles.filter(f=>imageExt.test(f.name)&&!/\/\._/.test(pathOf(f))),other=mainFiles.filter(f=>/\.(?:csv|yaml|yml)$/i.test(f.name));
@@ -480,7 +523,18 @@ function evaluateSync(){
  }
  return issues;
 }
-function assertValid(){const data=evaluateSync();const errors=data.filter(x=>x.severity==='ERROR');if(errors.length)throw Error(`QC nhãn A: ${errors.length} lỗi. ${errors[0].image_id||'manifest'} · ${errors[0].after_line?'dòng '+errors[0].after_line+': ':''}${errors[0].message} Xem mục 02 để sửa.`);}
+function assertValid(){
+ // Pixel findings are asynchronous; evaluateSync resets issues. Preserve current pixel ERRORs
+ // before structural validation so a height-under-12px ERROR also blocks export.
+ if(scanning||(getImages().length>0&&lastCompleteRevision!==qcRevision))throw Error('QC pixel đang chạy hoặc dữ liệu đã thay đổi. Hoàn tất Kiểm tra lại ở mục 02 trước khi xuất.');
+ const pixelFindings=lastCompleteRevision===qcRevision?issues.filter(x=>x.check_code==='HEIGHT_LT_12PX'||x.check_code==='WIDTH_LT_1PX'||x.check_code==='IMAGE_DECODE'):[];
+ const pixelScanned=qcMetrics.pixelScanned;
+ const data=evaluateSync();
+ // Keep already-verified pixel findings visible after export validation.
+ issues.push(...pixelFindings);qcMetrics.pixelScanned=pixelScanned;
+ const errors=issues.filter(x=>x.severity==='ERROR');
+ if(errors.length)throw Error(`QC nhãn A: ${errors.length} lỗi. ${errors[0].image_id||'manifest'} · ${errors[0].after_line?'dòng '+errors[0].after_line+': ':''}${errors[0].message} Xem mục 02 để sửa.`);
+}
 function assertCoverage(){
  // Called when preparing ZIP; prevents a silently incomplete set against the chosen manifest scope.
  const c=getCoverage();if(!c)return;
@@ -540,7 +594,7 @@ async function scanQC(options={}){
     for(const [idx,raw] of file.text.replace(/^\uFEFF/,'').split(/\r?\n/).entries()){
      const p=raw.trim().split(/\s+/);if(p.length!==5||!/^[0-3]$/.test(p[0])||p.slice(1).some(v=>!floatPattern.test(v)))continue;
      const g=p.slice(1).map(Number);if(g.some(v=>!Number.isFinite(v))||g[2]<=0||g[3]<=0)continue;
-     if(g[3]*height<12-1e-8)issue('WARNING',key,idx+1,typeNames[Number(p[0])],'HEIGHT_LT_12PX',`Cao ${+(g[3]*height).toFixed(2)} px (< 12 px trên ảnh ${width} × ${height}). Xem ảnh và xác nhận xử lý tại mục 02.`);
+     if(g[3]*height<12-1e-8)issue('ERROR',key,idx+1,typeNames[Number(p[0])],'HEIGHT_LT_12PX',`Cao ${+(g[3]*height).toFixed(2)} px (< 12 px trên ảnh ${width} × ${height}). Xem ảnh và xác nhận xử lý tại mục 02.`);
      if(g[2]*width<1-1e-8)issue('WARNING',key,idx+1,typeNames[Number(p[0])],'WIDTH_LT_1PX',`Rộng ${(g[2]*width).toFixed(2)} px (< 1 px). Cần xem lại.`);
     }
    }catch(e){if(seq===scanSeq)issue('WARNING',key,0,'','IMAGE_DECODE',`Không đọc được ảnh để kiểm tra pixel: ${e.message}`);}
@@ -793,9 +847,78 @@ function quickBatch(code){
 }
 for(const [code,id] of batchModes){$(id)?.addEventListener('click',()=>quickBatch(code));}
 
+// Non-mutating preview: show the original image and highlight the exact QC box.
+// Keep this separate from the edit/delete flows and the old <12px warning list.
+let qcPreviewRequest=0;
+async function qcView(info,raw){
+ const preview=$('qcShortPreview'),title=$('qcShortPreviewTitle'),grid=preview.querySelector('.qcShortPreviewGrid');
+ const request=++qcPreviewRequest;
+ preview.hidden=false;grid.hidden=true;
+ title.textContent=`Đang xem ${info.image_id||'ảnh'}${info.after_line?' · A'+info.after_line:''}…`;
+ preview.scrollIntoView({behavior:'smooth',block:'nearest'});
+ const file=info.image_id&&window.MatchReview?.getImageFile?.(info.image_id);
+ if(!file){title.textContent=`${info.image_id||'Ảnh'} · Chưa nạp ảnh gốc. Hãy bổ sung ảnh tại mục 01 để xem trực quan.`;return;}
+ let imageUrl;
+ try{
+  imageUrl=URL.createObjectURL(file);
+  const img=await new Promise((resolve,reject)=>{
+   const element=new Image();
+   element.onload=()=>resolve(element);
+   element.onerror=()=>reject(Error('Không đọc được ảnh gốc.'));
+   element.src=imageUrl;
+  });
+  if(request!==qcPreviewRequest||preview.hidden)return;
+  const W=img.naturalWidth,H=img.naturalHeight;
+  const values=typeof raw==='string'?raw.trim().split(/\s+/):[];
+  const g=values.length===5?values.slice(1).map(Number):null;
+  const valid=!!g&&g.every(Number.isFinite)&&g[2]>0&&g[3]>0;
+  const titleSuffix=valid?` · ${info.check_code||'QC'}`:' · TXT không có tọa độ box hợp lệ, chỉ xem ảnh';
+  title.textContent=`${info.image_id} · ${info.after_line?'A'+info.after_line+' · ':''}${W} × ${H}${titleSuffix}`;
+  const whole=$('qcShortOverviewCanvas'),crop=$('qcShortCropCanvas');
+  const scale=Math.min(840/W,440/H,1);
+  whole.width=Math.max(1,Math.round(W*scale));whole.height=Math.max(1,Math.round(H*scale));
+  const c=whole.getContext('2d');c.clearRect(0,0,whole.width,whole.height);c.drawImage(img,0,0,whole.width,whole.height);
+  crop.width=360;crop.height=240;
+  const zoom=crop.getContext('2d');zoom.clearRect(0,0,crop.width,crop.height);
+  if(valid){
+   const [cx,cy,bw,bh]=g;
+   c.save();c.strokeStyle='#e54146';c.lineWidth=3;
+   c.strokeRect((cx-bw/2)*whole.width,(cy-bh/2)*whole.height,Math.max(2,bw*whole.width),Math.max(2,bh*whole.height));c.restore();
+   const centerX=cx*W,centerY=cy*H;
+   const half=Math.max(55,Math.max(bw*W,bh*H)*2.5);
+   const cropW=Math.min(W,half*3),cropH=Math.min(H,cropW*2/3);
+   const sx=Math.min(Math.max(0,centerX-cropW/2),Math.max(0,W-cropW));
+   const sy=Math.min(Math.max(0,centerY-cropH/2),Math.max(0,H-cropH));
+   zoom.drawImage(img,sx,sy,cropW,cropH,0,0,crop.width,crop.height);
+   zoom.strokeStyle='#e54146';zoom.lineWidth=3;
+   zoom.strokeRect(((cx-bw/2)*W-sx)*crop.width/cropW,((cy-bh/2)*H-sy)*crop.height/cropH,Math.max(2,bw*W*crop.width/cropW),Math.max(2,bh*H*crop.height/cropH));
+  }else zoom.drawImage(img,0,0,W,H,0,0,crop.width,crop.height);
+  grid.hidden=false;
+ }catch(e){if(request===qcPreviewRequest)title.textContent=`Không thể xem ${info.image_id||'ảnh'}: ${e.message}`;}
+ finally{if(imageUrl)URL.revokeObjectURL(imageUrl);}
+}
+$('qcPreviewClose')?.addEventListener('click',()=>{qcPreviewRequest++;});
 function renderFindings(){
  const filter=$('qcSeverityFilter').value;
- const findings=issues.filter(x=>(filter==='all'||x.severity===filter)&&memberIssueMatch(x));
+ const codeSelect=$('qcCodeFilter');
+ const previous=codeSelect.value;
+ const counts=new Map();for(const finding of issues){if(finding.check_code)counts.set(finding.check_code,(counts.get(finding.check_code)||0)+1);}
+ const codes=[...counts.keys()].sort((a,b)=>a.localeCompare(b));
+ const friendly={HEIGHT_LT_12PX:'Box cao dưới 12 px',WIDTH_LT_1PX:'Box rộng dưới 1 px',DUPLICATE_EXACT:'Box trùng hoàn toàn',NEAR_DUPLICATE:'Box gần trùng',OUT_OF_BOUNDS:'Box vượt biên',CENTER_OUTSIDE:'Tâm box ngoài ảnh',CLAMP_TINY:'Vượt biên rất nhỏ',MISSING_LABEL:'Thiếu nhãn',EXTRA_LABEL:'Dư nhãn',IMAGE_MISSING:'Thiếu ảnh gốc',IMAGE_DECODE:'Không đọc được ảnh'};
+ codeSelect.replaceChildren(new Option('Tất cả loại sai','all'));
+ for(const code of codes)codeSelect.add(new Option((friendly[code]||code)+' · '+counts.get(code),code));
+ codeSelect.value=codes.includes(previous)?previous:'all';
+ const codeFilter=codeSelect.value;
+ const codeItems=$('qcCodeFilterItems');codeItems.replaceChildren();
+ for(const code of ['all',...codes]){
+  const btn=document.createElement('button');btn.type='button';btn.dataset.code=code;
+  btn.setAttribute('aria-pressed',String(code===codeFilter));
+  const left=document.createElement('span');left.textContent=code==='all'?'Tất cả loại sai':friendly[code]||code;
+  const count=document.createElement('b');count.textContent=String(code==='all'?issues.length:counts.get(code));
+  btn.append(left,count);btn.addEventListener('click',()=>{codeSelect.value=code;$('qcCodeFilterMenu').open=false;renderFindings();});codeItems.append(btn);
+ }
+ $('qcCodeFilterSelected').textContent=codeFilter==='all'?'Tất cả loại sai':friendly[codeFilter]||codeFilter;
+ const findings=issues.filter(x=>(filter==='all'||x.severity===filter)&&(codeFilter==='all'||x.check_code===codeFilter)&&memberIssueMatch(x));
  const rows=$('afterQcRows');rows.replaceChildren();const limit=100;
  const afterMap=nameMap(state.after),canOpenCache=new Map(),linesCache=new Map();
  function readOriginal(entry){
@@ -814,8 +937,22 @@ function renderFindings(){
   for(const [i,value] of values.entries()){const td=document.createElement('td');td.textContent=value;if(i===0)td.className='qcSeverityCell '+entry.severity;if(i===4)td.className='qcCodeCell';tr.append(td);}
   const action=document.createElement('td'),group=document.createElement('div');group.className='qcInlineActions';
   const expected=entry.after_line>0?readOriginal(entry):null;
-  const make=(label,handler,kind='')=>{const b=document.createElement('button');b.type='button';b.className='qcIssueAction'+(kind?' '+kind:'');b.textContent=label;b.addEventListener('click',handler);group.append(b);return b;};
-  if(entry.check_code==='HEIGHT_LT_12PX')make('Xem',()=>window.QCShortBoxes?.open(entry.image_id,entry.after_line));
+  const make=(label,handler,kind='')=>{
+   const b=document.createElement('button');b.type='button';b.className='qcIssueAction qcIconAction'+(kind?' '+kind:'');
+   b.title=label;b.setAttribute('aria-label',label+' · '+(entry.image_id||'ảnh')+' · '+(entry.after_line?'A'+entry.after_line:'QC'));
+   const paths={
+    'Xem':'<circle cx="11" cy="11" r="3"/><path d="M2 11s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/>',
+    'Chỉnh sửa':'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L9 17l-4 1 1-4z"/>',
+    'Sửa TXT':'<path d="M5 3h10l4 4v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M7 13h6M7 17h4"/>',
+    'Xóa':'<path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6M10 10v7M14 10v7"/>',
+    'Bỏ trùng':'<rect x="3" y="3" width="12" height="12" rx="2"/><path d="M9 19h9a2 2 0 0 0 2-2V8M7 9l4 4m0-4-4 4"/>',
+    'Cắt biên':'<path d="M4 4v7h7M20 20v-7h-7M4 11V4h7M20 13v7h-7"/>',
+    'Sửa số':'<path d="M12 20h9"/><path d="M16.5 3.5a2 2 0 0 1 3 3L9 17l-4 1 1-4z"/>',
+    'Đến dữ liệu':'<path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10H3z"/><path d="M12 11v6m-3-3 3 3 3-3"/>'};
+   b.innerHTML='<svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(paths[label]||paths['Chỉnh sửa'])+'</svg>';
+   b.addEventListener('click',handler);group.append(b);return b;
+  };
+  if(entry.image_id)make('Xem',()=>void qcView(entry,expected),'is-view');
   if(entry.after_line>0&&qcLineCodes.has(entry.check_code)&&expected!==null){
    if(qcStructuralCodes.has(entry.check_code))make('Sửa TXT',()=>showRawEditor(entry,expected));
    else{
@@ -870,6 +1007,7 @@ $('qcRawEditModal').addEventListener('click',event=>{if(event.target===$('qcRawE
 $('afterQcDownload').addEventListener('click',downloadQC);
 $('qcLabels').addEventListener('click',()=>{clearTimeout(scanTimer);void scanQC({manual:true});});
 $('qcSeverityFilter').addEventListener('change',renderFindings);
+$('qcCodeFilter').addEventListener('change',renderFindings);
 qcMemberSelect?.addEventListener('change',()=>{renderFindings();refreshQuickActions();});
 $('normalize')?.addEventListener('change',()=>{qcRevision++;refreshQuickActions();scheduleQC();});
 window.addEventListener('yolo:labels-updated',event=>{if(event.detail?.side==='after'){qcRevision++;refreshQuickActions();scheduleQC();}});

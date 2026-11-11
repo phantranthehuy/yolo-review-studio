@@ -1,0 +1,7 @@
+Bản v7.0.7 – sửa giao diện QC (không sửa thuật toán):
+- Đồng bộ màu nút khóa phân việc mục 07 và nút tải nhãn A trên giao diện Dark.
+- Gộp các cảnh báo, gồm box A cao dưới 12px, vào bảng Vấn đề cần xem lại tại mục 02.
+- Bổ sung bộ lọc loại sai theo check_code, giữ lọc mức độ và thành viên.
+- Thay thao tác trong bảng bằng icon có title và aria-label.
+- Xem box dưới 12px mở preview ngay dưới bảng chung; nút xóa giữ xác nhận.
+- Bộ xử lý kiểm tra box nhỏ vẫn tồn tại trong mã, bảng cũ không hiển thị.

@@ -3,6 +3,9 @@ import json, shutil
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
+# The Dark mode belongs to the shared Sáng/Tối switch, not a separate HTML page.
+for obsolete in (ROOT / 'dark.html', DIST / 'dark.html'):
+    if obsolete.exists(): obsolete.unlink()
 for folder in ('styles', 'scripts'):
     shutil.copytree(ROOT / 'src' / folder, DIST / 'assets' / folder, dirs_exist_ok=True)
 shutil.copytree(ROOT / 'public/images', DIST / 'assets/images', dirs_exist_ok=True)
@@ -19,7 +22,7 @@ for name, settings in themes.items():
     (DIST / (name + '.html')).write_text(html)
 # Plain default theme is intentionally the starting screen for uncluttered QC work.
 (DIST / 'index.html').write_text((DIST / 'default.html').read_text())
-print('Built four themes in dist/')
+print(f'Built {len(themes)} themes in dist/')
 
 # Keep root-level entry pages and assets in sync. Users normally open ./index.html.
 for folder in ('styles','scripts'):

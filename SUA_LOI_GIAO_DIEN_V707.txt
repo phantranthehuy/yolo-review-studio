@@ -1,0 +1,8 @@
+v7.0.7 – sửa trên bản hiện có:
+- Không tạo giao diện mới. Giữ nút Sáng/Tối gốc trên header. Xóa dark.html, dist/dark.html, liên kết Dark trong bộ chọn giao diện.
+- Các thành phần QC, nút phân việc và nút tải nhãn cập nhật theo data-theme của trang.
+- Box A cao dưới 12 pixel từ WARNING sang ERROR khi có ảnh và kích thước xác định được; giữ xác nhận trước khi xóa.
+- Bộ lọc Loại sai dạng menu mở/đóng hiện danh sách check_code và số lượng; lọc chung trong bảng Vấn đề cần xem lại.
+- Xóa nút Xem không hoạt động, giữ icon Chỉnh sửa/Sửa TXT và icon Xóa; tooltip giải thích từng thao tác.
+- Không có bảng cảnh báo dưới 12px thứ hai.
+- Giữ nguyên 3 chế độ của mục 04: Batch nhóm, Kiểm tra nội bộ, Kiểm giữa nhóm.

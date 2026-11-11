@@ -45,17 +45,32 @@
 @media(max-width:1100px){.workflowSteps{grid-template-columns:repeat(2,minmax(0,1fr))}.uploadHowGrid{grid-template-columns:1fr}.igOverview{grid-template-columns:repeat(3,minmax(0,1fr))}.igPickRow{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}.igPickRow button:nth-last-child(-n+2){min-width:44px}}
 @media(max-width:680px){.workflowIntro{padding:17px 13px}.workflowSteps{grid-template-columns:repeat(2,minmax(0,1fr))}.workflowSteps a{padding:12px}.workflowGlossaryGrid{grid-template-columns:minmax(0,1fr)}.matchScopeSwitch{grid-template-columns:1fr}.intergroupWorkspace{padding:12px}.igOverview{grid-template-columns:repeat(2,minmax(0,1fr))}.igPickRow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.igPickRow label:first-child{grid-column:1 / -1}.igPickRow label:nth-child(3){grid-column:1/-1}.igCanvasGrid{grid-template-columns:1fr}.igReviewGrid{grid-template-columns:1fr}.igCanvasBar label{min-width:140px}.igCanvasGrid canvas{max-height:370px}}
 @media(max-width:360px){.workflowSteps{grid-template-columns:1fr}.igOverview{grid-template-columns:1fr}}
-/* Explicit dark ink for isolated intergroup card on light scenic themes. */
-.matchScopeSwitch .scopeBtn{background:#21343f!important;color:#eff8fa!important;border-color:#4b6975!important}
-.matchScopeSwitch .scopeBtn[aria-pressed="true"]{background:#116d79!important;color:#fff!important;border-color:#54c3cc!important}
-.matchScopeSwitch .scopeBtn small{color:#bed4dc!important}
-.intergroupWorkspace{background:#172a34!important;color:#edf7fa!important;border-color:#436573!important}
-.intergroupWorkspace .igStat,.intergroupWorkspace .igHow,.intergroupWorkspace .igDiffSummary{background:#213842!important;color:#edf7fa!important;border-color:#4a6570!important}
-.intergroupWorkspace .igStat span,.intergroupWorkspace .igHint,.intergroupWorkspace .igLegend{color:#b4d0d9!important}
-.intergroupWorkspace .igPickRow input,.intergroupWorkspace .igPickRow select,.intergroupWorkspace .igCanvasBar select,.intergroupWorkspace .igReviewForm select,.intergroupWorkspace .igReviewForm input,.intergroupWorkspace .igReviewForm textarea{background:#243b45!important;color:#f3fafc!important;border-color:#526f7b!important}
-.intergroupWorkspace button:not(.primary){background:#293e48;color:#edf7fa;border-color:#4e6b76}
-.intergroupWorkspace .igReviewForm>h3{color:#f4fafc}
-.intergroupWorkspace .igBad{color:#ff9d96!important}
+/* Theme contrast: dark surfaces apply ONLY while data-theme="dark".
+   An older unscoped block made Light mode look like Dark in section 04. */
+html[data-theme="dark"] .matchScopeSwitch .scopeBtn{background:#21343f!important;color:#eff8fa!important;border-color:#4b6975!important}
+html[data-theme="dark"] .matchScopeSwitch .scopeBtn[aria-pressed="true"]{background:#116d79!important;color:#fff!important;border-color:#54c3cc!important}
+html[data-theme="dark"] .matchScopeSwitch .scopeBtn small{color:#bed4dc!important}
+html[data-theme="dark"] .intergroupWorkspace{background:#172a34!important;color:#edf7fa!important;border-color:#436573!important}
+html[data-theme="dark"] .intergroupWorkspace .igStat,html[data-theme="dark"] .intergroupWorkspace .igHow,html[data-theme="dark"] .intergroupWorkspace .igDiffSummary{background:#213842!important;color:#edf7fa!important;border-color:#4a6570!important}
+html[data-theme="dark"] .intergroupWorkspace .igStat span,html[data-theme="dark"] .intergroupWorkspace .igHint,html[data-theme="dark"] .intergroupWorkspace .igLegend{color:#b4d0d9!important}
+html[data-theme="dark"] .intergroupWorkspace .igPickRow input,html[data-theme="dark"] .intergroupWorkspace .igPickRow select,html[data-theme="dark"] .intergroupWorkspace .igCanvasBar select,html[data-theme="dark"] .intergroupWorkspace .igReviewForm select,html[data-theme="dark"] .intergroupWorkspace .igReviewForm input,html[data-theme="dark"] .intergroupWorkspace .igReviewForm textarea{background:#243b45!important;color:#f3fafc!important;border-color:#526f7b!important}
+html[data-theme="dark"] .intergroupWorkspace button:not(.primary){background:#293e48;color:#edf7fa;border-color:#4e6b76}
+html[data-theme="dark"] .intergroupWorkspace .igReviewForm>h3{color:#f4fafc}
+html[data-theme="dark"] .intergroupWorkspace .igBad{color:#ff9d96!important}
+
+/* Section 04 in Light mode: bright cards and legible dark text, same design system. */
+html[data-theme="light"] .matchScopeSwitch .scopeBtn{background:#f4faf9!important;color:#1b3945!important;border-color:#bed7d8!important}
+html[data-theme="light"] .matchScopeSwitch .scopeBtn[aria-pressed="true"]{background:#ddf2ef!important;color:#09535f!important;border-color:#169ca2!important}
+html[data-theme="light"] .matchScopeSwitch .scopeBtn small{color:#58717c!important}
+html[data-theme="light"] .matchScopeSwitch .scopeIcon{background:#e1f3f0;color:#087e88}
+html[data-theme="light"] .intergroupWorkspace{background:#fff!important;color:#1d3948!important;border-color:#cbdfe2!important}
+html[data-theme="light"] .intergroupWorkspace .igStat,html[data-theme="light"] .intergroupWorkspace .igHow,html[data-theme="light"] .intergroupWorkspace .igDiffSummary{background:#f3f9f9!important;color:#253f4b!important;border-color:#d2e1e5!important}
+html[data-theme="light"] .intergroupWorkspace .igStat span,html[data-theme="light"] .intergroupWorkspace .igHint,html[data-theme="light"] .intergroupWorkspace .igLegend{color:#566e79!important}
+html[data-theme="light"] .intergroupWorkspace .igPickRow input,html[data-theme="light"] .intergroupWorkspace .igPickRow select,html[data-theme="light"] .intergroupWorkspace .igCanvasBar select,html[data-theme="light"] .intergroupWorkspace .igReviewForm select,html[data-theme="light"] .intergroupWorkspace .igReviewForm input,html[data-theme="light"] .intergroupWorkspace .igReviewForm textarea{background:#fff!important;color:#1d3948!important;border-color:#b9d2d7!important}
+html[data-theme="light"] .intergroupWorkspace button:not(.primary){background:#e8f3f4;color:#1d5460;border-color:#b6d2d6}
+html[data-theme="light"] .intergroupWorkspace .igReviewForm>h3{color:#213d49}
+html[data-theme="light"] .intergroupWorkspace .igBad{color:#ae3434!important}
+
 
 .workflowManual{margin-top:14px;border-top:1px solid var(--line,#4c606a);padding-top:13px}
 .workflowManual>summary{cursor:pointer;font-weight:800;font-size:14px;color:inherit}
@@ -68,5 +83,7 @@
 body.intergroupMode #hubNeedMatch{display:none!important}
 @media(max-width:680px){.workflowManualGrid{grid-template-columns:1fr}.workflowManualGrid article{padding:13px}}
 
-.igAutoAdvance{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;margin:12px 0 7px;font-size:12.5px!important;color:#d5e9ec!important;cursor:pointer}
+.igAutoAdvance{display:flex!important;flex-direction:row!important;align-items:center;gap:8px;margin:12px 0 7px;font-size:12.5px!important;cursor:pointer}
+html[data-theme="light"] .igAutoAdvance{color:#496575!important}
+html[data-theme="dark"] .igAutoAdvance{color:#d5e9ec!important}
 .igAutoAdvance input{width:17px!important;min-height:auto!important;height:17px;accent-color:#15a3ad;flex:none}

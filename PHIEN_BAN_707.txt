@@ -1,0 +1,5 @@
+YOLO Review Studio v7.0.7 — Cập nhật ngày 11/11/2026
+- Hướng dẫn mở/đóng cho mục 06 và 07; giải thích thao tác 7 bước và ý nghĩa CSV/TXT/JSON.
+- Đồng bộ hộp hướng dẫn theo thành phần helpDetails sẵn có; đọc hướng dẫn trước khi nạp manifest.
+- Nhật ký cập nhật được sắp mới nhất → cũ, không tự chạy; bổ sung Dark và các bản 7.0.x.
+- Giữ các thay đổi thẻ tiến độ và checkbox v7.0.5, lựa chọn giao diện Dark v7.0.6.

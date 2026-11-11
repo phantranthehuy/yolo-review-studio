@@ -1,0 +1,130 @@
+/* v7.0.7: Light/Dark parity after full visual control audit.
+   Intentionally scoped by #id and data-theme to avoid affecting image canvases,
+   box colors, QC data, export algorithms and the historical Update marquee. */
+
+/* Shared status card for 06 + 07: 07 used a Dark fallback even in Light. */
+html[data-theme="light"] #mergeSection .mergeLock,
+html[data-theme="light"] #allocationSection .allocLock {
+  background:#f1f7f8!important;
+  border:1px solid #bcd7dc!important;
+  color:#385666!important;
+}
+html[data-theme="light"] #allocationSection .allocLock .mergeLockCopy strong,
+html[data-theme="light"] #mergeSection .mergeLock .mergeLockCopy strong {
+  color:#183846!important;
+}
+html[data-theme="light"] #allocationSection .allocLock .mergeLockCopy span,
+html[data-theme="light"] #mergeSection .mergeLock .mergeLockCopy span {
+  color:#456272!important;
+}
+html[data-theme="light"] #allocationSection .allocLock code,
+html[data-theme="light"] #mergeSection .mergeLock code {
+  color:#165d66!important;background:#e4f0f1!important;
+}
+html[data-theme="dark"] #mergeSection .mergeLock,
+html[data-theme="dark"] #allocationSection .allocLock {
+  background:#233640!important;
+  border:1px solid #4e6b76!important;
+  color:#c8d9e1!important;
+}
+html[data-theme="dark"] #mergeSection .mergeLock .mergeLockCopy strong,
+html[data-theme="dark"] #allocationSection .allocLock .mergeLockCopy strong {
+  color:#f2f9fa!important;
+}
+html[data-theme="dark"] #mergeSection .mergeLock .mergeLockCopy span,
+html[data-theme="dark"] #allocationSection .allocLock .mergeLockCopy span {
+  color:#c2d6de!important;
+}
+html[data-theme="dark"] #allocationSection .allocLock code,
+html[data-theme="dark"] #mergeSection .mergeLock code {
+  color:#b4f4e9!important;background:#1c454b!important;
+}
+
+/* Manifest action button (both workspaces), consistent with current theme. */
+html[data-theme="light"] :is(#mergeGoManifest,#allocGoManifest) {
+  background:#e0f3f1!important;border:1px solid #78bdbb!important;
+  color:#0b5460!important;box-shadow:none!important;
+}
+html[data-theme="light"] :is(#mergeGoManifest,#allocGoManifest):hover:not(:disabled) {
+  background:#c9eae6!important;border-color:#39a29f!important;color:#073f48!important;
+}
+html[data-theme="dark"] :is(#mergeGoManifest,#allocGoManifest) {
+  background:#17545b!important;border:1px solid #389ba2!important;
+  color:#e4faf6!important;box-shadow:none!important;
+}
+html[data-theme="dark"] :is(#mergeGoManifest,#allocGoManifest):hover:not(:disabled) {
+  background:#1c6a70!important;border-color:#67c6c0!important;color:#fff!important;
+}
+:is(#mergeGoManifest,#allocGoManifest):focus-visible {
+  outline:3px solid #22b9b1;outline-offset:2px;
+}
+
+/* The dark-side buttons in Upload/Export retained white disabled fills. */
+html[data-theme="dark"] #uploadHub .hubManagedAction button:disabled,
+html[data-theme="dark"] #memberExportPanel button:disabled,
+html[data-theme="dark"] #prepSection .qcBatchActions button:disabled {
+  background:#2b414c!important;color:#b7cbd3!important;
+  border:1px solid #506d79!important;
+  opacity:.65!important;box-shadow:none!important;
+}
+html[data-theme="light"] #uploadHub .hubManagedAction button:disabled,
+html[data-theme="light"] #memberExportPanel button:disabled {
+  background:#e9f0f3!important;color:#576e7b!important;
+  border-color:#c6d6df!important;
+  opacity:.78!important;
+}
+html[data-theme="light"] #uploadHub .hubMissing span{
+  color:#806713!important;
+}
+
+/* Improve labels on dimmer secondary surfaces, preserving hierarchy. */
+html[data-theme="light"] .workflowManualGrid article p,
+html[data-theme="light"] .workflowManualGrid article p strong,
+html[data-theme="light"] .workflowGlossaryGrid p,
+html[data-theme="light"] .workflowManualGrid article code,
+html[data-theme="light"] .workflowGlossaryGrid code {
+  color:#455d6b!important;
+}
+html[data-theme="dark"] .settingsFold>summary small {
+  color:#c2d5dc!important;
+}
+html[data-theme="light"] #coord_empty small {color:#566c7a!important}
+html[data-theme="light"] #coord_empty span {color:#465d6b!important}
+html[data-theme="dark"] #matchScopeSwitch .scopeBtn .scopeIcon {color:#e3ffff!important}
+html[data-theme="dark"] #matchScopeSwitch .scopeBtn small {color:#d2e5ea!important}
+
+/* Native text/buttons/inputs must adopt the page palette, not old fixed fills. */
+html[data-theme="light"] #allocationSection .allocStep,
+html[data-theme="light"] #allocationSection .allocTableWrap,
+html[data-theme="light"] #allocationSection .allocCompletedWarning {
+  color:#243d4b;
+}
+html[data-theme="dark"] #allocationSection .allocStep,
+html[data-theme="dark"] #allocationSection .allocTableWrap,
+html[data-theme="dark"] #allocationSection .allocCompletedWarning {
+  color:#e6f2f5;
+}
+html[data-theme="light"] #allocationSection button:disabled:not(.allocLockButton),
+html[data-theme="light"] #mergeSection button:disabled:not(.mergeFileBtn) {
+  color:#657984;border-color:#ccd9df;background:#e9eff2;
+}
+html[data-theme="dark"] #allocationSection button:disabled:not(.allocLockButton),
+html[data-theme="dark"] #mergeSection button:disabled:not(.mergeFileBtn) {
+  color:#a8bcc5;border-color:#526a75;background:#293f49;
+}
+
+/* The icon-only QC controls should never inherit generic button colors. */
+html[data-theme="light"] #prepSection .qcInlineActions .qcIconAction.is-view {
+  background:#e9f5f9!important;border-color:#8cbac9!important;color:#115b78!important;
+}
+html[data-theme="dark"] #prepSection .qcInlineActions .qcIconAction.is-view {
+  background:#284c5a!important;border-color:#6ca6b7!important;color:#b7ecfb!important;
+}
+html[data-theme="light"] #prepSection .qcCodeFilterMenu>summary,
+html[data-theme="light"] #prepSection .qcCodeFilterItems {
+  background:#f9fcfc;color:#294751;border-color:#bad2d8;
+}
+html[data-theme="dark"] #prepSection .qcCodeFilterMenu>summary,
+html[data-theme="dark"] #prepSection .qcCodeFilterItems {
+  background:#253942;color:#f0f8f9;border-color:#52717c;
+}

@@ -58,11 +58,10 @@ function showShortPanel(){
   const row=node('tr'),cell=node('td'),check=node('input');check.type='checkbox';check.checked=V.shortSelected.has(x.id);
   check.setAttribute('aria-label',`Chọn box A${x.line}, ${x.className}, ảnh ${x.key}`);
   check.addEventListener('change',()=>{check.checked?V.shortSelected.add(x.id):V.shortSelected.delete(x.id);shortUpdateSelected();});
-  const see=node('button','Xem');see.type='button';see.className='qcShortSee';see.addEventListener('click',()=>void previewShortBox(x));
   const edit=node('button','Chỉnh sửa');edit.type='button';edit.className='qcShortSee';edit.addEventListener('click',()=>{Promise.resolve(editOneShortBox(x.key,x.line)).catch(err=>{document.getElementById('qcShortActionMessage').textContent=err.message;});});
   const del=node('button','Xóa');del.type='button';del.className='qcShortSee qcShortSingleDelete';del.addEventListener('click',()=>deleteOneShortBox(x.key,x.line));
   cell.append(check);row.append(cell,node('td',x.key),node('td','A'+x.line),node('td',x.className),node('td',x.height.toFixed(2)+' px'));
-  const view=node('td');view.className='qcInlineActions';view.append(see,edit,del);row.append(view);body.append(row);
+  const view=node('td');view.className='qcInlineActions';view.append(edit,del);row.append(view);body.append(row);
  }
  shortUpdateSelected();
 }
@@ -87,10 +86,9 @@ async function previewShortBox(x){
  }catch(err){if(seq===V.shortPreviewSeq)document.getElementById('qcShortPreviewTitle').textContent=`Không mở được ảnh: ${err.message}`;}
 }
 function openShortWarning(imageId,line){
- const fold=document.getElementById('qcSmallBoxFold');fold.hidden=false;fold.open=true;
- fold.scrollIntoView({behavior:'smooth',block:'center'});
  const row=V.shortRows.find(x=>x.key===imageId&&x.line===line);
- if(row)void previewShortBox(row);
+ if(row){void previewShortBox(row);document.getElementById('qcShortPreview').scrollIntoView({behavior:'smooth',block:'nearest'});}
+ else document.getElementById('afterQcTableWrap')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function deleteOneShortBox(key,line){
  const x=V.shortRows.find(row=>row.key===key&&row.line===line);
@@ -100,6 +98,7 @@ function deleteOneShortBox(key,line){
 }
 function editOneShortBox(key,line){return window.YoloCoords?.focusQCBox?.(key,line,'HEIGHT_LT_12PX');}
 window.QCShortBoxes={open:openShortWarning,deleteOne:deleteOneShortBox,editOne:editOneShortBox};
+document.getElementById('qcPreviewClose')?.addEventListener('click',()=>{document.getElementById('qcShortPreview').hidden=true;});
 function showQcActionFeedback(text){
  const feedback=document.getElementById('qcActionFeedback');feedback.hidden=false;
  document.getElementById('qcActionFeedbackText').textContent=text;

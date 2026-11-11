@@ -1,0 +1,11 @@
+YOLO REVIEW STUDIO 7.0.7 — PHỤC HỒI UPDATE V5 / SỬA LỖI LIGHT
+
+1. Sao chép nguyên gốc releaseNotes.css và releaseNotes.js từ file v5.0 người dùng cung cấp.
+   Nhật ký vẫn chứa các cập nhật v7.0.x và lịch sử v4.x–v5.x.
+   Tự cuộn dọc khi hiển thị; rê chuột vào để dừng; cuộn tay để xem.
+2. Sửa file v419WorkflowAndIntergroup.css: đoạn CSS ép nền đen trước đây
+   không có điều kiện theme nên làm 3 thẻ chế độ + toàn bộ kiểm giữa nhóm
+   tối ngay cả khi công tắc ở Light. Hiện các màu tối chỉ áp dụng tại html[data-theme=dark];
+   khi light là nền sáng, chữ tối rõ ràng.
+3. Giữ nguyên nút Sáng/Tối gốc. Không tạo dark.html.
+4. Không thay đổi xử lý QC, thuật toán phân công, kiểm tra nội bộ hay liên nhóm.

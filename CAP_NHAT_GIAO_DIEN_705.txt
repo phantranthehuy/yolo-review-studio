@@ -1,0 +1,20 @@
+YOLO REVIEW STUDIO — CẬP NHẬT GIAO DIỆN 7.05
+
+Mục 06 — Gộp nhãn theo thành viên
+- Thẻ hiển thị mã SV, trạng thái nạp, số TXT đã nạp / tổng số, phần trăm và thanh tiến độ.
+- Mã tệp nhãn dài được chuyển vào mục "Xem ... tệp còn thiếu" (bấm để mở), không còn tràn sang các cột khác.
+- Chỉ hiển thị nút "Xóa bộ nhãn" khi thành viên đã nạp dữ liệu; xác nhận xóa vẫn được giữ nguyên.
+- Một cột trên tablet, hai cột trên màn hình rộng.
+
+Mục 07 — Chia việc
+- Thẻ SV đủ rộng, có trạng thái "Đang tham gia" / "Không tham gia" và hai số liệu ảnh.
+- Ô tick màu xanh ngọc sáng khi được chọn; bỏ tick là thành viên không tham gia.
+- Nút "Giữ nguyên cả phần việc" xanh dương khi có thể bấm; "Đã khóa phân công" màu vàng khi đã khóa.
+- Không cho khóa phần việc khi thành viên không tham gia; bỏ tick sẽ bỏ khóa của thành viên đó.
+- Tách nút khỏi nhãn checkbox để bấm riêng và có thể điều khiển bằng bàn phím.
+- Lưới tự thay đổi số cột theo chiều rộng màn hình.
+
+Cả bốn giao diện default, flower, forest, sakura đã được build và đồng bộ root + dist.
+Thuật toán phân công, kiểm nhãn và xuất dữ liệu không thay đổi.
+
+CÁCH MỞ: giải nén ZIP đầy đủ, sau đó mở file index.html trong thư mục yolo-review-studio 2.

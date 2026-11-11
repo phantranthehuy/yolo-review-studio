@@ -1,0 +1,285 @@
+/* v7.05 – Clear member progress and truly actionable allocation controls.
+   Only sections 06/07 are modified; all other tool modules retain their styles. */
+#mergeSection .mergeMemberRows {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  width:100%;min-width:0;max-width:100%;
+  align-items:start;
+}
+#mergeSection .mergeMemberCard {
+  --merge-card-bg:#f8fbfc;
+  --merge-card-line:#d5e4ea;
+  --merge-card-ink:#173443;
+  --merge-card-sub:#576d7a;
+  --merge-card-track:#dce8eb;
+  padding:17px 18px 15px;
+  background:var(--merge-card-bg);
+  border:1px solid var(--merge-card-line);
+  border-radius:14px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:11px;
+  min-width:0;max-width:100%;width:100%;
+  overflow:hidden;
+  box-shadow:none;
+}
+#mergeSection .mergeMemberCard.is-complete{border-color:#75cdb5}
+#mergeSection .mergeMemberCard.is-partial{border-color:#91b7de}
+#mergeSection .mergeMemberCard > *{min-width:0;max-width:100%}
+#mergeSection .mergeMemberTop{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+#mergeSection .mergeMemberTop strong{
+  font-size:15px;line-height:1.4;font-weight:800;color:var(--merge-card-ink);
+}
+#mergeSection .mergeMemberState{
+  padding:4px 9px;border-radius:6px;background:#e8eef2;color:#46606c;
+  border:1px solid #d6e2e8;font-size:11px;line-height:1.4;
+  font-weight:750;white-space:normal;text-align:center;
+}
+#mergeSection .mergeMemberCard.is-partial .mergeMemberState{background:#e3f2ff;border-color:#b4d7ff;color:#235b96}
+#mergeSection .mergeMemberCard.is-complete .mergeMemberState{background:#d8f8eb;border-color:#94dfc4;color:#0c7653}
+#mergeSection .mergeMemberStats{
+  display:flex;align-items:baseline;gap:9px;min-width:0;flex-wrap:wrap;
+  color:var(--merge-card-sub);font-size:12px;line-height:1.35;
+}
+#mergeSection .mergeMemberStats strong{
+  font-size:23px;line-height:1.2;color:var(--merge-card-ink);
+  letter-spacing:-.035em;font-variant-numeric:tabular-nums;
+}
+#mergeSection .mergeMemberStats .mergeMemberPercent{
+  margin-left:auto;font-weight:800;color:#0a9388;letter-spacing:.01em;
+  font-variant-numeric:tabular-nums;
+}
+#mergeSection .mergeTrack{
+  display:block;width:100%;max-width:100%;height:8px;
+  border-radius:99px;background:var(--merge-card-track);
+  overflow:hidden;flex:none;
+}
+#mergeSection .mergeTrackFill{height:100%;background:#16bd9b;border-radius:99px}
+#mergeSection .mergeMemberBottom{
+  display:flex;flex-wrap:wrap;align-items:center;
+  justify-content:space-between;gap:10px;min-width:0;
+}
+#mergeSection .mergeMemberBottom .mergeMemberSummary{
+  flex:1 1 180px;min-width:0;max-width:100%;width:auto;
+  overflow-wrap:anywhere;white-space:normal;
+  text-overflow:clip;overflow:visible;
+  color:var(--merge-card-sub);font-size:12px;line-height:1.45;
+}
+#mergeSection .mergeMemberBottom .mergeRemoveMember{
+  flex:0 0 auto;min-height:34px;
+  padding:6px 12px;white-space:normal;
+  border:1px solid #eeb4af;border-radius:8px;
+  background:#fff5f3;color:#ad413b;
+  font-size:12px;font-weight:750;
+}
+#mergeSection .mergeMemberBottom .mergeRemoveMember:not(:disabled):hover{
+  background:#ffe5df;border-color:#df827b;color:#852c27;
+}
+#mergeSection .mergeMissingDetails{
+  display:block;margin:0;padding:10px 0 0;border:0;
+  border-top:1px solid var(--merge-card-line);
+  background:transparent;
+}
+#mergeSection .mergeMissingDetails summary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:2px 0;list-style:none;cursor:pointer;
+  min-height:30px;color:#067e8a;
+  font-size:12px;font-weight:800;line-height:1.4;
+}
+#mergeSection .mergeMissingDetails summary::-webkit-details-marker{display:none}
+#mergeSection .mergeMissingDetails summary::after{
+  content:'⌄';font-size:18px;line-height:1;transform:translateY(-2px);
+  transition:transform .15s ease;
+}
+#mergeSection .mergeMissingDetails[open] summary::after{transform:rotate(180deg) translateY(2px)}
+#mergeSection .mergeMissingDetails summary:hover{text-decoration:underline}
+#mergeSection .mergeMissingDetails summary:focus-visible{outline:3px solid #37bfd0;outline-offset:3px}
+#mergeSection .mergeMissingList{
+  display:grid;gap:0;margin-top:9px;max-height:180px;
+  overflow:auto;padding:8px 11px;border:1px solid var(--merge-card-line);
+  border-radius:8px;background:#edf4f7;color:#395b6a;
+  font:11px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+#mergeSection .mergeMissingList>div{
+  padding:5px 0;overflow-wrap:anywhere;word-break:break-word;
+}
+#mergeSection .mergeMissingList>div+div{border-top:1px solid #d9e5eb}
+
+/* Allocation: 3–4 roomy cards per row rather than six tiny cards. */
+#allocationSection .allocMemberGrid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr));
+  align-items:stretch;gap:13px;width:100%;min-width:0;
+}
+#allocationSection .allocMemberCard{
+  --alloc-card-bg:#f9fbfd;--alloc-card-border:#d1e0e8;
+  --alloc-card-ink:#173b4b;--alloc-card-muted:#617886;
+  display:grid;grid-template-columns:minmax(0,1fr);align-content:start;
+  gap:13px;padding:16px 16px 15px;
+  min-width:0;border-radius:13px;
+  background:var(--alloc-card-bg);border:1px solid var(--alloc-card-border);
+  color:var(--alloc-card-ink);cursor:default;
+  transition:background-color .15s ease,border-color .15s ease;
+}
+#allocationSection .allocMemberCard.is-active,
+#allocationSection .allocMemberCard:has(input:checked){
+  background:#f0faf7;border-color:#76cdb8;
+}
+#allocationSection .allocMemberCard.is-away,
+#allocationSection .allocMemberCard:has(input:not(:checked)){
+  background:#f7f8fa;border-color:#cfd6db;
+}
+#allocationSection .allocMemberSelect{
+  display:flex;align-items:center;gap:12px;
+  min-width:0;cursor:pointer;
+}
+#allocationSection .allocMemberSelect input[type=checkbox]{
+  appearance:none;-webkit-appearance:none;position:relative;
+  flex:0 0 24px;width:24px;height:24px;min-width:24px;min-height:24px;
+  border-radius:7px;margin:0;padding:0;
+  background:#fff;border:2px solid #7194a0;
+  cursor:pointer;box-shadow:0 1px 2px #092f3d12;
+}
+#allocationSection .allocMemberSelect input[type=checkbox]:checked{
+  background:#0bbf92;border-color:#0bbf92;
+}
+#allocationSection .allocMemberSelect input[type=checkbox]:checked::after{
+  content:'';position:absolute;left:6px;top:1px;
+  width:7px;height:12px;border:solid #fff;
+  border-width:0 3px 3px 0;transform:rotate(45deg);
+}
+#allocationSection .allocMemberSelect input[type=checkbox]:focus-visible{
+  outline:3px solid #20bde4;outline-offset:3px;
+}
+#allocationSection .allocMemberIdentity{
+  display:flex;flex-direction:column;gap:2px;min-width:0;line-height:1.4;
+}
+#allocationSection .allocMemberIdentity strong{
+  font-size:15px;font-weight:800;letter-spacing:.01em;color:var(--alloc-card-ink);
+}
+#allocationSection .allocMemberSelectHint{
+  color:#078369;font-size:11px;font-weight:750;
+}
+#allocationSection .allocMemberCard.is-away .allocMemberSelectHint{color:var(--alloc-card-muted)}
+#allocationSection .allocMemberMetrics{
+  display:flex;align-items:center;justify-content:space-between;gap:9px;
+  flex-wrap:wrap;color:var(--alloc-card-muted);
+  font-size:12px;line-height:1.4;
+}
+#allocationSection .allocMemberMetrics span{display:inline;white-space:normal}
+#allocationSection .allocMemberMetrics b{font-weight:850;color:var(--alloc-card-ink)}
+#allocationSection .allocLockButton{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;min-height:38px;margin:0;padding:9px 12px;
+  border-radius:8px;border:1px solid #1763e4;
+  color:#fff;background:#246ee9;
+  text-align:center;font:750 12px/1.35 system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  cursor:pointer;box-shadow:none;
+}
+#allocationSection .allocLockButton:not(:disabled):hover{
+  color:#fff;background:#1659c4;border-color:#1659c4;
+}
+#allocationSection .allocLockButton[aria-pressed=true]{
+  background:#fbbf47;border-color:#eaa523;color:#563404;
+}
+#allocationSection .allocLockButton[aria-pressed=true]:not(:disabled):hover{
+  background:#f6ad2b;border-color:#dc9215;color:#493104;
+}
+#allocationSection .allocLockButton:disabled{
+  background:#e7edf0;border-color:#cbd4d8;color:#7a8b92;
+  cursor:not-allowed;opacity:1;
+}
+#allocationSection .allocLockButton:focus-visible{
+  outline:3px solid #2bbde4;outline-offset:3px;
+}
+#allocationSection .allocMemberHint{
+  font-size:12px;line-height:1.6;color:#4e6878;
+  margin:-3px 0 13px;max-width:90ch;
+}
+#allocationSection #allocAllMembers{
+  border:1px solid #0aa98c;background:#e2faf3;color:#08765f;
+  font-size:12px;font-weight:800;
+}
+#allocationSection #allocAllMembers:not(:disabled):hover{background:#c7f5e6}
+
+/* Night mode matches the existing dark palette without gray-on-gray controls. */
+html[data-theme="dark"] #mergeSection .mergeMemberCard{
+  --merge-card-bg:#243640;--merge-card-line:#45606c;
+  --merge-card-ink:#f4fbfd;--merge-card-sub:#bdced7;
+  --merge-card-track:#435a65;
+}
+html[data-theme="dark"] #mergeSection .mergeMemberState{
+  background:#344b57;border-color:#486574;color:#cbdce5;
+}
+html[data-theme="dark"] #mergeSection .mergeMemberCard.is-partial .mergeMemberState{
+  background:#214b75;border-color:#337ab3;color:#cce9ff;
+}
+html[data-theme="dark"] #mergeSection .mergeMemberCard.is-complete .mergeMemberState{
+  background:#174e46;border-color:#278a75;color:#a6f6dc;
+}
+html[data-theme="dark"] #mergeSection .mergeMemberStats .mergeMemberPercent{color:#42dfb5}
+html[data-theme="dark"] #mergeSection .mergeMemberBottom .mergeRemoveMember{
+  background:#402e34;color:#ffbfb9;border-color:#96565c;
+}
+html[data-theme="dark"] #mergeSection .mergeMemberBottom .mergeRemoveMember:not(:disabled):hover{
+  background:#56343a;color:#ffded8;border-color:#d77476;
+}
+html[data-theme="dark"] #mergeSection .mergeMissingDetails summary{color:#65dfdb}
+html[data-theme="dark"] #mergeSection .mergeMissingList{
+  background:#1c2c35;color:#d5e4e8;border-color:#415b65;
+}
+html[data-theme="dark"] #mergeSection .mergeMissingList>div+div{border-top-color:#324d59}
+html[data-theme="dark"] #allocationSection .allocMemberCard{
+  --alloc-card-bg:#253941;--alloc-card-border:#445e6a;
+  --alloc-card-ink:#f3fafc;--alloc-card-muted:#b5c9d2;
+}
+html[data-theme="dark"] #allocationSection .allocMemberCard.is-active,
+html[data-theme="dark"] #allocationSection .allocMemberCard:has(input:checked){
+  background:#203f43;border-color:#208f87;
+}
+html[data-theme="dark"] #allocationSection .allocMemberCard.is-away,
+html[data-theme="dark"] #allocationSection .allocMemberCard:has(input:not(:checked)){
+  background:#293842;border-color:#415461;
+}
+html[data-theme="dark"] #allocationSection .allocMemberSelect input[type=checkbox]:not(:checked){
+  background:#20333d;border-color:#7f9ca9;
+}
+html[data-theme="dark"] #allocationSection .allocMemberSelect input[type=checkbox]:checked{
+  background:#16cfa0;border-color:#16cfa0;
+}
+html[data-theme="dark"] #allocationSection .allocMemberSelectHint{color:#65e8c1}
+html[data-theme="dark"] #allocationSection .allocMemberCard.is-away .allocMemberSelectHint{color:#b8c5cd}
+html[data-theme="dark"] #allocationSection .allocLockButton:not(:disabled):not([aria-pressed=true]){
+  background:#2878f1;border-color:#3a89ff;color:#fff;
+}
+html[data-theme="dark"] #allocationSection .allocLockButton:not(:disabled):not([aria-pressed=true]):hover{
+  background:#1a5fcd;border-color:#408cff;
+}
+html[data-theme="dark"] #allocationSection .allocLockButton[aria-pressed=true]:not(:disabled){
+  background:#ffc45b;border-color:#f1ad33;color:#463000;
+}
+html[data-theme="dark"] #allocationSection .allocLockButton:disabled{
+  background:#374954;border-color:#536873;color:#9fb3bb;opacity:1;
+}
+html[data-theme="dark"] #allocationSection .allocMemberHint{color:#b9ccd5}
+html[data-theme="dark"] #allocationSection #allocAllMembers{
+  background:#164e4d;border-color:#269b8d;color:#abf3df;
+}
+html[data-theme="dark"] #allocationSection #allocAllMembers:not(:disabled):hover{background:#21625c}
+@media(max-width:950px){
+ #mergeSection .mergeMemberRows{grid-template-columns:minmax(0,1fr)}
+ #allocationSection .allocMemberGrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,235px),1fr))}
+}
+@media(max-width:570px){
+ #mergeSection .mergeMemberCard{padding:14px}
+ #allocationSection .allocMemberGrid{grid-template-columns:minmax(0,1fr)}
+ #allocationSection .allocMemberCard{padding:14px}
+ #allocationSection .allocMemberMetrics{justify-content:flex-start;gap:6px 20px}
+}
+@media(prefers-reduced-motion:reduce){
+ #allocationSection .allocMemberCard{transition:none}
+ #mergeSection .mergeMissingDetails summary::after{transition:none}
+}

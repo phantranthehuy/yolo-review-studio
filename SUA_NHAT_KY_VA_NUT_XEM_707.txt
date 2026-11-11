@@ -1,0 +1,7 @@
+BẢN V7.0.7 — KHÔI PHỤC NHẬT KÝ CŨ VÀ NÚT XEM QC
+
+- Trả về thanh nhật ký phiên bản tự cuộn như bản gốc, đủ lịch sử từ 7.0.7 đến 4.1.
+- Tự dừng cuộn khi người dùng đưa chuột vào hoặc thao tác trong danh sách.
+- Giữ nút chuyển Sáng/Tối gốc; không tạo dark.html.
+- Thêm lại icon Xem trong bảng QC; hiện ảnh gốc và phóng to vùng box, hoặc hướng dẫn khi thiếu ảnh gốc.
+- Không thay đổi kiểm tra nội bộ/liên nhóm, thao tác Chỉnh sửa/Xóa, quy tắc ERROR box cao dưới 12px.

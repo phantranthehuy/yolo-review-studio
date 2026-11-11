@@ -1,0 +1,70 @@
+YOLO REVIEW STUDIO V5.0 – MỤC 07 / CHIA VIỆC
+==========================================
+Nguồn tích hợp: yolo-review-studio.zip (bản mới do người dùng cung cấp).
+
+1. NHẬP TỆP: CHỈ MỤC 01
+----------------------
+Mục 01 giữ nguyên đúng hai nút có sẵn: Chọn tệp / Chọn thư mục.
+Mục 07 KHÔNG có nút upload.
+
+Dữ liệu chính: assignment_manifest.csv có image_id và assigned_reviewer_id.
+Dữ liệu tùy chọn có thể đi cùng ZIP/thư mục hoặc chọn bằng hai nút sẵn có:
+- crosscheck_assignments.csv: mẫu kiểm chéo được cấp (image_id,original_reviewer_id,checker_id,check_type).
+- review_log.csv: nếu có, hỗ trợ phát hiện ảnh đã được hoàn tất review.
+- chia_viec_phien_*.json: khôi phục phiên Chia việc đã lưu.
+
+Hai CSV tùy chọn KHÔNG bắt buộc để chia ảnh review. Nếu không có mẫu kiểm chéo
+chính thức, website tạo mẫu mới và ghi rõ nguồn trong báo cáo. Không tuyên bố
+mẫu này là mẫu ngẫu nhiên đã được giảng viên cấp.
+
+2. PHÂN CHIA REVIEW
+------------------
+Mục 07 tự hiển thị thành viên từ manifest. Bỏ chọn người vắng.
+Mặc định chỉ phân lại ảnh của người vắng, giữ nguyên ảnh người còn tham gia.
+Thuật toán cân bằng số ảnh và difficulty_weight (nếu có), sử dụng đầu vào
+thực tế; KHÔNG đọc bảng Excel mẫu hay ánh xạ cố định nào, KHÔNG mặc định SV10 vắng.
+
+Bảng Excel trước đó chỉ được dùng làm mẫu xác định mục tiêu thuật toán:
+số ảnh hợp lý, cân bằng trọng số, tránh trùng/chuyển âm thầm. KHÔNG xuất
+hiện trong runtime hoặc phân phối theo danh sách image_id từ Excel.
+
+Giao diện 07 ban đầu dùng màn hình khóa giống mục 06 nếu chưa có manifest;
+chỉ cần nạp dữ liệu qua mục 01 để mở. Không còn dải 7 bước hay chữ Offline.
+
+Nếu trạng thái ảnh hoàn tất được ghi trong manifest hoặc review_log và ảnh đó
+thuộc một người vắng, website mới hiện ô xác nhận chuyển các ảnh đã hoàn tất,
+kèm số lượng cụ thể. Nếu không có ảnh hoàn tất cần chuyển, không hiện ô này.
+Nếu cả hai nguồn không có trạng thái, hệ thống cảnh báo chưa xác minh được ảnh đã làm.
+Dấu tích là sự đồng ý thay người chịu trách nhiệm, không phải đánh dấu ảnh đã làm.
+
+3. PHÂN CHIA KIỂM CHÉO
+---------------------
+- Giữ danh sách kiểm chéo gốc nếu có, không thay 120 image_id đã cấp.
+- Khi đổi reviewer, checker được cập nhật nếu vắng/trùng reviewer/sai quy tắc.
+- Yêu cầu random toàn nhóm >= ceil(10% tổng ảnh).
+- Yêu cầu random theo từng người >= ceil(10% ảnh do người đó review).
+- Mẫu targeted bổ sung không thay thế chỉ tiêu random.
+- Nếu không có file mẫu gốc, hệ thống chọn random phân tầng dựa metadata thực có.
+- Seed mặc định 2026; thay seed để kiểm tra tính tái lập.
+
+Lưu ý: "120 ảnh" chỉ là ceil(10%*1195) cho ví dụ 1195 ảnh, KHÔNG phải
+con số cố định. Thuật toán tính theo N của manifest trong phiên.
+
+4. XUẤT / KHÔI PHỤC
+------------------
+Bấm Tính phân công · kiểm tra, xem thống kê và cảnh báo, rồi tải ZIP hoặc
+CSV riêng. "Áp dụng manifest vào phiên" chỉ cập nhật bộ nhớ trang sau xác nhận;
+không thay đổi file gốc trên máy. Nên tải ZIP trước khi áp dụng.
+
+Mục 07 có nút Lưu phiên JSON. Nạp lại JSON này bằng nút Chọn tệp tại mục 01.
+Tên JSON cần bắt đầu bằng chia_viec_phien_.
+
+5. PHÂN TÁCH CHỨC NĂNG
+---------------------
+Mục 07 không chỉnh sửa kiểm tra giữa nhóm và không dùng intergroup_results.csv.
+Mục 06 vẫn gộp nhãn thành viên như trước. Mục 01 vẫn nạp ảnh/nhãn.
+
+6. CHẠY BỘ TEST
+---------------
+Cần Node.js: node --test tests/assignmentEngine.test.cjs
+Bộ test dùng dữ liệu tổng hợp, không chứa dữ liệu lấy từ Excel hoặc file riêng của nhóm.

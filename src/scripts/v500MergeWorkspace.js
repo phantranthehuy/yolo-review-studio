@@ -168,19 +168,37 @@
    const block=document.createElement('div');block.className='mergeMetric';const strong=document.createElement('strong'),span=document.createElement('span');strong.textContent=n;span.textContent=label;block.append(strong,span);totals.append(block);
   }
   for(const [member,assigned] of currentInfo.byMember){
-   const m=uploads.get(member)||new Map(),found=assigned.filter(id=>m.has(id)).length,missing=assigned.length-found,pct=100*found/assigned.length;
-   const box=document.createElement('div');box.className='mergeMemberCard'+(!missing?' is-complete':'');box.setAttribute('role','listitem');
+   const m=uploads.get(member)||new Map(),found=assigned.filter(id=>m.has(id)).length,missing=assigned.length-found,pct=assigned.length?100*found/assigned.length:100;
+   const box=document.createElement('div');box.className='mergeMemberCard'+(!missing?' is-complete':found?' is-partial':' is-empty');box.setAttribute('role','listitem');
    const top=document.createElement('div');top.className='mergeMemberTop';
    const name=document.createElement('strong');name.textContent=member;
-   const progress=document.createElement('span');progress.textContent=`${found}/${assigned.length} nhãn · ${missing?'thiếu '+missing:'đủ'}`;
-   top.append(name,progress);
-   const track=document.createElement('div');track.className='mergeTrack';track.setAttribute('role','progressbar');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(assigned.length));track.setAttribute('aria-valuenow',String(found));track.setAttribute('aria-label',`Tiến độ ${member}`);
+   const stateBadge=document.createElement('span');stateBadge.className='mergeMemberState';stateBadge.textContent=!missing?'Đã đủ nhãn':found?'Đang bổ sung':'Chưa nạp';
+   top.append(name,stateBadge);
+   const stats=document.createElement('div');stats.className='mergeMemberStats';
+   const count=document.createElement('strong');count.textContent=`${found} / ${assigned.length}`;
+   const caption=document.createElement('span');caption.textContent='tệp TXT đã nạp';
+   const percent=document.createElement('span');percent.className='mergeMemberPercent';percent.textContent=Math.round(pct)+'%';
+   stats.append(count,caption,percent);
+   const track=document.createElement('div');track.className='mergeTrack';track.setAttribute('role','progressbar');track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(assigned.length));track.setAttribute('aria-valuenow',String(found));track.setAttribute('aria-label',`Tiến độ nhãn ${member}`);
    const fill=document.createElement('div');fill.className='mergeTrackFill';fill.style.width=pct.toFixed(2)+'%';track.append(fill);
    const bottom=document.createElement('div');bottom.className='mergeMemberBottom';
-   const note=document.createElement('span');note.textContent=missing?`Còn thiếu: ${assigned.filter(id=>!m.has(id)).slice(0,2).map(id=>id+'.txt').join(', ')}${missing>2?'…':''}`:`Đã nhận đủ ${found} TXT từ bộ nhãn của thành viên`;
-   const btn=document.createElement('button');btn.type='button';btn.className='mergeRemoveMember';btn.textContent='Xóa bộ này';btn.disabled=!m.size||ingesting;
-   btn.addEventListener('click',()=>{if(window.confirm(`Xóa ${m.size} nhãn đã nạp của ${member} trong mục 06? Nhãn A ở mục 02 không bị ảnh hưởng.`)){uploads.delete(member);warn(`Đã xóa dữ liệu của ${member} trong mục 06.`);render();}});
-   bottom.append(note,btn);box.append(top,track,bottom);rows.append(box);
+   const note=document.createElement('span');note.className='mergeMemberSummary';note.textContent=missing?`Cần bổ sung ${missing} tệp TXT còn thiếu`:`Đã nạp đầy đủ nhãn theo manifest`;
+   bottom.append(note);
+   if(m.size){
+    const btn=document.createElement('button');btn.type='button';btn.className='mergeRemoveMember';btn.textContent='Xóa bộ nhãn';btn.disabled=ingesting;btn.setAttribute('aria-label',`Xóa ${m.size} nhãn đã nạp của ${member}`);
+    btn.addEventListener('click',()=>{if(window.confirm(`Xóa ${m.size} nhãn đã nạp của ${member} trong mục 06? Nhãn A ở mục 02 không bị ảnh hưởng.`)){uploads.delete(member);warn(`Đã xóa dữ liệu của ${member} trong mục 06.`);render();}});
+    bottom.append(btn);
+   }
+   box.append(top,stats,track,bottom);
+   if(missing){
+    // Keep hashes out of the default layout; reveal full, selectable filenames on demand.
+    const details=document.createElement('details');details.className='mergeMissingDetails';
+    const summary=document.createElement('summary');summary.textContent=`Xem ${missing} tệp còn thiếu`;
+    const missingList=document.createElement('div');missingList.className='mergeMissingList';
+    for(const id of assigned){if(m.has(id))continue;const item=document.createElement('div');item.textContent=id+'.txt';missingList.append(item);}
+    details.append(summary,missingList);box.append(details);
+   }
+   rows.append(box);
   }
   const done=snapshot.ready;
   downloadBtn.disabled=!done;qcBtn.disabled=!done;el('mergeClearAll').disabled=!uploads.size;

@@ -1,0 +1,76 @@
+BÁO CÁO KIỂM TRA – YOLO REVIEW STUDIO / 07 CHIA VIỆC
+====================================================
+Nguồn tích hợp: gói yolo-review-studio.zip mới.
+
+Đã đạt 17/17 ca kiểm thử Node.js với dữ liệu tổng hợp:
+- Nhóm 10→9: giữ phân công cũ, chỉ chia ảnh người vắng, 132–133 ảnh/người
+- Người vắng là SV05; nhiều người vắng; không hardcode G11/SV10
+- Bảo toàn 120 ID kiểm chéo nguồn khi được cấp; không self-check
+- Sửa checker trùng reviewer mới, ghi thay đổi
+- Tỷ lệ >=10% toàn nhóm và >=10% theo từng chủ ảnh
+- Seed tái lập, metadata thiếu được cảnh báo
+- Chặn thay đổi ảnh hoàn tất chưa được xác nhận
+- Targeted không được thay random
+- CSV và UTF-8, metadata/hash không bị chỉnh sửa
+- Chặn thiếu manifest, trùng ID, mẫu ngoài manifest
+- Chia lại toàn bộ nhưng khóa thành viên đúng
+- Chỉ yêu cầu xác nhận ảnh đã hoàn tất khi người vắng sở hữu ảnh đó
+
+Thử với assignment_manifest.csv người dùng cung cấp (KHÔNG tích hợp file
+này vào website làm dữ liệu mặc định):
+- 1.195 ảnh gốc; 10 thành viên; chọn 9 thành viên SV01–SV09
+- 119 ảnh của người vắng được chia bằng thuật toán tổng quát
+- Review cuối: mỗi người 132–133 ảnh
+- Tổng difficulty_weight: 7.036–7.037/người
+- Random cuối khi chưa có file mẫu kiểm chéo: 135 ảnh (seed 2026)
+- Không có lỗi kế hoạch
+
+Kiểm tra HTML:
+- Cả 5 trang Default/Forest/Flower/Sakura/Index có mục 07
+- Mục 07 có 0 file input, không có shortcut Excel G11
+- Mục 01 giữ 2 file input Chọn tệp / Chọn thư mục
+- Các đường dẫn nội bộ tới JS/CSS đều tồn tại
+- Toàn bộ mã JS trong src/scripts qua node --check
+
+Kiểm tra browser độc lập (in-memory):
+- Mục 07 khi thiếu manifest: hiện khóa giống mục 06, phần điều khiển vô hiệu hóa
+- Nạp manifest hợp lệ: tự mở khóa, có đủ 10 thành viên
+- Không có ảnh hoàn tất: không hiện ô xác nhận; phát hiện một ảnh xong của người vắng: hiện ô, chặn xuất đến khi xác nhận
+- Chọn lại tất cả thành viên: ẩn ô và xóa dấu tích cũ
+- Đã bỏ trạng thái Offline và dải 7 bước trong HTML
+- Render 10 thành viên, bỏ chọn SV10, tính lại 9 thành viên
+- Tự cập nhật biểu đồ thống kê và 135 ảnh random
+- Giả lập luồng nhận crosscheck_assignments.csv qua event chung của mục 01,
+  nạp 120 dòng thành công, giữ được mẫu khi tái tính
+- Xuất ZIP thật bằng JSZip nhúng sẵn trong ZIP nguồn, giải nén thành công,
+  kiểm tra CRC không lỗi; manifest đề xuất đủ 1.195 ảnh
+- Viewport hẹp 390 px: không phát hiện tràn ngang trong giao diện mục 07 cô lập
+
+GIỚI HẠN:
+- Chính sách môi trường chặn mở trang file:// và localhost bằng Chromium,
+  vì vậy chưa xác minh E2E hoàn chỉnh trên toàn bộ website được mở từ ổ cứng.
+- Nạp file 01→07 được kiểm tra qua routing mã nguồn và event mô phỏng trong browser;
+  cần kiểm tra thêm trên máy thực tế trước khi nộp.
+- Các tiêu chí phân tầng như lịch sử sửa box, ảnh chờ phân xử chưa có đủ dữ liệu;
+  không tuyên bố đã chứng minh phân tầng hoàn chỉnh.
+- Không có file crosscheck_assignments.csv chính thức trong các đầu vào được cung cấp.
+
+=== BỔ SUNG 2026-11-11: SỬA NHẦM MANIFEST VỚI CSV THÀNH VIÊN ===
+Nguyên nhân: bộ nạp mục 01 tự coi một CSV có assigned_reviewer_id (ví dụ G11_SV09.csv chỉ 119 ảnh) là assignment_manifest.csv, khiến mục 06/07 chỉ thấy 1 reviewer.
+Đã sửa:
+- Chỉ tự nhận manifest theo tên assignment_manifest.csv, có hỗ trợ tên trùng assignment_manifest (1).csv.
+- Kiểm tra cột image_id, assigned_reviewer_id, ID trống/trùng, reviewer_id hợp lệ trước khi cập nhật state.manifest.
+- CSV riêng thành viên Gxx_SVyy.csv không thay thế manifest.
+- Nếu manifest nạp lỗi, giữ manifest cũ và thông báo lỗi rõ ràng; không báo thành công trên dữ liệu cũ.
+- Nhận đúng manifest khi nạp ZIP chứa đồng thời manifest và CSV thành viên.
+Kết quả thử nghiệm thực tế từ giao diện với Chromium (luồng mục 01 -> 06 -> 07):
+- Nhập G11_SV09.csv trước -> vẫn khóa vì chưa có manifest; không nhận nhầm 119 ảnh.
+- Nhập assignment_manifest.csv G11 -> 1.195 ảnh / 10 thành viên.
+- Nhập G11_SV09.csv sau -> vẫn 1.195 ảnh / 10 thành viên.
+- Nhập manifest sai sau khi đã có manifest hợp lệ -> không thay thế dữ liệu; hiển thị lỗi.
+- Nạp ZIP hỗn hợp G11/assignment_manifest.csv + G11/reports/G11_SV09.csv -> vẫn 1.195 ảnh / 10 thành viên.
+- Bỏ SV10, tính mục 07 -> 119 ảnh được chia, 9 người, ảnh và người kiểm hợp lệ.
+- JavaScript không phát sinh pageerror trong luồng thử nghiệm.
+- node --test tests/assignmentEngine.test.cjs: 17/17 đạt.
+- python tests/manifestRouter.browser.py: đạt với bộ dữ liệu tổng hợp không hardcode G11/Excel.
+Trang khác, trình duyệt khác và mọi trường hợp dữ liệu người dùng chưa được kiểm thử xuyên suốt.

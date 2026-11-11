@@ -1,9 +1,11 @@
 (function(){
 'use strict';
 const root=document.documentElement,toggle=document.getElementById('themeToggle'),label=document.getElementById('themeToggleLabel');
-let dark=false;
-try{dark=localStorage.getItem('yolo-review-theme')==='dark'}catch(e){}
-function applyTheme(next,persist){
+// The chosen HTML entry page is authoritative: Dark starts dark;
+// Default, Forest, Sakura, Flower and index always start light.
+// Never reuse a saved Dark choice on a light entry page.
+let dark=root.getAttribute('data-theme')==='dark';
+function applyTheme(next){
  dark=!!next;root.setAttribute('data-theme',dark?'dark':'light');
  toggle.setAttribute('aria-pressed',String(dark));
  toggle.setAttribute('aria-label',dark?'Bật chế độ sáng':'Bật chế độ tối');
@@ -12,10 +14,9 @@ function applyTheme(next,persist){
  toggle.querySelector('svg').innerHTML=dark?
   '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>':
   '<path d="M20.5 13.2A8.4 8.4 0 0 1 10.8 3.5 8.5 8.5 0 1 0 20.5 13.2Z"/>';
- if(persist){try{localStorage.setItem('yolo-review-theme',dark?'dark':'light')}catch(e){}}
 }
-applyTheme(dark,false);
-toggle.addEventListener('click',()=>applyTheme(!dark,true));
+applyTheme(dark);
+toggle.addEventListener('click',()=>applyTheme(!dark));
 // Floating toolbar footer uses the same selected-box values as the desktop bar.
 const dock=document.getElementById('coordMobileInfoBar'),section=document.getElementById('coordsSection'),
  name=document.getElementById('coord_selectedName'),pos=document.getElementById('coord_coord'),details=document.getElementById('coord_details'),

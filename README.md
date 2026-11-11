@@ -202,3 +202,43 @@ Trong **01 → Quản lý dữ liệu đã nạp / tải nhãn đổi tên**, m�
 - CSV thành viên như `G11_SV09.csv` là tệp riêng, **không** được tự thay thế `assignment_manifest.csv` chỉ vì có cột `image_id` hoặc `filename`.
 - Khi nạp cả thư mục hoặc ZIP `G11`, chương trình đọc manifest bên trong trước rồi cho chọn nhãn B / A / nhãn thành viên; tên tệp manifest thật hiện dưới nút Xóa manifest.
 - Nạp nhầm CSV không xóa manifest hợp lệ đã có. Kiểm tra phần thống kê tiến độ mục 06 đối chiếu theo tổng số ảnh được phân công.
+
+
+## 07 – Chia việc (tích hợp từ bản source mới)
+
+Dùng manifest đã nạp tại **mục 01**, không lấy image_id hoặc mapping từ Excel mẫu.
+Chọn thành viên còn tham gia, chạy thuật toán chia lại ảnh người vắng và lập mẫu
+kiểm chéo 10% với khả năng bảo toàn mẫu gốc nếu được cung cấp.
+Mọi upload vẫn tại **hai nút sẵn có ở mục 01**; mục 07 không thêm nút tải dữ liệu.
+
+Xem `HUONG_DAN_CHIA_VIEC_07.txt` và `BAO_CAO_KIEM_THU_07.txt`.
+
+
+### v7.0.3 — Sửa nạp CSV thành viên bị nhầm làm manifest
+
+- Chỉ `assignment_manifest.csv` (hoặc bản tải trùng tên `assignment_manifest (1).csv`) có hai cột `image_id`, `assigned_reviewer_id` mới được dùng làm phân công tổng.
+- `Gxx_SVyy.csv`, file CSV xuất riêng cho một sinh viên, sẽ không ghi đè manifest hay làm mục 06/07 chỉ còn một người.
+- Manifest mới phải qua kiểm tra ID trùng/rỗng và mã reviewer trước khi thay manifest cũ; khi nạp lỗi, dữ liệu đã nạp hợp lệ vẫn giữ nguyên.
+- Nếu trước đó đã thấy 1/1 thành viên do nạp nhầm, dùng nút Xóa manifest tại mục 01 (nếu cần), rồi chọn đúng `assignment_manifest.csv` để khôi phục đầy đủ nhóm.
+
+
+### v7.0.4 — Chặn manifest một thành viên và hiển thị nguồn thực
+
+- Mục 01 hiển thị nguồn `assignment_manifest.csv`, số ảnh và số thành viên THỰC của manifest trong bộ nhớ.
+- Chặn manifest chỉ chứa một mã reviewer ngay cả khi người dùng đổi tên CSV thành `assignment_manifest.csv`.
+- Mục 07 chỉ mở khi có manifest có ít nhất hai reviewer.
+- File `G11_SV09.csv` không được nhận làm manifest, dù có cùng toàn bộ 31 cột.
+- Mục 07 hiển thị nguồn file được dùng; không lấy dữ liệu cố định từ Excel.
+- Nếu sau khi giải nén mới vẫn hiển thị giao diện khác, kiểm tra dấu hiệu `Nguồn: ...` ở bước 01 của mục 07, vì đó là dấu hiệu phiên bản 7.0.4.
+
+## Cập nhật v7.0.6 — Dark rõ ràng trong danh sách giao diện
+- Thêm lựa chọn **Dark** (biểu tượng mặt trăng) trực tiếp tại **Chọn giao diện**.
+- Chế độ tối được bật/tắt ngay trên trang đang mở bằng công tắc Sáng/Tối của thanh đầu trang.
+- Nút Sáng / Tối ở đầu trang tiếp tục sử dụng được; các giao diện Default, Forest, Sakura, Flower và logic chia việc giữ nguyên.
+- Mở `index.html` để dùng mặc định; bấm công tắc Sáng/Tối để chuyển nền mà không đổi trang.
+
+## v7.0.7 — Hướng dẫn mở–đóng và lịch sử cập nhật
+- Mục 06 có hướng dẫn gộp nhãn và giải thích các file ZIP gộp.
+- Mục 07 có một hướng dẫn tổng quan đọc được ngay cả khi thiếu manifest, bảng giải thích từng file xuất và hướng dẫn riêng cho từng bước 01–07.
+- Các hộp dùng chính kiểu `helpDetails` hiện có, hỗ trợ mở/đóng bằng click, bàn phím, nền sáng/tối.
+- Trang chủ hiển thị các cập nhật 7.0.7, 7.0.6 (Dark), 7.0.5 (thẻ nhãn & tick), 7.0; các phiên bản trước chuyển vào mục lưu trữ có thể mở. Không còn tự cuộn khiến khó đọc.

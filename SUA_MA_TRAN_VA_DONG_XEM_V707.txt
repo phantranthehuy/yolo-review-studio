@@ -1,0 +1,6 @@
+BẢN V7.0.7 – SỬA GIAO DIỆN (KHÔNG ĐỔI THUẬT TOÁN)
+
+- X ở khung xem ảnh QC là nút đóng khung xem trước, không phải xóa nhãn. Đã đổi nhãn thành “Đóng xem ảnh”.
+- Ma trận reviewer/checker không còn dùng màu nền sáng cố định ở ô tiêu đề và cột reviewer đầu tiên khi bật Dark.
+- Các ô hàng/cột có màu chữ tương phản trong Dark; chế độ sáng vẫn giữ nền sáng.
+- Giữ nguyên bộ lọc QC, thao tác Xem/Chỉnh sửa/Xóa, nhật ký phiên bản tự cuộn, công tắc Sáng/Tối và luồng kiểm tra nội bộ / liên nhóm.

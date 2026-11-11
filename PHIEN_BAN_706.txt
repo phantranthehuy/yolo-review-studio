@@ -1,0 +1,3 @@
+YOLO Review Studio v7.0.6 — Thêm Dark trong Chọn giao diện.
+Dùng nút Sáng/Tối trên thanh đầu trang để chuyển chế độ, không cần trang dark.html riêng.
+Giữ nguyên cải tiến thẻ thành viên của v7.0.5.

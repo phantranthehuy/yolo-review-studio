@@ -1,0 +1,5 @@
+YOLO Review Studio — v7.0.4 manifest fix
+Test: tải assignment_manifest.csv cùng G11_SV09.csv → hiện 1195 ảnh / 10 thành viên.
+Dấu hiệu phiên bản mới: mục 01 hiện “Manifest đang dùng…” và mục 07 hiện “Nguồn: …”.
+Khi nạp CSV thành viên riêng, manifest toàn nhóm không bị thay thế.
+Bản website dùng offline, file CSV gốc không bị sửa.
