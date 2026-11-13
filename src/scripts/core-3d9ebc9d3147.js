@@ -1103,5 +1103,5 @@ const backQC=document.getElementById('coord_qcBack');
 if(backQC)backQC.addEventListener('click',()=>{
  document.getElementById('prepSection').scrollIntoView({behavior:'smooth',block:'start'});
 });
-window.YoloCoords={normalized,pixelBox,tupleFor,hitCandidates,tuple,refresh:redraw,focusQCBox,setZoom:queueZoom,getZoom:()=>scale,getFitScale:()=>img?fitImageScale():1,getMaxZoom:()=>img?Math.max(MAX_ZOOM,fitImageScale()):MAX_ZOOM,getRegions:()=>drawnBoxes.map(b=>({...b,rect:{...b.rect}}))};redraw();renderDrawnList();
+window.YoloCoords={normalized,pixelBox,tupleFor,hitCandidates,tuple,refresh:redraw,focusQCBox,setZoom:queueZoom,getZoom:()=>scale,getFitScale:()=>img?fitImageScale():1,getMaxZoom:()=>img?Math.max(MAX_ZOOM,fitImageScale()):MAX_ZOOM,hasSessionData:()=>!!(img||labelFile||savedRegions.size),getRegions:()=>drawnBoxes.map(b=>({...b,rect:{...b.rect}}))};redraw();renderDrawnList();
 })();

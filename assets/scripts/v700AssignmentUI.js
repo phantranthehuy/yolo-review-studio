@@ -156,6 +156,6 @@
   if(kind==='official'||kind==='log')void loadOptional(file,kind);
   else if(kind==='session')void restore(file);
  });
- window.YoloAllocation={preview,collect,getPlan:()=>ui.plan};
+ window.YoloAllocation={preview,collect,getPlan:()=>ui.plan,hasSessionData:()=>!!(ui.official||ui.log||ui.sessionManifest||ui.plan)};
  renderSources();renderMembers();
 })();

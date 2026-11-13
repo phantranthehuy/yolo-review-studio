@@ -1054,6 +1054,6 @@ function scheduleQC(){
 }
 refreshQCMemberOptions();
 window.YoloAfterQC={scan:scanQC,inspectSync:evaluateSync,assertValid,assertScope,assertCoverage,download:downloadQC,getSnapshot:()=>({issues:issues.map(x=>({...x})),metrics:{...qcMetrics},scanning})};
-window.YoloUploadHub={refresh,go:()=>hub.scrollIntoView({behavior:'smooth',block:'start'})};
+window.YoloUploadHub={refresh,isLoading:()=>loading,go:()=>hub.scrollIntoView({behavior:'smooth',block:'start'})};
 refresh();scheduleQC();
 })();
