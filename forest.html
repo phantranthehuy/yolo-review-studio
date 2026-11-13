@@ -350,7 +350,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 <div id="vm_stats" class="matchScore" hidden></div>
 
 <div id="vm_stage" class="matchStage" hidden><div id="vm_beforePane" class="matchPane"><h3 id="vm_beforeTitle">Khung cũ B / khung mới A</h3><canvas id="vm_canvasBefore" width="800" height="300"></canvas></div><div id="vm_afterPane" class="matchPane" hidden><h3>Nhãn sau sửa A</h3><canvas id="vm_canvasAfter" width="800" height="300"></canvas></div></div>
-<div id="vm_reviewTools" hidden><div class="matchControls"><label>Box cũ <select id="vm_beforeSelect"></select></label><label>Box mới <select id="vm_afterSelect"></select></label><button id="vm_showPair">Xem cặp đang chọn</button><label><input id="vm_onlyUnmatched" type="checkbox" checked>Chỉ đề xuất box chưa ghép</label><label><input id="vm_autoNext" type="checkbox" checked>Tự chuyển sang box chưa ghép tiếp theo</label></div>
+<div id="vm_reviewTools" hidden><div class="matchControls"><label>Box cũ <select id="vm_beforeSelect"></select></label><label>Box mới <select id="vm_afterSelect"></select></label><button id="vm_showPair">Xem cặp đang chọn</button><label><input id="vm_onlyUnmatched" type="checkbox">Chỉ hiển thị box chưa ghép</label><label><input id="vm_autoNext" type="checkbox" checked>Tự chuyển sang box chưa ghép tiếp theo</label></div>
 <div class="matchGrid"><div><h3 class="matchLegendB">Chi tiết box cũ đang chọn</h3><canvas id="vm_cropBefore" class="matchCrop" width="600" height="220"></canvas><p id="vm_beforeInfo" class="matchBoxInfo"></p></div><div><h3 class="matchLegendA">Chi tiết box mới đang chọn</h3><canvas id="vm_cropAfter" class="matchCrop" width="600" height="220"></canvas><p id="vm_afterInfo" class="matchBoxInfo"></p></div></div>
 <div class="matchActions"><button id="vm_pin" class="primary">Xác nhận B và A là cùng box</button><button id="vm_unlink">Gỡ ghép box B đang chọn</button><button id="vm_remove">Xác nhận box B đã xóa</button><button id="vm_add">Xác nhận box A mới thêm</button><button id="vm_reset">Bỏ toàn bộ quyết định của ảnh này</button></div>
 <p class="small">Ghép thủ công có thể nhận box dời xa dù IoU thấp hoặc bằng 0. Chỉ xác nhận khi nhìn rõ cùng phương tiện. Số đếm trong log cập nhật theo ghép mới; thao tác này không sửa nhãn và không thay đổi phần chấm F1/Recall.</p></div>
@@ -363,7 +363,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 <div id="stats" class="stats"></div>
 <div class="toolbar"><h2 style="margin:0">Kết quả theo ảnh</h2></div>
 <p class="small">Chọn “Chi tiết” để xem từng box. Bạn có thể sửa số đếm, trạng thái, thời gian và notes ngay trong bảng trước khi tải.</p>
-<div class="row resultsFilterBar"><label class="small" for="search">Tìm ảnh</label><input id="search" type="search" placeholder="Nhập một phần image_id"><label class="check" for="onlyWarnings"><input id="onlyWarnings" type="checkbox">Chỉ ảnh cần kiểm tra</label><span id="visibleCount" class="small"></span></div>
+<div class="row resultsFilterBar"><label class="small" for="search">Tìm ảnh</label><input id="search" type="search" placeholder="Nhập một phần image_id"><label class="check" for="onlyWarnings"><input id="onlyWarnings" type="checkbox">Chỉ ảnh cần kiểm tra</label><label class="check" for="onlyPendingMatches"><input id="onlyPendingMatches" type="checkbox">Chỉ ảnh còn box chưa ghép</label><span id="visibleCount" class="small"></span></div>
 <div class="tablewrap"><table><thead><tr><th>Ảnh / chi tiết</th><th>Thêm (đề xuất)</th><th>Xóa (đề xuất)</th><th>Sửa</th><th>Đổi lớp</th><th>Hình học</th><th>Trạng thái</th><th>Thời gian / revision</th><th>Notes</th></tr></thead><tbody id="tbody"></tbody></table></div>
 </section>
 </div>
@@ -767,10 +767,10 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 </div></div>
 
 <script src="assets/scripts/core-a67fe933b7b3.js"></script>
-<script src="assets/scripts/core-a7504b369507.js?v=704-csv-source-guard"></script>
+<script src="assets/scripts/core-a7504b369507.js?v=scope-matching2"></script>
 <script src="assets/scripts/core-3d9ebc9d3147.js?v=423-crisp-a-only"></script>
 
-<script src="assets/scripts/core-fbdd1da5a5fb.js?v=422"></script>
+<script src="assets/scripts/core-fbdd1da5a5fb.js?v=scope-matching2"></script>
 <script src="assets/scripts/responsiveJumpNavScript.js?v=feedback"></script>
 
 <script src="assets/scripts/unifiedGoldPickerScript.js"></script>
@@ -874,7 +874,7 @@ html[data-theme="dark"] #uploadHub .hubChooseBtn:not(.primary):hover{background:
 <link rel="stylesheet" href="assets/styles/v419WorkflowAndIntergroup.css?v=419">
 <link rel="stylesheet" href="assets/styles/v500InternalCrosscheck.css?v=707-internal-restore">
 <script src="assets/scripts/v419IntergroupReview.js?v=422"></script>
-<script src="assets/scripts/v417UnifiedUploadQC.js?v=707-internal-restore"></script>
+<script src="assets/scripts/v417UnifiedUploadQC.js?v=scope-matching2"></script>
 <script src="assets/scripts/v500InternalCrosscheck.js?v=707-internal-restore"></script>
 <link rel="stylesheet" href="assets/styles/v420QcClarity.css">
 <link rel="stylesheet" href="assets/styles/v425PerformanceAndContrast.css">

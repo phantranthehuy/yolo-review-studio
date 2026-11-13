@@ -449,12 +449,13 @@ function getCoverage(){
  const expected=[...new Set(ids)];
  return {expected,allIds,dup,invalid,reviewer,matched:0,missing:0,extra:0,withoutImage:0};
 }
-function evaluateSync(){
- issues=[];
+function inspectLabels(files,coverage){
+ const findings=[];
+ const issue=(severity,image_id,after_line,class_name,check_code,message)=>findings.push({severity,image_id,after_line,class_name,check_code,message});
  const images=new Set(getImages()),seenNames=new Map();
- unknownImageCount=0;
- qcMetrics={boxes:0,validBoxes:0,pixelScanned:0,matchedImages:0,coverage:getCoverage()};
- for(const file of state.after){
+ let unknownImages=0;
+ const metrics={boxes:0,validBoxes:0,pixelScanned:0,matchedImages:0,coverage};
+ for(const file of files){
   const id=cleanId(file.name,$('normalize').checked);
   if(seenNames.has(id))issue('ERROR',id,0,'','DUPLICATE_IMAGE_ID',`Trùng ID chuẩn hóa giữa ${seenNames.get(id)} và ${file.name}.`);
   else seenNames.set(id,file.name);
@@ -462,7 +463,7 @@ function evaluateSync(){
   const seenExact=new Map(),boxes=[],lines=file.text.replace(/^\uFEFF/,'').split(/\r?\n/);
   for(let i=0;i<lines.length;i++){
    const raw=lines[i].trim();if(!raw)continue;
-   qcMetrics.boxes++;
+   metrics.boxes++;
    const p=raw.split(/\s+/),line=i+1;
    if(p.length!==5){issue('ERROR',id,line,'','COLUMN_COUNT',`Cần đúng 5 cột class x_center y_center width height; hiện có ${p.length}.`);continue;}
    const cls=Number(p[0]),name=/^[0-3]$/.test(p[0])?typeNames[cls]:'';
@@ -471,7 +472,7 @@ function evaluateSync(){
    const g=p.slice(1).map(Number);if(g.some(n=>!Number.isFinite(n))){issue('ERROR',id,line,name,'NONFINITE','Tọa độ vượt miền số hữu hạn.');continue;}
    const [x,y,w,h]=g;
    if(w<=0||h<=0){issue('ERROR',id,line,name,'NONPOSITIVE_SIZE','Chiều rộng và chiều cao phải lớn hơn 0.');continue;}
-   qcMetrics.validBoxes++;
+   metrics.validBoxes++;
    if(x<0||x>1||y<0||y>1)issue('ERROR',id,line,name,'CENTER_OUTSIDE','Tâm box nằm ngoài miền [0,1].');
    const left=x-w/2,top=y-h/2,right=x+w/2,bottom=y+h/2;
    const exceed=Math.max(0,-left,-top,right-1,bottom-1);
@@ -502,10 +503,9 @@ function evaluateSync(){
    }
    activeBoxes.push(a);
   }
-  if(images.has(id))qcMetrics.matchedImages++;
-  else unknownImageCount++;
+  if(images.has(id))metrics.matchedImages++;
+  else unknownImages++;
  }
- const coverage=qcMetrics.coverage;
  if(coverage){
   for(const line of coverage.invalid)issue('ERROR','',line,'','MANIFEST_ID_INVALID',`Manifest dòng ${line} có image_id rỗng hoặc không hợp lệ.`);
   for(const id of new Set(coverage.dup))issue('ERROR',id,0,'','MANIFEST_ID_DUPLICATE','Trùng image_id trong assignment_manifest.csv sau chuẩn hóa.');
@@ -521,6 +521,12 @@ function evaluateSync(){
   for(const id of seenNames.keys())if(!images.has(id))
    issue('WARNING',id,0,'','IMAGE_MISSING','Nhãn A chưa có ảnh gốc cùng image_id; không thể kiểm kích thước pixel.');
  }
+ return {findings,metrics,unknownImages};
+}
+
+function evaluateSync(){
+ const result=inspectLabels(state.after,getCoverage());
+ issues=result.findings;qcMetrics=result.metrics;unknownImageCount=result.unknownImages;
  return issues;
 }
 function assertValid(){
@@ -559,6 +565,31 @@ function qcRunNotice(message,kind='done'){
  const el=$('qcRunFeedback');if(!el)return;
  el.hidden=false;el.textContent=message;el.dataset.kind=kind;
 }
+function inspectPixelBoxes(file,key,dimensions,report){
+ const {height,width}=dimensions;
+ for(const [idx,raw] of file.text.replace(/^\uFEFF/,'').split(/\r?\n/).entries()){
+  const p=raw.trim().split(/\s+/);if(p.length!==5||!/^[0-3]$/.test(p[0])||p.slice(1).some(v=>!floatPattern.test(v)))continue;
+  const g=p.slice(1).map(Number);if(g.some(v=>!Number.isFinite(v))||g[2]<=0||g[3]<=0)continue;
+  if(g[3]*height<12-1e-8)report('ERROR',key,idx+1,typeNames[Number(p[0])],'HEIGHT_LT_12PX',`Cao ${+(g[3]*height).toFixed(2)} px (< 12 px trên ảnh ${width} × ${height}). Xem ảnh và xác nhận xử lý tại mục 02.`);
+  if(g[2]*width<1-1e-8)report('WARNING',key,idx+1,typeNames[Number(p[0])],'WIDTH_LT_1PX',`Rộng ${(g[2]*width).toFixed(2)} px (< 1 px). Cần xem lại.`);
+ }
+}
+async function assertScope(keys,files){
+ const {findings}=inspectLabels(files,null);
+ const errors=findings.filter(item=>item.severity==='ERROR');
+ if(errors.length)throw Error(`QC nhãn A trong phạm vi: ${errors[0].image_id} · ${errors[0].message} Xem mục 02 để sửa.`);
+ const available=new Set(files.map(file=>cleanId(file.name,$('normalize').checked)));
+ for(const key of keys)if(!available.has(key))throw Error(`Thiếu TXT nhãn A trong phạm vi: ${key}. Xem mục 02 để sửa.`);
+ for(const file of files){
+  const key=cleanId(file.name,$('normalize').checked),image=window.MatchReview?.getImageFile?.(key);
+  if(!image)continue;
+  let dimensions;
+  try{dimensions=await imageDimensions(image);}catch{continue;} // Same warning-only rule as the full QC scan.
+  inspectPixelBoxes(file,key,dimensions,(severity,id,line,name,code,message)=>{
+   if(severity==='ERROR')throw Error(`QC nhãn A trong phạm vi: ${id} · dòng ${line} · ${message}`);
+  });
+ }
+}
 async function scanQC(options={}){
  const manual=options?.manual===true;
  const seq=++scanSeq,revision=qcRevision;
@@ -590,13 +621,7 @@ async function scanQC(options={}){
    while(cursor<maps.length){const {key,file}=maps[cursor++];try{
     const dimensions=await imageDimensions(window.MatchReview.getImageFile(key));if(seq!==scanSeq)return;
     qcMetrics.pixelScanned++;
-    const height=dimensions.height,width=dimensions.width;
-    for(const [idx,raw] of file.text.replace(/^\uFEFF/,'').split(/\r?\n/).entries()){
-     const p=raw.trim().split(/\s+/);if(p.length!==5||!/^[0-3]$/.test(p[0])||p.slice(1).some(v=>!floatPattern.test(v)))continue;
-     const g=p.slice(1).map(Number);if(g.some(v=>!Number.isFinite(v))||g[2]<=0||g[3]<=0)continue;
-     if(g[3]*height<12-1e-8)issue('ERROR',key,idx+1,typeNames[Number(p[0])],'HEIGHT_LT_12PX',`Cao ${+(g[3]*height).toFixed(2)} px (< 12 px trên ảnh ${width} × ${height}). Xem ảnh và xác nhận xử lý tại mục 02.`);
-     if(g[2]*width<1-1e-8)issue('WARNING',key,idx+1,typeNames[Number(p[0])],'WIDTH_LT_1PX',`Rộng ${(g[2]*width).toFixed(2)} px (< 1 px). Cần xem lại.`);
-    }
+    inspectPixelBoxes(file,key,dimensions,issue);
    }catch(e){if(seq===scanSeq)issue('WARNING',key,0,'','IMAGE_DECODE',`Không đọc được ảnh để kiểm tra pixel: ${e.message}`);}
   }}));
   if(seq!==scanSeq)return false;
@@ -1028,7 +1053,7 @@ function scheduleQC(){
  },280);
 }
 refreshQCMemberOptions();
-window.YoloAfterQC={scan:scanQC,inspectSync:evaluateSync,assertValid,assertCoverage,download:downloadQC,getSnapshot:()=>({issues:issues.map(x=>({...x})),metrics:{...qcMetrics},scanning})};
+window.YoloAfterQC={scan:scanQC,inspectSync:evaluateSync,assertValid,assertScope,assertCoverage,download:downloadQC,getSnapshot:()=>({issues:issues.map(x=>({...x})),metrics:{...qcMetrics},scanning})};
 window.YoloUploadHub={refresh,go:()=>hub.scrollIntoView({behavior:'smooth',block:'start'})};
 refresh();scheduleQC();
 })();
