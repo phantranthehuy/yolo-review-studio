@@ -78,17 +78,21 @@ function diff(a,b,threshold,clampedLines=new Set(),review=null){const pinned=mer
  for(const [i,j] of pairs){ra.delete(i);rb.delete(j);}
  for(const [i,j,value,manual] of pairs){if(manual)continue;if(value<.8)warnings.push(`Cặp tự động IoU thấp: trước dòng ${a[i].line}, sau dòng ${b[j].line}; cần xem lại.`);const alternatives=b.some((other,k)=>k!==j&&iou(a[i],other)>=threshold&&iou(a[i],other)>=value-.05)||a.some((other,k)=>k!==i&&iou(other,b[j])>=threshold&&iou(other,b[j])>=value-.05);if(alternatives)warnings.push(`Cặp tự động mơ hồ: trước dòng ${a[i].line}, sau dòng ${b[j].line}.`);}
  const counts={boxes_added:rb.size,boxes_removed:ra.size,boxes_modified:0,class_changes:0,geometry_changes:0},events=[];let clamps=0;for(const [i,j,value] of pairs){const cc=a[i].c!==b[j].c,gc=!same(a[i],b[j]);if(cc||gc){const cl=gc&&clampPair(a[i],b[j]);counts.boxes_modified++;counts.class_changes+=+cc;counts.geometry_changes+=+gc;clamps+=+cl;events.push({change_type:'modified',before_line:a[i].line,after_line:b[j].line,before:a[i].raw,after:b[j].raw,iou:value.toFixed(9),class_changed:+cc,geometry_changed:+gc,clamp:+cl});}}
- for(const i of ra)events.push({change_type:'removed',before_line:a[i].line,after_line:'',before:a[i].raw,after:'',iou:'',class_changed:0,geometry_changed:0,clamp:0});for(const j of rb)events.push({change_type:'added',before_line:'',after_line:b[j].line,before:'',after:b[j].raw,iou:'',class_changed:0,geometry_changed:0,clamp:0});if([...ra].some(i=>!(review?.removed||[]).includes(a[i].line))||[...rb].some(j=>!(review?.added||[]).includes(b[j].line)))warnings.push('Box chưa ghép chỉ là đề xuất thêm/xóa; mở đối chiếu trực quan để xác nhận box dời vị trí.');for(const [label,bs] of [['trước',a],['sau',b]])if(new Set(bs.map(x=>JSON.stringify([x.c,...x.g]))).size!==bs.length)warnings.push('Có box trùng hoàn toàn trong nhãn '+label+'.');return{counts,events,warnings,clamps,pairs,unmatchedBefore:[...ra],unmatchedAfter:[...rb]};}
+ for(const i of ra)events.push({change_type:'removed',before_line:a[i].line,after_line:'',before:a[i].raw,after:'',iou:'',class_changed:0,geometry_changed:0,clamp:0});for(const j of rb)events.push({change_type:'added',before_line:'',after_line:b[j].line,before:'',after:b[j].raw,iou:'',class_changed:0,geometry_changed:0,clamp:0});
+ const unresolvedBefore=[...ra].filter(i=>!removed.has(a[i].line));
+ const unresolvedAfter=[...rb].filter(j=>!added.has(b[j].line));
+ // If both sides still have boxes, a vehicle may have moved too far for IoU matching.
+ const needsReview=unresolvedBefore.length>0&&unresolvedAfter.length>0;
+ if(needsReview)warnings.push('Còn box chưa ghép ở cả B và A. Kiểm tra box dời vị trí trước khi xác nhận thêm/xóa.');
+ for(const [label,bs] of [['trước',a],['sau',b]])if(new Set(bs.map(x=>JSON.stringify([x.c,...x.g]))).size!==bs.length)warnings.push('Có box trùng hoàn toàn trong nhãn '+label+'.');
+ return {counts,events,warnings,clamps,pairs,unmatchedBefore:[...ra],unmatchedAfter:[...rb],
+  pendingBefore:needsReview?unresolvedBefore:[],pendingAfter:needsReview?unresolvedAfter:[],
+  autoRemoved:needsReview?[]:unresolvedBefore,autoAdded:needsReview?[]:unresolvedAfter};
+}
 function reviewKey(row){return row.key??scopeId(row.data.image_id);}
 function pendingBoxes(row,side){
- const matching=row.matching;
- if(!matching)return [];
- const decision=state.matchReviews.get(reviewKey(row));
- const before=side==='before';
- const resolved=new Set(before?decision?.removed:decision?.added);
- const boxes=before?matching.a:matching.b;
- const unmatched=before?matching.res.unmatchedBefore:matching.res.unmatchedAfter;
- return unmatched.filter(index=>!resolved.has(boxes[index].line));
+ const result=row.matching?.res;
+ return (side==='before'?result?.pendingBefore:result?.pendingAfter)??[];
 }
 function validTime(t){if(!t)return true;const m=t.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|([+-])(\d{2}):(\d{2}))$/);if(!m)return false;const y=+m[1],mo=+m[2],d=+m[3],days=new Date(Date.UTC(y,mo,0)).getUTCDate();return mo>=1&&mo<=12&&d>=1&&d<=days&&+m[4]<24&&+m[5]<60&&+m[6]<60&&(!m[9]||(+m[9]<=14&&+m[10]<60&&(+m[9]!==14||+m[10]===0)))&&Number.isFinite(Date.parse(t));}
 async function compare(){if(state.busy)return;hideMessage();invalidate();let comparing=false;try{const reviewer=$('reviewer').value.trim(),time=$('reviewedAt').value.trim(),rev=$('revision').value,th=Number($('threshold').value);if(!reviewer)throw Error('Điền reviewer_id.');state.classes=currentNames();if(!validTime(time))throw Error('Thời gian phải có giây và múi giờ, ví dụ 2026-11-03T20:00:00+07:00.');if(rev&&!/^[1-9]\d*$/.test(rev))throw Error('Revision phải là số nguyên >= 1.');if(!(th>0&&th<=1))throw Error('IoU phải > 0 và <= 1.');if($('confirmed').checked&&!time)throw Error('Cần thời gian hoàn tất phiên thực tế để tự ghi trạng thái.');if(!state.before.length||!state.after.length)throw Error('Chọn nhãn ban đầu và sau sửa.');const scoped=state.manifest&&state.manifestScope==='member';
